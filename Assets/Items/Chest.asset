@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Name: Chest
+  m_EditorClassIdentifier: 
+  itemType: 3
+  actionType: 5
+  stackable: 1
+  maxStack: 10
+  icon: {fileID: 21300000, guid: 7be611736b9cdfe479559e3c0984188c, type: 3}
+  itemName: Chest
+  equippedPrefab: {fileID: 3722185172534624221, guid: f550c61aa90613a4998898ee940fbb6c, type: 3}
+  itemDrop: {fileID: 7938084063335841887, guid: f481ca9fe7dbfdc4a9ecbdd896989a68, type: 3}
+  animatorController: {fileID: 0}
+  buildingGhost: {fileID: 1225668700139714346, guid: da9dc4e1327235544a8fb291365dfb82, type: 3}
+  height: 0
+  buildingSize: {x: 1, y: 1}
+  attackDistance: 1
+  attackSpeed: 0
+  attackDelay: 0
+  attackDamage:
+  - 0
+  - 0
+  critChance: 2
+  critFactor: 2
+  attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  hitEffect: {fileID: 0}
+  swingSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  toolLevel: 0
+  toolType: 3
+  foodValue: 0
+  fuelValue: 15
+  smeltRate: 0.01
+  output: {fileID: 0}
+  outputCount: 1
+  attacking: 0
+  readyToAttack: 1

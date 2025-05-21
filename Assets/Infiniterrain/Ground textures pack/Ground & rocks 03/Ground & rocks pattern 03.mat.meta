@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: bce0cd8cdfffc2a41b798316325a24d2
+labels:
+- Ground
+- Nature
+- Pattern
+- Sand
+- Stone
+- Terrain
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 46241
+  packageName: InfiniTerrain
+  packageVersion: 1.0
+  assetPath: Assets/Infiniterrain/Ground textures pack/Ground & rocks 03/Ground &
+    rocks pattern 03.mat
+  uploadId: 85248

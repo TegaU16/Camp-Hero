@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0524aa71c14153e4088d75ae7291db57, type: 3}
+  m_Name: Hut Chest LT
+  m_EditorClassIdentifier: 
+  lootEntries:
+  - item: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
+    minCount: 4
+    maxCount: 15
+    probability: 0.9
+  - item: {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
+    minCount: 5
+    maxCount: 20
+    probability: 0.9
+  - item: {fileID: 11400000, guid: 395e7513434bc0544bf7f2d37284a38d, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.1
+  - item: {fileID: 11400000, guid: 556f3b86c57e5114f9da0401a33243af, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.1
+  - item: {fileID: 11400000, guid: 16e2be021ac897044b41171a34e2c6d0, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.02
+  - item: {fileID: 11400000, guid: f6ca558b36613e34bbe8df775e8261f0, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.02
+  - item: {fileID: 11400000, guid: 54660bbb6fa3ce54ebd5e4e88b17b093, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.02
+  - item: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.01
+  - item: {fileID: 11400000, guid: 8dc46a65aa3e6d244b3e8d2ce2b8d37e, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.01
+  - item: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.01

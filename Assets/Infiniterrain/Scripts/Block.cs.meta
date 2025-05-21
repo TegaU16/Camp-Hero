@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 5db61288e71c4264dbaa956b90ef7edb
+timeCreated: 1442283002
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 46241
+  packageName: InfiniTerrain
+  packageVersion: 1.0
+  assetPath: Assets/Infiniterrain/Scripts/Block.cs
+  uploadId: 85248

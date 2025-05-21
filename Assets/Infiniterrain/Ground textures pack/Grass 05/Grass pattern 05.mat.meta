@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 49c3c02661a83fd42b33859cfbf9a17d
+labels:
+- Pattern
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 46241
+  packageName: InfiniTerrain
+  packageVersion: 1.0
+  assetPath: Assets/Infiniterrain/Ground textures pack/Grass 05/Grass pattern 05.mat
+  uploadId: 85248

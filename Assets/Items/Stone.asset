@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Name: Stone
+  m_EditorClassIdentifier: 
+  itemType: 9
+  actionType: 3
+  stackable: 1
+  maxStack: 20
+  icon: {fileID: 21300000, guid: 25e267992d1b55c49a7e30dcf03f5c31, type: 3}
+  itemName: Stone
+  equippedPrefab: {fileID: 5182128074753737184, guid: 290edec923b17fd4293a2b9ee402ae23, type: 3}
+  itemDrop: {fileID: 6974038280828783544, guid: d6c00442f4a24554a94ab64ad01f331b, type: 3}
+  animatorController: {fileID: 0}
+  buildingGhost: {fileID: 0}
+  height: 0
+  buildingSize: {x: 1, y: 1}
+  attackDistance: 1
+  attackSpeed: 0
+  attackDelay: 0
+  attackDamage:
+  - 2
+  - 5
+  critChance: 2
+  critFactor: 2
+  attackLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  hitEffect: {fileID: 0}
+  swingSound: {fileID: 0}
+  hitSound: {fileID: 0}
+  toolLevel: 0
+  toolType: 3
+  foodValue: 0
+  fuelValue: 0
+  smeltRate: 0.01
+  output: {fileID: 0}
+  outputCount: 1
+  attacking: 0
+  readyToAttack: 1

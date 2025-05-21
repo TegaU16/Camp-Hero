@@ -1,0 +1,68 @@
+using UnityEngine;
+
+public class MortarProjectile : MonoBehaviour
+{
+    public float explosionRadius = 3f;
+    public LayerMask damageMask;
+    public GameObject explosionEffect;
+    public float arcHeight = 5f;
+
+    private Rigidbody rb;
+    private int damage;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
+    public void Launch(Vector3 targetPosition, int damageAmount)
+    {
+        damage = damageAmount;
+
+        Vector3 start = transform.position;
+        Vector3 end = targetPosition;
+
+        Vector3 direction = end - start;
+        Vector3 horizontal = new(direction.x, 0f, direction.z);
+        float heightDifference = direction.y;
+
+        float gravity = -Physics.gravity.y;
+
+        float initialYVelocity = Mathf.Sqrt(2 * gravity * arcHeight);
+        float timeToApex = initialYVelocity / gravity;
+
+        float totalTime = timeToApex + Mathf.Sqrt(2 * (arcHeight - heightDifference) / gravity);
+        Vector3 initialXZVelocity = horizontal / totalTime;
+
+        Vector3 launchVelocity = initialXZVelocity + Vector3.up * initialYVelocity;
+
+        rb.linearVelocity = launchVelocity;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        Collider[] hits = new Collider[20];
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, explosionRadius, hits);
+
+        if (hitCount == hits.Length)
+        {
+            Collider[] expandedArray = new Collider[hitCount * 2];
+            hitCount = Physics.OverlapSphereNonAlloc(transform.position, explosionRadius, expandedArray);
+            hits = expandedArray;
+        }
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider hit = hits[i];
+            if (hit.TryGetComponent(out BreakableObject breakable))
+            {
+                breakable.TakeDamage(damage, false);
+            }
+        }
+
+        if (explosionEffect != null)
+            Instantiate(explosionEffect, transform.position, Quaternion.identity);
+
+        Destroy(gameObject);
+    }
+}

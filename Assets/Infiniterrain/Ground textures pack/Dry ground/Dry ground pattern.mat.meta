@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: d805d830c4023774cb6259aca09f431e
+labels:
+- Ground
+- Nature
+- Pattern
+- Terrain
+- Dry
+- Desert
+- Dried
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 46241
+  packageName: InfiniTerrain
+  packageVersion: 1.0
+  assetPath: Assets/Infiniterrain/Ground textures pack/Dry ground/Dry ground pattern.mat
+  uploadId: 85248

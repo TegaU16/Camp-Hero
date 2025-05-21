@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 36508c771463abf43b7135d9539897e7
+labels:
+- Ground
+- Nature
+- Pattern
+- Terrain
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 46241
+  packageName: InfiniTerrain
+  packageVersion: 1.0
+  assetPath: Assets/Infiniterrain/Ground textures pack/Ground 02/Ground pattern 02.mat
+  uploadId: 85248
