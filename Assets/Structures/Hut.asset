@@ -15,5 +15,6 @@ MonoBehaviour:
   structureName: Hut
   prefabParts:
   - {fileID: 92347587458306418, guid: 61500a5c1c40ca6499665c2b59ce052f, type: 3}
-  localOffsets:
-  - {x: 0, y: 0, z: 0}
+  localOffsets: []
+  localSizes:
+  - {x: 5, y: 6}

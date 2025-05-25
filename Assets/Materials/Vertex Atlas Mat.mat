@@ -111,7 +111,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _SunlightIntensity: 0.80619264
+    - _SunlightIntensity: 0.6123618
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1

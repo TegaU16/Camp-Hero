@@ -17,13 +17,18 @@ public class AttackHitbox : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
+    {
+        ProcessHit(other);
+    }
+
+    private void ProcessHit(Collider other)
     {
         if (GameManager.Instance.isPaused) return;
 
         Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
         if (selectedItem == null) return;
-        
+
         BreakableObject breakable = other.GetComponentInParent<BreakableObject>();
         if (breakable == null) return;
 

@@ -4,6 +4,7 @@ public class SimpleRagdollController : MonoBehaviour
 {
     private Rigidbody[] allRigidbodies;
     private Collider[] allColliders;
+    public Collider[] collidersToIgnore;
 
     [SerializeField] private Animator animator;
     [SerializeField] private UnityEngine.AI.NavMeshAgent agent;
@@ -53,7 +54,7 @@ public class SimpleRagdollController : MonoBehaviour
 
         foreach (var col in allColliders)
         {
-            if (col.GetComponent<CharacterController>() == null)
+            if (col.GetComponent<CharacterController>() == null && !ToIgnore(col))
             {
                 col.enabled = false;
             }
@@ -66,5 +67,18 @@ public class SimpleRagdollController : MonoBehaviour
             agent.enabled = true;
 
         IsSetup = false;
+    }
+
+    private bool ToIgnore(Collider colIgnore)
+    {
+        foreach(Collider col in collidersToIgnore)
+        {
+            if (col == colIgnore)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

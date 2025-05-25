@@ -76,8 +76,7 @@ public class BreakableObject : MonoBehaviour
         popupInstance.transform.LookAt(Camera.main.transform);
         popupInstance.transform.Rotate(0, 180, 0); // Flip if needed
 
-        DamagePopup popup = popupInstance.GetComponent<DamagePopup>();
-        if (popup != null)
+        if (popupInstance.TryGetComponent(out DamagePopup popup))
         {
             popup.Setup(damage, crit);
         }
@@ -119,6 +118,7 @@ public class BreakableObject : MonoBehaviour
                 }
             }
 
+            GameManager.Instance.voxelGrid.MarkAreaOccupied(gameObject);
             Destroy(gameObject);
         }
     }

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using static StorageUnit;
 
 public class StorageUI : MonoBehaviour
 {
@@ -16,6 +15,11 @@ public class StorageUI : MonoBehaviour
     {
         linkedStorage = storage;
 
+        foreach (var storedItem in linkedStorage.items)
+        {
+            storedItem.ResolveItemFromName();
+        }
+
         ClearSlots();
         gameObject.SetActive(true);
         InventoryManager.Instance.darkBackground.SetActive(true);
@@ -24,10 +28,14 @@ public class StorageUI : MonoBehaviour
 
     public void Close()
     {
+        linkedStorage.isOpen = false;
+
         SaveItemsToStorage();
         ClearSlots();
         gameObject.SetActive(false);
         InventoryManager.Instance.darkBackground.SetActive(false);
+
+        linkedStorage = null;
     }
 
     private void BuildSlots()
@@ -86,11 +94,13 @@ public class StorageUI : MonoBehaviour
                 }
                 else
                 {
-                    linkedStorage.items.Add(new StoredItem
+                    StoredItem stored = new()
                     {
                         item = inventoryItem.item,
                         count = Mathf.Max(1, inventoryItem.count)
-                    });
+                    };
+                    stored.SyncNameFromItem();
+                    linkedStorage.items.Add(stored);
                 }
             }
         }

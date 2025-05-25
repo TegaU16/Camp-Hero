@@ -36,7 +36,7 @@ public class VoxelGrid : MonoBehaviour
     public List<BiomeData> biomes;
     public NoiseSettings biomeNoiseSettings;
 
-    private readonly Dictionary<Vector3Int, bool> voxelOccupancy = new();
+    private readonly HashSet<Vector3Int> voxelOccupancy = new();
 
     public DayNightCycle dayNightCycle;
 
@@ -311,6 +311,8 @@ public class VoxelGrid : MonoBehaviour
                             obj.transform.parent = chunk.chunkObject.transform;
                             chunk.objects.Add(obj);
 
+                            MarkAreaOccupied(obj);
+
                             if (obj.TryGetComponent(out BreakableObject breakable))
                             {
                                 breakable.owningChunk = chunk;
@@ -404,6 +406,7 @@ public class VoxelGrid : MonoBehaviour
                     smallObj.transform.parent = chunk.chunkObject.transform;
                     chunk.objects.Add(smallObj);
                     chunk.savedObjectPositions.Add(finalPosition);
+
 
                     chunk.savedObjects.Add(new SpawnedObjectData(finalPosition, smallPrefab));
 
@@ -649,25 +652,31 @@ public class VoxelGrid : MonoBehaviour
 
     public bool IsOccupied(Vector3Int position)
     {
-        if (voxelOccupancy.ContainsKey(position))
-        {
-            return voxelOccupancy[position];
-        }
-        else
-        {
-            return false;
-        }
+        return voxelOccupancy.Contains(position);
     }
 
-    public void SetOccupied(Vector3Int position, bool isOccupied)
+    public void SetOccupied(Vector3Int position, bool occupy = true)
     {
-        if (!voxelOccupancy.ContainsKey(position))
-        {
-            voxelOccupancy.Add(position, isOccupied);
-        }
+        if (occupy)
+            voxelOccupancy.Add(position);
         else
+            voxelOccupancy.Remove(position);
+    }
+
+    public void MarkAreaOccupied(GameObject prefab, bool occupy = true)
+    {
+        Bounds bounds = prefab.GetComponentInChildren<Renderer>().bounds;
+
+        Vector3Int min = WorldToVoxelCoord(bounds.min);
+        Vector3Int max = WorldToVoxelCoord(bounds.max);
+
+        for (int x = min.x; x <= max.x; x++)
         {
-            voxelOccupancy[position] = isOccupied;
+            for (int z = min.z; z <= max.z; z++)
+            {
+                Vector3Int voxelPos = new(x, 0, z);
+                SetOccupied(voxelPos, occupy);
+            }
         }
     }
 
@@ -784,7 +793,6 @@ public class VoxelGrid : MonoBehaviour
         }
 
         chunks.Clear();
-        voxelOccupancy.Clear();
 
         if (structureManager != null) 
             structureManager.ClearStructures();
@@ -796,5 +804,25 @@ public class VoxelGrid : MonoBehaviour
         CreateWorldBorders();
 
         Debug.Log("World reset complete.");
+    }
+
+    public void DrawOccupiedVoxels()
+    {
+        foreach (Vector3Int voxel in voxelOccupancy)
+        {
+            Vector3 center = (Vector3)voxel * voxelSize + Vector3.one * (voxelSize / 2f);
+            Vector3 top = center + 0.5f * voxelSize * Vector3.up;
+            Vector3 bottom = center - 0.5f * voxelSize * Vector3.up;
+            Debug.DrawLine(bottom, top, Color.red, 2f); // 0 = one frame
+        }
+    }
+
+    public Vector3Int WorldToVoxelCoord(Vector3 worldPos)
+    {
+        return new Vector3Int(
+            Mathf.FloorToInt(worldPos.x / voxelSize),
+            Mathf.FloorToInt(worldPos.y / voxelSize),
+            Mathf.FloorToInt(worldPos.z / voxelSize)
+        );
     }
 }

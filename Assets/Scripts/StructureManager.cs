@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class StructureManager : MonoBehaviour
@@ -8,6 +9,9 @@ public class StructureManager : MonoBehaviour
 
     public List<WorldStructure> activeStructures = new();
     public VoxelGrid voxelGrid;
+    public LayerMask structureLayer;
+
+    public BuildingManager buildingManager;
 
     public float minSpacing;
 
@@ -87,8 +91,12 @@ public class StructureManager : MonoBehaviour
                 partPosition.y = hit.point.y;
             }
 
+            if (!buildingManager.IsAreaFree(prefab, partPosition)) continue;
+
             GameObject part = Instantiate(prefab, partPosition, Quaternion.identity, chunk.chunkObject.transform);
             structure.structureObjects.Add(part);
+
+            voxelGrid.MarkAreaOccupied(part);
 
             foreach (var storage in part.GetComponentsInChildren<StorageUnit>())
             {

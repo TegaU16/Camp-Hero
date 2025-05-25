@@ -38,8 +38,8 @@ public class PlayerCombat : MonoBehaviour
                 box.center = new Vector3(0f, 0f, -attackDistance / 2f);
             }
 
-            hitbox.gameObject.SetActive(true);
             hitbox.ClearHits();
+            hitbox.gameObject.SetActive(true);
 
             yield return new WaitForSeconds(0.3f);
             hitbox.gameObject.SetActive(true);

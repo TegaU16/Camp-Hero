@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 [System.Serializable]
 public class StoredItem
@@ -16,6 +17,12 @@ public class StoredItem
 
     public void ResolveItemFromName()
     {
+        if (string.IsNullOrEmpty(itemName))
+        {
+            Debug.LogWarning("StoredItem has no itemName to resolve.");
+            return;
+        }
+
         item = ItemRegistry.GetItemByName(itemName);
     }
 }
@@ -24,26 +31,25 @@ public class StorageUnit : MonoBehaviour, IInteractable, ISaveableObject
 {
     public string chestName = "Storage Chest";
     public int maxSlots = 16;
+    [HideInInspector] public bool isOpen = false;
 
     [HideInInspector]
     public List<StoredItem> items = new();
 
-    private StorageUI currentUI;
-
     public void Interact()
     {
-        if (currentUI == null)
-        {
-            currentUI = InventoryManager.Instance.storageMenuUI.GetComponent<StorageUI>();
-            currentUI.Open(this); // Pass this chest's reference
+        StorageUI ui = InventoryManager.Instance.storageMenuUI.GetComponent<StorageUI>();
 
+        if (!isOpen)
+        {
+            ui.Open(this);
+            isOpen = true;
             InventoryManager.Instance.mainInventory.SetActive(true);
         }
         else
         {
-            currentUI.Close();
-            currentUI = null;
-
+            ui.Close();
+            isOpen = false;
             InventoryManager.Instance.mainInventory.SetActive(false);
         }
     }
