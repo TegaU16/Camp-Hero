@@ -88,8 +88,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
-  health: 200
-  expDropped: 0
+  maxHealth: 400
+  expDropped: 50
   drops:
   - drop: {fileID: 11400000, guid: 834ad97841f69b645b91a62158983e75, type: 2}
     minValue: 5

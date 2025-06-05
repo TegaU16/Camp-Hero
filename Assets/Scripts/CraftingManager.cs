@@ -12,6 +12,8 @@ public class CraftingManager : MonoBehaviour
     [Header("UI")]
     public GameObject craftingItemPrefab;
     public Transform craftingItemParent;
+    public TextMeshProUGUI craftingItemName;
+    public Image craftingItemIcon;
     public GameObject requirementPrefabParent;
 
     [Header("State")]
@@ -36,8 +38,15 @@ public class CraftingManager : MonoBehaviour
         {
             if (InventoryManager.Instance.mainInventory != null) InventoryManager.Instance.mainInventory.SetActive(true);
             if (InventoryManager.Instance.craftingMenuUI != null) InventoryManager.Instance.craftingMenuUI.SetActive(true);
+
+            if (selectedItem == null)
+            {
+                craftingItemIcon.gameObject.SetActive(false);
+                craftingItemName.text = "Select an item to craft";
+            }
         }
     }
+
     public void TryUnlockRecipes(List<Item> discoveredItems)
     {
         foreach (var recipe in craftingDatabase.allRecipes)
@@ -90,8 +99,7 @@ public class CraftingManager : MonoBehaviour
             Transform iconTransform = reqGO.transform.Find("Req. Icon");
             if (iconTransform != null)
             {
-                Image iconImage = iconTransform.GetComponent<Image>();
-                if (iconImage != null)
+                if (iconTransform.TryGetComponent(out Image iconImage))
                     iconImage.sprite = item.requiredItem.icon;
             }
 
@@ -103,6 +111,10 @@ public class CraftingManager : MonoBehaviour
 
         // Update selected item
         selectedItem = craftingItem;
+
+        craftingItemName.text = selectedItem.recipe.resultItem.itemName;
+        craftingItemIcon.gameObject.SetActive(true);
+        craftingItemIcon.sprite = selectedItem.recipe.resultItem.icon;
     }
 
     /// <summary>

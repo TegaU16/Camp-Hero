@@ -9,6 +9,15 @@ using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using UnityEngine.AI;
 using UnityEngine;
+using UnityEditor.AI;
+using UnityEditor;
+
+/*[MenuItem("Tools/NavMesh/Toggle Surface Gizmos")]
+static void ToggleGizmos()
+{
+    NavMeshSurfaceGizmoSettings.ShowGizmos = !NavMeshSurfaceGizmoSettings.ShowGizmos;
+    SceneView.RepaintAll(); // Refresh the view
+}*/
 
 namespace UnityEditor.AI
 {
@@ -34,28 +43,28 @@ namespace UnityEditor.AI
 #endif
         class Styles
         {
-            public readonly GUIContent m_LayerMask = new GUIContent("Include Layers");
+            public readonly GUIContent m_LayerMask = new("Include Layers");
 
-            public readonly GUIContent m_ShowInputGeom = new GUIContent("Show Input Geom");
-            public readonly GUIContent m_ShowVoxels = new GUIContent("Show Voxels");
-            public readonly GUIContent m_ShowRegions = new GUIContent("Show Regions");
-            public readonly GUIContent m_ShowRawContours = new GUIContent("Show Raw Contours");
-            public readonly GUIContent m_ShowContours = new GUIContent("Show Contours");
-            public readonly GUIContent m_ShowPolyMesh = new GUIContent("Show Poly Mesh");
-            public readonly GUIContent m_ShowPolyMeshDetail = new GUIContent("Show Poly Mesh Detail");
+            public readonly GUIContent m_ShowInputGeom = new("Show Input Geom");
+            public readonly GUIContent m_ShowVoxels = new("Show Voxels");
+            public readonly GUIContent m_ShowRegions = new("Show Regions");
+            public readonly GUIContent m_ShowRawContours = new("Show Raw Contours");
+            public readonly GUIContent m_ShowContours = new("Show Contours");
+            public readonly GUIContent m_ShowPolyMesh = new("Show Poly Mesh");
+            public readonly GUIContent m_ShowPolyMeshDetail = new("Show Poly Mesh Detail");
         }
 
         static Styles s_Styles;
 
-        static bool s_ShowDebugOptions;
+        static readonly bool s_ShowDebugOptions;
 
         static Color s_HandleColor = new Color(127f, 214f, 244f, 100f) / 255;
         static Color s_HandleColorSelected = new Color(127f, 214f, 244f, 210f) / 255;
         static Color s_HandleColorDisabled = new Color(127f * 0.75f, 214f * 0.75f, 244f * 0.75f, 100f) / 255;
 
-        BoxBoundsHandle m_BoundsHandle = new BoxBoundsHandle();
+        readonly BoxBoundsHandle m_BoundsHandle = new();
 
-        bool editingCollider
+        bool EditingCollider
         {
             get { return EditMode.editMode == EditMode.SceneViewEditMode.Collider && EditMode.IsOwner(this); }
         }
@@ -78,12 +87,10 @@ namespace UnityEditor.AI
 #if NAVMESHCOMPONENTS_SHOW_NAVMESHDATA_REF
             m_NavMeshData = serializedObject.FindProperty("m_NavMeshData");
 #endif
-            NavMeshVisualizationSettings.showNavigation++;
         }
 
         void OnDisable()
         {
-            NavMeshVisualizationSettings.showNavigation--;
         }
 
         Bounds GetBounds()
@@ -94,8 +101,7 @@ namespace UnityEditor.AI
 
         public override void OnInspectorGUI()
         {
-            if (s_Styles == null)
-                s_Styles = new Styles();
+            s_Styles ??= new Styles();
 
             serializedObject.Update();
 
@@ -126,7 +132,7 @@ namespace UnityEditor.AI
             }
             else
             {
-                if (editingCollider)
+                if (EditingCollider)
                     EditMode.QuitEditMode();
             }
 
@@ -204,7 +210,7 @@ namespace UnityEditor.AI
 
             var hadError = false;
             var multipleTargets = targets.Length > 1;
-            foreach (NavMeshSurface navSurface in targets)
+            foreach (NavMeshSurface navSurface in targets.Cast<NavMeshSurface>())
             {
                 var settings = navSurface.GetBuildSettings();
                 // Calculating bounds is potentially expensive when unbounded - so here we just use the center/size.
@@ -312,7 +318,7 @@ namespace UnityEditor.AI
         [DrawGizmo(GizmoType.NotInSelectionHierarchy | GizmoType.Pickable)]
         static void RenderBoxGizmoNotSelected(NavMeshSurface navSurface, GizmoType gizmoType)
         {
-            if (NavMeshVisualizationSettings.showNavigation > 0)
+            if (NavMeshSurfaceGizmoSettings.ShowGizmos)
                 RenderBoxGizmo(navSurface, gizmoType, false);
             else
                 Gizmos.DrawIcon(navSurface.transform.position, "NavMeshSurface Icon", true);
@@ -361,7 +367,7 @@ namespace UnityEditor.AI
 
         void OnSceneGUI()
         {
-            if (!editingCollider)
+            if (!EditingCollider)
                 return;
 
             var navSurface = (NavMeshSurface)target;
@@ -396,5 +402,10 @@ namespace UnityEditor.AI
             if (view != null)
                 view.MoveToView(go.transform);
         }
+    }
+
+    public static class NavMeshSurfaceGizmoSettings
+    {
+        public static bool ShowGizmos = true;
     }
 }

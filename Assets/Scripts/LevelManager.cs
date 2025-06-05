@@ -15,10 +15,6 @@ public class LevelManager : MonoBehaviour
     {
         UpdateExpBar();
         UpdateMaxExp();
-    }
-
-    void Update()
-    {
         levelText.text = level.ToString();
     }
 
@@ -40,6 +36,7 @@ public class LevelManager : MonoBehaviour
         level += 1;
         UpdateMaxExp();
         UpdateExpBar();
+        levelText.text = level.ToString();
     }
 
     private void UpdateMaxExp()

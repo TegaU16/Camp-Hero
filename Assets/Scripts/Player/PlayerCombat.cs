@@ -4,6 +4,16 @@ using System.Collections.Generic;
 
 public class PlayerCombat : MonoBehaviour
 {
+    [Header("Combo Settings")]
+    public float comboResetTime = 1f;
+    public int maxCombo = 3;
+
+    private int comboStep = 0;
+    private float lastAttackTime;
+    private bool canChain = false;
+
+    private Animator animator;
+
     [HideInInspector] public bool isCritical = false;
     public AttackHitbox playerAttackHitbox;
     private const float reductionFactor = 2f;
@@ -15,35 +25,74 @@ public class PlayerCombat : MonoBehaviour
         { ToolType.Sword, new() { BreakableObject.ObjectType.Flesh } }
     };
 
+    void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            StartCoroutine(PerformAttack());
+            HandleComboAttack();
+        }
+
+        if (comboStep > 0 && Time.time - lastAttackTime > comboResetTime)
+        {
+            ResetCombo();
         }
     }
 
-    private IEnumerator PerformAttack()
+    private void HandleComboAttack()
     {
-        AttackHitbox hitbox = playerAttackHitbox;
-        Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+        if (InventoryManager.Instance.IsExtensionOpen()) return;
 
-        if (hitbox != null && selectedItem != null)
+        if (GameManager.Instance.isPaused) return;
+
+        if (canChain || comboStep == 0)
         {
-            if (hitbox.TryGetComponent(out BoxCollider box))
-            {
-                float attackDistance = selectedItem.attackDistance;
+            comboStep++;
+            if (comboStep > maxCombo) comboStep = 1;
 
-                box.size = new Vector3(0.2f, 0.2f, attackDistance);
-                box.center = new Vector3(0f, 0f, -attackDistance / 2f);
+            AttackHitbox hitbox = playerAttackHitbox;
+            Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+
+            if (hitbox != null && selectedItem != null)
+            {
+                if (hitbox.TryGetComponent(out BoxCollider box))
+                {
+                    float attackDistance = selectedItem.attackDistance;
+
+                    box.size = new Vector3(0.5f, 1f, attackDistance);
+                    box.center = new Vector3(0f, box.size.y / 2f, attackDistance / 2f);
+                }
             }
 
-            hitbox.ClearHits();
-            hitbox.gameObject.SetActive(true);
+            animator.SetTrigger("Attack");
+            animator.SetInteger("Combo Step", comboStep);
+            lastAttackTime = Time.time;
 
-            yield return new WaitForSeconds(0.3f);
-            hitbox.gameObject.SetActive(true);
+            canChain = false; // wait for animation to re-enable this
         }
+    }
+
+    // Called via animation event during each attack animation
+    public void EnableNextComboWindow()
+    {
+        canChain = true;
+    }
+
+    // Called via animation event at the end of the final attack
+    public void EndCombo()
+    {
+        ResetCombo();
+    }
+
+    private void ResetCombo()
+    {
+        comboStep = 0;
+        animator.SetInteger("Combo Step", 0);
+        canChain = false;
     }
 
     public int ItemDamage(BreakableObject hitObject, Item selectedItem)
@@ -68,14 +117,14 @@ public class PlayerCombat : MonoBehaviour
 
     private int CalculateDamage(float damage, bool isCrit, bool isToolValid, Item selectedItem)
     {
+        isCritical = isCrit;
+
         if (isToolValid)
         {
-            isCritical = isCrit;
             return isCrit ? (int)(damage * selectedItem.critFactor) : (int)damage;
         }
         else
         {
-            isCritical = isCrit;
             float damageModifier = isCrit ? selectedItem.critFactor / (reductionFactor * 2) : 1 / (reductionFactor * 2);
             return (int)(damage * damageModifier);
         }

@@ -17,9 +17,21 @@ public class AttackHitbox : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
+    public void PerformHit()
     {
-        ProcessHit(other);
+        ClearHits();
+
+        if (!TryGetComponent(out BoxCollider box)) return;
+
+        Vector3 boxCenter = transform.TransformPoint(box.center);
+        Vector3 boxHalfExtents = Vector3.Scale(box.size * 0.5f, transform.lossyScale);
+
+        Collider[] hits = Physics.OverlapBox(boxCenter, boxHalfExtents, transform.rotation, breakableLayer);
+
+        foreach (Collider hit in hits)
+        {
+            ProcessHit(hit);
+        }
     }
 
     private void ProcessHit(Collider other)

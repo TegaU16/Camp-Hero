@@ -8,25 +8,32 @@ public class Player : MonoBehaviour
     public float sprintSpeed = 10f;
     public float gravity = -9.8f; // Gravity force
     public float jumpHeight = 3f; // Jump height
-
-    private Transform cam;
-    public float turnSmoothTime = 0.1f;
-    float turnSmoothVelocity;
-
     private Vector3 velocity; // To store current velocity
 
-    public Transform itemHolder;
-
+    [Header("Status")]
     public Health health;
-    private HealthBar healthBar;
+    [HideInInspector] public HealthBar healthBar;
     private StaminaBar staminaBar;
     private float buffer = 0f;
     public float bufferCooldown = 5f;
     public float jumpDecrease = 10f;
 
+    [Header("Body Settings")]
     public CharacterController controller;
     private Animator animator;
     private SimpleRagdollController ragdollController;
+    public Transform itemHolder;
+
+    [Header("Camera Settings")]
+    private Transform cam;
+    public float turnSmoothTime = 0.1f;
+    float turnSmoothVelocity;
+    public Transform cameraTarget;
+    public float ySmoothSpeed = 5f;
+    public Vector3 offset = new(0, 1.5f, 0);
+
+    [Header("Keys")]
+    public KeyCode sprintKey = KeyCode.LeftShift;
 
     private void Start()
     {
@@ -53,17 +60,11 @@ public class Player : MonoBehaviour
     {
         if (GameManager.Instance.isPaused) return;
 
-        if (controller == null)
-        {
-            Debug.LogWarning("Controller is missing.");
-            return;
-        }
+        if (controller == null || controller.enabled == false) return;
 
-        if (cam == null)
-        {
-            Debug.LogWarning("Camera is missing.");
-            return;
-        }
+        if (cam == null) return;
+        
+        if (animator == null ||  animator.enabled == false) return;
 
         // Check if the player is grounded using CharacterController's built-in isGrounded property
         bool isGrounded = controller.isGrounded;
@@ -93,7 +94,7 @@ public class Player : MonoBehaviour
 
                 Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
-                if (Input.GetKey(KeyCode.LeftShift) && staminaBar.slider.value > 0)
+                if (Input.GetKey(sprintKey) && staminaBar.slider.value > 0)
                 {
                     controller.Move(sprintSpeed * Time.deltaTime * moveDir.normalized);
 
@@ -104,7 +105,7 @@ public class Player : MonoBehaviour
                 {
                     controller.Move(speed * Time.deltaTime * moveDir.normalized);
 
-                    if (buffer >= bufferCooldown && !Input.GetKey(KeyCode.LeftShift))
+                    if (buffer >= bufferCooldown && !Input.GetKey(sprintKey))
                     {
                         staminaBar.IncreaseStamina();
                     }
@@ -117,7 +118,7 @@ public class Player : MonoBehaviour
 
             if (isGrounded)
             {
-                bool isSprinting = Input.GetKey(KeyCode.LeftShift) && staminaBar.slider.value > 0;
+                bool isSprinting = Input.GetKey(sprintKey) && staminaBar.slider.value > 0;
                 float moveSpeed = direction.magnitude * (isSprinting ? sprintSpeed : speed);
                 animator.SetFloat("Speed", moveSpeed);
 
@@ -162,6 +163,20 @@ public class Player : MonoBehaviour
 
         // Apply final movement with gravity
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    void LateUpdate()
+    {
+        Vector3 targetPos = transform.position + offset;
+
+        // Smooth only Y axis if you want to avoid height jitter/zoom
+        Vector3 smoothed = new(
+            targetPos.x,
+            Mathf.Lerp(cameraTarget.position.y, targetPos.y, Time.deltaTime * ySmoothSpeed),
+            targetPos.z
+        );
+
+        cameraTarget.position = smoothed;
     }
 
     public void TakeDamage(int damage)

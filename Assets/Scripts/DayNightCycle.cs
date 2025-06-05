@@ -77,32 +77,35 @@ public class DayNightCycle : MonoBehaviour
 
         DynamicGI.UpdateEnvironment();
 
-        // Compute the pivot point (center of sky rotation) to be the player
-        Vector3 center = player.transform.position;
+        if (player != null)
+        {
+            // Compute the pivot point (center of sky rotation) to be the player
+            Vector3 center = player.transform.position;
 
-        // Calculate sun direction
-        Quaternion sunRotation = Quaternion.Euler((timeOfDay - 6f) * 15f, 170f, 0);
-        Vector3 sunDirection = sunRotation * Vector3.forward;
+            // Calculate sun direction
+            Quaternion sunRotation = Quaternion.Euler((timeOfDay - 6f) * 15f, 170f, 0);
+            Vector3 sunDirection = sunRotation * Vector3.forward;
 
-        // Sun position & rotation
-        Vector3 sunPosition = center - sunDirection * sunDistance;
-        sun.transform.position = sunPosition;
-        sun.transform.LookAt(center); // Ensures the directional light is centered on the player
+            // Sun position & rotation
+            Vector3 sunPosition = center - sunDirection * sunDistance;
+            sun.transform.position = sunPosition;
+            sun.transform.LookAt(center); // Ensures the directional light is centered on the player
 
-        sunVisual.transform.position = sunPosition;
-        sunVisual.transform.LookAt(player.transform);
-        sunVisual.transform.Rotate(0f, 180f, 0f);
+            sunVisual.transform.position = sunPosition;
+            sunVisual.transform.LookAt(player.transform);
+            sunVisual.transform.Rotate(0f, 180f, 0f);
 
-        // Moon direction is opposite the sun
-        Vector3 moonDirection = -sunDirection;
-        Vector3 moonPosition = center - moonDirection * moonDistance;
+            // Moon direction is opposite the sun
+            Vector3 moonDirection = -sunDirection;
+            Vector3 moonPosition = center - moonDirection * moonDistance;
 
-        moon.transform.position = moonPosition;
-        moon.transform.LookAt(center);
+            moon.transform.position = moonPosition;
+            moon.transform.LookAt(center);
 
-        moonVisual.transform.position = moonPosition;
-        moonVisual.transform.LookAt(player.transform);
-        moonVisual.transform.Rotate(0f, 180f, 0f);
+            moonVisual.transform.position = moonPosition;
+            moonVisual.transform.LookAt(player.transform);
+            moonVisual.transform.Rotate(0f, 180f, 0f);
+        }
     }
 
     public float GetSunlightIntensity()

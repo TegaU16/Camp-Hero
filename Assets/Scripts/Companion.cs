@@ -55,7 +55,7 @@ public class Companion : MonoBehaviour, IInteractable, ISimulatable
 
             foreach (var obj in targets)
             {
-                if (obj.type != targetType || obj.health <= 0) continue;
+                if (obj.type != targetType) continue;
 
                 float dist = Vector3.Distance(transform.position, obj.transform.position);
                 if (dist < closestDist)
@@ -73,20 +73,20 @@ public class Companion : MonoBehaviour, IInteractable, ISimulatable
             agent.SetDestination(closest.transform.position);
 
             // Wait until the agent reaches the object, or the object is destroyed
-            while (closest != null && closest.health > 0f && Vector3.Distance(transform.position, closest.transform.position) > 2f)
+            while (closest != null && Vector3.Distance(transform.position, closest.transform.position) > 2f)
             {
                 yield return null;
             }
 
             // Revalidate before attacking
-            if (closest == null || closest.health <= 0f)
+            if (closest == null)
             {
                 yield return null;
                 continue; // Pick a new target
             }
 
             // Harvesting loop
-            while (closest != null && closest.health > 0f)
+            while (closest != null)
             {
                 closest.TakeDamage(5, false);
                 yield return new WaitForSeconds(1f);

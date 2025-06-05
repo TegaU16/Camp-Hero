@@ -1,22 +1,50 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class EnemyAttackHitbox : MonoBehaviour
 {
     private Enemy enemyScript;
+    private readonly HashSet<Targetable> alreadyHit = new();
+
+    public LayerMask targetableLayer;
 
     void Awake()
     {
-        // Cache the Enemy script from the parent
         enemyScript = GetComponentInParent<Enemy>();
     }
 
-    void OnTriggerEnter(Collider other)
+    public void PerformHit()
     {
+        ClearHits();
+
+        if (!TryGetComponent(out BoxCollider box)) return;
+
+        Vector3 boxCenter = transform.TransformPoint(box.center);
+        Vector3 boxHalfExtents = Vector3.Scale(box.size * 0.5f, transform.lossyScale);
+
+        Collider[] hits = Physics.OverlapBox(boxCenter, boxHalfExtents, transform.rotation, targetableLayer);
+
+        foreach (Collider hit in hits)
+        {
+            ProcessHit(hit);
+        }
+    }
+
+    void ProcessHit(Collider other)
+    {
+        if (GameManager.Instance.isPaused) return;
+
         if (enemyScript == null) return;
 
-        if (other.GetComponent<Health>() != null || other.GetComponent<BreakableObject>() != null)
+        if (other.TryGetComponent(out Targetable targetable))
         {
-            enemyScript.DealDamage();
+            enemyScript.DealDamage(targetable);
         }
+    }
+
+    public void ClearHits()
+    {
+        alreadyHit.Clear();
     }
 }

@@ -16,10 +16,10 @@ MonoBehaviour:
   actionType: 6
   stackable: 1
   maxStack: 1
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9f86b1f131455fe4d8c1b87872f70afd, type: 3}
   itemName: Gunpowder
-  equippedPrefab: {fileID: 0}
-  itemDrop: {fileID: 0}
+  equippedPrefab: {fileID: 875002129195479748, guid: 57cfc49d389ede14fa40751111d7951d, type: 3}
+  itemDrop: {fileID: 5399671079635036106, guid: 1b58947570e07394ab5658e46730ae00, type: 3}
   animatorController: {fileID: 0}
   buildingGhost: {fileID: 0}
   height: 0
@@ -39,7 +39,7 @@ MonoBehaviour:
   swingSound: {fileID: 0}
   hitSound: {fileID: 0}
   toolLevel: 0
-  toolType: 0
+  toolType: 3
   foodValue: 0
   fuelValue: 0
   smeltRate: 0.01

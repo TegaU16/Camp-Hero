@@ -20,8 +20,8 @@ public class BreakableObject : MonoBehaviour
     }
 
     public GameObject damagePopupPrefab;
-    private float maxHealth;
-    public float health;
+    public float maxHealth;
+    private float health;
     public int expDropped;
     public Drop[] drops;
     public ObjectType type;
@@ -35,7 +35,7 @@ public class BreakableObject : MonoBehaviour
 
     private void Start()
     {
-        maxHealth = health;
+        ResetObject();
     }
 
     public void TakeDamage(int damage, bool crit)
@@ -50,7 +50,6 @@ public class BreakableObject : MonoBehaviour
             if (TryGetComponent(out Enemy enemy))
             {
                 enemy.Die();
-                isDestroyed = true;
                 return; // Enemy will handle deactivation
             }
 

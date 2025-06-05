@@ -806,17 +806,6 @@ public class VoxelGrid : MonoBehaviour
         Debug.Log("World reset complete.");
     }
 
-    public void DrawOccupiedVoxels()
-    {
-        foreach (Vector3Int voxel in voxelOccupancy)
-        {
-            Vector3 center = (Vector3)voxel * voxelSize + Vector3.one * (voxelSize / 2f);
-            Vector3 top = center + 0.5f * voxelSize * Vector3.up;
-            Vector3 bottom = center - 0.5f * voxelSize * Vector3.up;
-            Debug.DrawLine(bottom, top, Color.red, 2f); // 0 = one frame
-        }
-    }
-
     public Vector3Int WorldToVoxelCoord(Vector3 worldPos)
     {
         return new Vector3Int(

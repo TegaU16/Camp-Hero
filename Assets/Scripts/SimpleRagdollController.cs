@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class SimpleRagdollController : MonoBehaviour
 {
@@ -27,7 +28,14 @@ public class SimpleRagdollController : MonoBehaviour
         if (!IsSetup)
         {
             foreach (var rb in allRigidbodies)
+            {
                 rb.isKinematic = false;
+                rb.linearDamping = 2f;
+                rb.angularDamping = 4f;
+                rb.sleepThreshold = 0.5f;
+            }
+
+            StartCoroutine(FreezeAfterTime(3f));
 
             foreach (var col in allColliders)
             {
@@ -80,5 +88,16 @@ public class SimpleRagdollController : MonoBehaviour
         }
 
         return false;
+    }
+
+    IEnumerator FreezeAfterTime(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        foreach (var rb in allRigidbodies)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.Sleep();
+        }
     }
 }

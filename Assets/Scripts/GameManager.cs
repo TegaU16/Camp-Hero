@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public GameObject playerPrefab;
     public GameObject campFire;
 
+    [Header("Managers")]
     public VoxelGrid voxelGrid;
     public InventoryManager inventoryManager;
     public DayNightCycle dayNightCycle;
@@ -33,6 +34,8 @@ public class GameManager : MonoBehaviour
     public GameObject winMenuUI;
     public GameObject darkBackground;
 
+    public KeyCode togglePauseKey = KeyCode.Escape;
+
     public static GameManager Instance;
 
     void Awake()
@@ -51,7 +54,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !InventoryManager.Instance.IsExtensionOpen())
+        if (Input.GetKeyDown(togglePauseKey) && !InventoryManager.Instance.IsExtensionOpen())
         {
             if (isPaused) ResumeGame();
             else PauseGame();
@@ -185,7 +188,6 @@ public class GameManager : MonoBehaviour
 
     private void HookSystems(GameObject playerInstance)
     {
-        
         voxelGrid.SetPlayer(playerInstance);
         inventoryManager.SetPlayer(playerInstance);
         dayNightCycle.SetPlayer(playerInstance);
@@ -194,8 +196,11 @@ public class GameManager : MonoBehaviour
         CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         if (cinemachineCamera != null)
         {
-            cinemachineCamera.Follow = playerInstance.transform;
-            cinemachineCamera.LookAt = playerInstance.transform;
+            if (playerInstance.TryGetComponent(out Player player))
+            {
+                cinemachineCamera.Follow = player.cameraTarget;
+                cinemachineCamera.LookAt = player.cameraTarget;
+            }
         }
     }
 

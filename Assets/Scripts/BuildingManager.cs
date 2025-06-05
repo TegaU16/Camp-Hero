@@ -13,6 +13,10 @@ public class BuildingManager : MonoBehaviour
     public VoxelGrid voxelGrid;
     public float gridSize = 1f;
 
+    private bool isPlacingWall = false;
+    private readonly Dictionary<Vector3Int, WallSegment> placedWalls = new();
+    private List<GameObject> ghostWallObjects = new();
+
     void Update()
     {
         if (GameManager.Instance.isPaused) return;
@@ -25,18 +29,38 @@ public class BuildingManager : MonoBehaviour
             {
                 if (selectedItem.buildingGhost != null)
                 {
-                    if (currentGhost == null)
+                    isPlacingWall = selectedItem.buildingGhost.GetComponent<WallSegment>() != null;
+
+                    if (isPlacingWall)
                     {
-                        currentGhost = Instantiate(selectedItem.buildingGhost);
-                        DisableGhostColliders(currentGhost);
-                        SetAllScriptsEnabled(currentGhost, false);
+                        UpdateGhostAnchorPosition();
+
+                        if (currentGhost != null)
+                        {
+                            ShowGhostWall(currentGhost.transform.position);
+                        }
+
+                        if (Input.GetMouseButtonDown(1) && currentGhost != null)
+                        {
+                            PlaceWall(currentGhost.transform.position);
+                        }
                     }
-
-                    UpdateGhostPosition();
-
-                    if (Input.GetMouseButtonDown(0))
+                    else
                     {
-                        PlaceObject();
+                        // Normal building logic
+                        if (currentGhost == null)
+                        {
+                            currentGhost = Instantiate(selectedItem.buildingGhost);
+                            DisableGhostColliders(currentGhost);
+                            SetAllScriptsEnabled(currentGhost, false);
+                        }
+
+                        UpdateGhostPosition();
+
+                        if (Input.GetMouseButtonDown(1))
+                        {
+                            PlaceObject();
+                        }
                     }
                 }
             }
@@ -55,10 +79,7 @@ public class BuildingManager : MonoBehaviour
 
     void UpdateGhostPosition()
     {
-        voxelGrid.DrawOccupiedVoxels();
-
         Vector2Int buildingSize = selectedItem.buildingSize;
-        float voxelSize = voxelGrid.voxelSize;
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, placementMask))
@@ -91,6 +112,24 @@ public class BuildingManager : MonoBehaviour
                         visualIndicator.GetComponent<Renderer>().material.color = Color.green;
                 }
             }
+        }
+    }
+
+    void UpdateGhostAnchorPosition()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, placementMask))
+        {
+            Vector3 snappedPosition = GetSnappedPosition(hit.point);
+
+            if (currentGhost == null)
+            {
+                currentGhost = new GameObject("WallGhostAnchor");
+            }
+
+            currentGhost.transform.position = snappedPosition;
+
+            ClearVisualIndicators();
         }
     }
 
@@ -199,5 +238,140 @@ public class BuildingManager : MonoBehaviour
         {
             script.enabled = enabled;
         }
+    }
+
+    void UpdateWallVisuals(Vector3Int position)
+    {
+        WallSegment current = GetWallAtPosition(position);
+        if (current == null) return;
+
+        bool hasLeft = IsWallAt(position + Vector3Int.left);
+        bool hasRight = IsWallAt(position + Vector3Int.right);
+
+        current.SetPoleVisibility(!hasLeft, !hasRight);
+        current.SetConnectorToRight(hasRight);
+
+        // Also update neighboring walls
+        WallSegment leftWall = GetWallAtPosition(position + Vector3Int.left);
+        if (leftWall != null)
+        {
+            leftWall.SetPoleVisibility(!IsWallAt(position + Vector3Int.left * 2), false);
+            leftWall.SetConnectorToRight(true);
+        }
+
+        WallSegment rightWall = GetWallAtPosition(position + Vector3Int.right);
+        if (rightWall != null)
+        {
+            rightWall.SetPoleVisibility(false, !IsWallAt(position + Vector3Int.right * 2));
+        }
+    }
+
+    void ShowGhostWall(Vector3 anchor)
+    {
+        ClearVisualIndicators();
+        ClearGhostWalls(); // Clear previously instantiated ghost walls
+
+        anchor = GetSnappedPosition(anchor);
+        Vector3 dir = new(1, 0, 0); // +X direction for now
+
+        InventoryItem selectedInvItem = InventoryManager.Instance.GetInventoryItem();
+        GameObject wallPrefab = selectedItem.buildingGhost;
+        int maxWalls = selectedInvItem.count;
+
+        if (wallPrefab == null)
+        {
+            Debug.LogWarning("No wall prefab found.");
+            return;
+        }
+
+        for (int i = 0; i < maxWalls; i++)
+        {
+            Vector3 pos = anchor + gridSize * i * dir;
+
+            GameObject wallGhost = Instantiate(wallPrefab, pos, Quaternion.identity);
+            SetAllScriptsEnabled(wallGhost, false);
+            ghostWallObjects.Add(wallGhost); // Track it
+
+            GameObject visual = Instantiate(gridSquarePrefab, pos, gridSquarePrefab.transform.rotation);
+            visualIndicators.Add(visual);
+
+            bool isFree = IsAreaFree(wallPrefab, pos);
+            visual.GetComponent<Renderer>().material.color = isFree ? Color.green : Color.red;
+        }
+    }
+
+    void PlaceWall(Vector3 anchor)
+    {
+        anchor = GetSnappedPosition(anchor);
+        Vector3 dir = new(1, 0, 0); // +X direction for now
+
+        InventoryItem selectedInvItem = InventoryManager.Instance.GetInventoryItem();
+        GameObject wallPrefab = selectedItem.buildingGhost;
+        int maxWalls = selectedInvItem.count;
+
+        if (wallPrefab == null)
+        {
+            Debug.LogWarning("No wall prefab found.");
+            return;
+        }
+
+        // First, check if all positions are free
+        for (int i = 0; i < maxWalls; i++)
+        {
+            Vector3 pos = anchor + gridSize * i * dir;
+            pos = GetSnappedPosition(pos);
+
+            if (!IsAreaFree(wallPrefab, pos))
+            {
+                Debug.Log("Cannot place full wall: area occupied at " + pos);
+                return; // Abort placement if any part blocked
+            }
+        }
+
+        // If we get here, all spots are free - place all wall segments
+        for (int i = 0; i < maxWalls; i++)
+        {
+            Vector3 pos = anchor + gridSize * i * dir;
+            Vector3Int gridPos = WorldToGrid(pos);
+
+            GameObject wall = Instantiate(wallPrefab, pos, Quaternion.identity);
+            SetAllScriptsEnabled(wall, true);
+            voxelGrid.MarkAreaOccupied(wall);
+            InventoryManager.Instance.UseSelectedItem();
+
+            WallSegment wallSegment = wall.GetComponent<WallSegment>();
+            placedWalls[gridPos] = wallSegment;
+
+            UpdateWallVisuals(gridPos);
+        }
+
+        Destroy(currentGhost);
+        currentGhost = null;
+        ClearVisualIndicators();
+    }
+
+    void ClearGhostWalls()
+    {
+        foreach (var obj in ghostWallObjects)
+        {
+            Destroy(obj);
+        }
+        ghostWallObjects.Clear();
+    }
+
+    bool IsWallAt(Vector3Int pos)
+    {
+        return placedWalls.ContainsKey(pos);
+    }
+
+    WallSegment GetWallAtPosition(Vector3Int pos)
+    {
+        placedWalls.TryGetValue(pos, out var wall);
+        return wall;
+    }
+
+    Vector3Int WorldToGrid(Vector3 worldPos)
+    {
+        return Vector3Int.RoundToInt(worldPos / gridSize);
     }
 }

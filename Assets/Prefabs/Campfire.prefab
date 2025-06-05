@@ -53,6 +53,10 @@ PrefabInstance:
       value: Campfire
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: fcaf0aa955cfd174ca4801ce736b5edc, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: fcaf0aa955cfd174ca4801ce736b5edc, type: 3}
       propertyPath: m_TagString
       value: Campfire
       objectReference: {fileID: 0}
@@ -69,6 +73,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fcaf0aa955cfd174ca4801ce736b5edc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2151556487400451191}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fcaf0aa955cfd174ca4801ce736b5edc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4560558371876839098}
   m_SourcePrefab: {fileID: 100100000, guid: fcaf0aa955cfd174ca4801ce736b5edc, type: 3}
 --- !u!1 &3959252520251244358 stripped
 GameObject:
@@ -122,3 +129,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13658b960feed564d80138f745b658fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4560558371876839098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3959252520251244358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetType: 0

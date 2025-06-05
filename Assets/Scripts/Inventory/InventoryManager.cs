@@ -29,8 +29,9 @@ public class InventoryManager : MonoBehaviour
 
     public PickupNotification pickupNotification;
 
-    int selectedSlot = -1;
+    int selectedSlot = 0;
 
+    [Header("Menus")]
     public GameObject mainInventory;
     public GameObject craftingMenuUI;
     public GameObject storageMenuUI;
@@ -38,6 +39,13 @@ public class InventoryManager : MonoBehaviour
     public GameObject campfireMenuUI;
 
     public GameObject darkBackground;
+
+    [Header("Keys")]
+    public KeyCode inventoryToggleKey = KeyCode.Tab;
+    public KeyCode interactionKey = KeyCode.E;
+    public KeyCode itemDropKey = KeyCode.Q;
+    public KeyCode itemStackDropKey = KeyCode.LeftControl;
+    public KeyCode exitExtensionKey = KeyCode.Escape;
 
     private void Awake()
     {
@@ -304,6 +312,14 @@ public class InventoryManager : MonoBehaviour
         return null;
     }
 
+    public InventoryItem GetInventoryItem()
+    {
+        InventorySlot slot = inventoryUIHandler.inventorySlots[selectedSlot];
+        InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+
+        return itemInSlot;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -324,7 +340,7 @@ public class InventoryManager : MonoBehaviour
 
     void HandleInventoryToggle()
     {
-        if (!Input.GetKeyDown(KeyCode.Tab)) return;
+        if (!Input.GetKeyDown(inventoryToggleKey)) return;
 
         if (IsExtensionOpen())
         {
@@ -340,7 +356,7 @@ public class InventoryManager : MonoBehaviour
 
     void HandleInteraction()
     {
-        if (Input.GetKeyDown(KeyCode.E) && !IsExtensionOpen())
+        if (Input.GetKeyDown(interactionKey) && !IsExtensionOpen())
         {
             TryInteractWithObject();
         }
@@ -348,9 +364,9 @@ public class InventoryManager : MonoBehaviour
 
     void HandleItemDropping()
     {
-        if (!Input.GetKeyDown(KeyCode.Q) || IsExtensionOpen()) return;
+        if (!Input.GetKeyDown(itemDropKey) || IsExtensionOpen()) return;
 
-        if (Input.GetKey(KeyCode.LeftControl))
+        if (Input.GetKey(itemStackDropKey))
             DropSelectedStack();
         else
             DropSelectedItem();
@@ -358,7 +374,7 @@ public class InventoryManager : MonoBehaviour
 
     void HandleExtensionExit()
     {
-        if (IsExtensionOpen() && Input.GetKeyDown(KeyCode.Escape))
+        if (IsExtensionOpen() && Input.GetKeyDown(exitExtensionKey))
         {
             ResetExtensions();
         }

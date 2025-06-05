@@ -3,8 +3,15 @@ using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
-    public enum State { Idle, Chasing, Attacking, Dead }
+    public enum State { Idle, Chasing, Attacking, RangedAttacking, Dead }
     private State currentState = State.Idle;
+
+    public enum AttackType { Melee, Ranged, Mixed }
+    public AttackType attackType = AttackType.Melee;
+
+    public GameObject projectilePrefab;
+    public Transform projectileSpawnPoint;
+    public float rangedAttackRange = 10f;
 
     public float detectionRange = 15f;
     public float attackRange = 2f;
@@ -45,6 +52,9 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         campfireTarget = GameObject.FindGameObjectWithTag("Campfire").transform;
+        currentTarget = campfireTarget;
+        currentState = State.Chasing;
+
         agent.speed = moveSpeed;
         agent.stoppingDistance = attackRange - 0.2f;
     }
@@ -64,10 +74,8 @@ public class Enemy : MonoBehaviour
         switch (currentState)
         {
             case State.Idle:
-                if (distance <= detectionRange)
-                {
-                    currentState = State.Chasing;
-                }
+                currentTarget = campfireTarget;
+                currentState = State.Chasing;
                 break;
 
             case State.Chasing:
@@ -79,19 +87,25 @@ public class Enemy : MonoBehaviour
 
                 if (currentTarget.CompareTag("Player") && distance > detectionRange + 2f)
                 {
-                    Debug.Log("[Enemy] Player is too far, reverting to campfire");
                     currentTarget = campfireTarget;
                 }
 
-                if (distance <= attackRange)
+                if (attackType == AttackType.Melee && distance <= attackRange)
                 {
-                    isAttacking = true;
-                    agent.isStopped = true;
-                    agent.ResetPath();
-                    currentState = State.Attacking;
-                    Attack();
-                    attackTimer = 0f;
+                    BeginMeleeAttack();
                 }
+                else if (attackType == AttackType.Ranged && distance <= rangedAttackRange)
+                {
+                    BeginRangedAttack();
+                }
+                else if (attackType == AttackType.Mixed)
+                {
+                    if (distance <= attackRange)
+                        BeginMeleeAttack();
+                    else if (distance <= rangedAttackRange)
+                        BeginRangedAttack();
+                }
+
                 break;
 
             case State.Attacking:
@@ -109,6 +123,16 @@ public class Enemy : MonoBehaviour
                 {
                     isAttacking = false;
                     currentState = State.Chasing;
+                }
+                break;
+
+            case State.RangedAttacking:
+                transform.LookAt(new Vector3(currentTarget.position.x, transform.position.y, currentTarget.position.z));
+
+                if (distance > rangedAttackRange + 1f)
+                {
+                    currentState = State.Chasing;
+                    isAttacking = false;
                 }
                 break;
         }
@@ -146,12 +170,47 @@ public class Enemy : MonoBehaviour
         animator.SetTrigger("Attack");
     }
 
+    void BeginMeleeAttack()
+    {
+        isAttacking = true;
+        agent.isStopped = true;
+        agent.ResetPath();
+        currentState = State.Attacking;
+        Attack();
+        attackTimer = 0f;
+    }
+
+    void BeginRangedAttack()
+    {
+        isAttacking = true;
+        agent.isStopped = true;
+        agent.ResetPath();
+        currentState = State.RangedAttacking;
+        animator.SetTrigger("RangedAttack");
+        attackTimer = 0f;
+    }
+
+    // Called by animation event
+    void RangedAttack()
+    {
+        if (projectilePrefab != null && projectileSpawnPoint != null && currentTarget != null)
+        {
+            Vector3 direction = (currentTarget.position - projectileSpawnPoint.position).normalized;
+
+            GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, Quaternion.LookRotation(direction));
+            if (projectile.TryGetComponent(out Projectile projectileScript))
+            {
+                projectileScript.SetTarget(currentTarget, damage);
+            }
+        }
+    }
+
     public void EndAttack()
     {
         isAttacking = false;
     }
 
-    public void DealDamage()
+    public void DealDamage(Targetable targetable)
     {
         if (currentTarget == null) return;
 
@@ -160,7 +219,15 @@ public class Enemy : MonoBehaviour
 
         if (currentTarget.TryGetComponent(out Health targetHealth))
         {
-            HealthBar healthBar = currentTarget.GetComponent<HealthBar>();
+            HealthBar healthBar;
+            if (targetable.targetType == Targetable.TargetType.Player)
+            {
+                healthBar = currentTarget.GetComponent<Player>().healthBar;
+            } 
+            else
+            {
+                healthBar = currentTarget.GetComponent<HealthBar>();
+            }
             targetHealth.TakeDamage(damage, healthBar);
 
             if (currentTarget.TryGetComponent(out Rigidbody targetRb))
@@ -261,24 +328,6 @@ public class Enemy : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    public void EnableAttackHitbox()
-    {
-        EnemyAttackHitbox hitbox = GetComponentInChildren<EnemyAttackHitbox>(true);
-        if (hitbox != null)
-        {
-            hitbox.gameObject.SetActive(true);
-        }
-    }
-
-    public void DisableAttackHitbox()
-    {
-        EnemyAttackHitbox hitbox = GetComponentInChildren<EnemyAttackHitbox>(true);
-        if (hitbox != null)
-        {
-            hitbox.gameObject.SetActive(false);
-        }
-    }
-
     void ScanForTargets()
     {
         // Retaliation check
@@ -286,7 +335,6 @@ public class Enemy : MonoBehaviour
         {
             if (currentTarget != recentAttacker)
             {
-                Debug.Log($"[Scan] Retaliating against: {recentAttacker.name}");
                 lastTarget = recentAttacker;
                 lastTargetChangeTime = Time.time;
                 currentTarget = recentAttacker;
@@ -315,14 +363,11 @@ public class Enemy : MonoBehaviour
             if (hit.TryGetComponent(out Targetable targetable))
             {
                 float dist = Vector3.Distance(transform.position, hit.transform.position);
-                Debug.Log($"[Scan] Found target: {hit.name}, Type: {targetable.targetType}, Distance: {dist}");
 
                 if (targetable.targetType == Targetable.TargetType.Player && dist <= 5f)
                 {
                     bestTarget = hit.transform;
-                    closestDistance = dist;
                     foundHighPriorityPlayer = true;
-                    Debug.Log($"[Scan] Prioritizing nearby PLAYER: {hit.name}");
                     break;  // Immediate priority
                 }
 
@@ -338,15 +383,10 @@ public class Enemy : MonoBehaviour
         {
             if (bestTarget != currentTarget)
             {
-                Debug.Log($"[Scan] Switching target to: {bestTarget.name} (distance: {closestDistance})");
                 lastTarget = bestTarget;
                 lastTargetChangeTime = Time.time;
                 currentTarget = bestTarget;
             }
-        }
-        else
-        {
-            Debug.Log($"[Scan] Retaining current target: {(currentTarget != null ? currentTarget.name : null ?? "None")} due to target memory.");
         }
     }
 
