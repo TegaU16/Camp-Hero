@@ -15,7 +15,7 @@ MonoBehaviour:
   itemType: 9
   actionType: 6
   stackable: 1
-  maxStack: 1
+  maxStack: 20
   icon: {fileID: 21300000, guid: 9f86b1f131455fe4d8c1b87872f70afd, type: 3}
   itemName: Gunpowder
   equippedPrefab: {fileID: 875002129195479748, guid: 57cfc49d389ede14fa40751111d7951d, type: 3}

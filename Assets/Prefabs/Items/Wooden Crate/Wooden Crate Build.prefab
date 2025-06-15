@@ -82,6 +82,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5533347837397351334}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6412718710087352386}
   m_SourcePrefab: {fileID: 100100000, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
 --- !u!1 &7423042443656293166 stripped
 GameObject:
@@ -102,6 +105,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chestName: Crate
   maxSlots: 8
+  isOpen: 0
   items: []
 --- !u!65 &5533347837397351334
 BoxCollider:
@@ -124,3 +128,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.3999999, y: 2.4000006, z: 2.0000005}
   m_Center: {x: 0, y: 1.4210855e-14, z: 1.0000002}
+--- !u!208 &6412718710087352386
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7423042443656293166}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.7, y: 1.2, z: 1}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 1}
+  m_TimeToStationary: 0.5

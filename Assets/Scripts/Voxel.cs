@@ -58,8 +58,10 @@ public class VoxelChunk
     public Mesh generatedMesh;
     public float[,] heightMap;
     public bool visualsEnabled;
+
     public bool objectsSpawned;
     public bool structureSpawned;
+
     public bool wasLoadedFromSave;
 
     public VoxelChunk(GameObject chunkObject, int chunkSize)
@@ -70,8 +72,10 @@ public class VoxelChunk
         this.objects = new List<GameObject>();
         this.savedObjectPositions = new List<Vector3>();
         this.savedObjects = new List<SpawnedObjectData>();
+
         this.objectsSpawned = false;
         this.structureSpawned = false;
+
         this.simulatedEntities = new List<ISimulatable>();
         this.heightMap = new float[chunkSize, chunkSize];
         this.wasLoadedFromSave = false;

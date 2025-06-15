@@ -8,8 +8,7 @@ public class Health : MonoBehaviour
 
     void Start()
     {
-        currentHealth = maxHealth;
-        isDead = false;
+        ResetHealth(maxHealth);
     }
 
     public void TakeDamage(int amount, HealthBar healthBar = null)
@@ -21,6 +20,26 @@ public class Health : MonoBehaviour
             healthBar.SetHealth(currentHealth);
 
         if (currentHealth <= 0) Die();
+    }
+
+    public void AddHealth(int amount, HealthBar healthBar = null)
+    {
+        if (isDead) return;
+
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        if (healthBar != null)
+            healthBar.SetHealth(currentHealth);
+    }
+
+    public void SetHealth(int health, HealthBar healthBar)
+    {
+        currentHealth = health;
+        healthBar.SetHealth(health);
+    }
+
+    public int GetHealth()
+    {
+        return currentHealth;
     }
 
     void Die()
@@ -39,7 +58,7 @@ public class Health : MonoBehaviour
         }
     }
 
-    public void ResetHealth()
+    public void ResetHealth(int maxHealth)
     {
         currentHealth = maxHealth;
         isDead = false;

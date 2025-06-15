@@ -47,6 +47,8 @@ public class InventoryManager : MonoBehaviour
     public KeyCode itemStackDropKey = KeyCode.LeftControl;
     public KeyCode exitExtensionKey = KeyCode.Escape;
 
+    public bool JustClosedExtension { get; private set; }
+
     private void Awake()
     {
         Instance = this;
@@ -64,6 +66,21 @@ public class InventoryManager : MonoBehaviour
         player = playerObject.GetComponentInChildren<Player>();
 
         inventoryExtensions.Add(variableExtension);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        HandleSlotSelection();
+        HandleInventoryToggle();
+        HandleInteraction();
+        HandleItemDropping();
+        HandleExtensionExit();
+    }
+
+    void LateUpdate()
+    {
+        JustClosedExtension = false;
     }
 
     void ChangeSelectedSlot(int newValue)
@@ -222,9 +239,11 @@ public class InventoryManager : MonoBehaviour
             {
                 DropItem(itemInSlot.item, itemInSlot.count);
                 itemInSlot.count = 0;
-                GetSelectedItem(false);
+                Destroy(itemInSlot.gameObject);
             }
         }
+
+        GetSelectedItem(false);
     }
 
     public void DropItem(Item item, int count)
@@ -320,16 +339,6 @@ public class InventoryManager : MonoBehaviour
         return itemInSlot;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        HandleSlotSelection();
-        HandleInventoryToggle();
-        HandleInteraction();
-        HandleItemDropping();
-        HandleExtensionExit();
-    }
-
     void HandleSlotSelection()
     {
         if (int.TryParse(Input.inputString, out int number) && number is > 0 and <= numHotbarSlots)
@@ -419,6 +428,8 @@ public class InventoryManager : MonoBehaviour
                 inventoryExtensions[i].SetActive(false);
             }
         }
+
+        JustClosedExtension = true;
     }
 
     void TryInteractWithObject()

@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 474.92923
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalPosition.y
@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 465.29248
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -95,6 +95,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 949896441938526181, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_Layer
@@ -905,13 +909,13 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
   rangedAttackRange: 10
-  detectionRange: 15
   attackRange: 2
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
   moveSpeed: 3.5
   retaliateDuration: 4
+  preferredTargets: 0000000001000000040000000300000002000000
 --- !u!136 &2546199301787166028
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -970,7 +974,7 @@ MonoBehaviour:
   collidersToIgnore:
   - {fileID: 1740665172481277125}
   animator: {fileID: 627319165041851991}
-  agent: {fileID: 0}
+  agent: {fileID: 3068024087063073780}
 --- !u!195 &3068024087063073780
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -987,7 +991,7 @@ NavMeshAgent:
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 0.475

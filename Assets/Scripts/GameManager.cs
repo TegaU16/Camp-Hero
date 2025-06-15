@@ -9,22 +9,8 @@ public class GameManager : MonoBehaviour
     public GameObject playerPrefab;
     public GameObject campFire;
 
-    [Header("Managers")]
-    public VoxelGrid voxelGrid;
-    public InventoryManager inventoryManager;
-    public DayNightCycle dayNightCycle;
-    public EnemySpawner enemySpawner;
-
-    [HideInInspector]
-    public GameObject playerInstance;
-
+    [HideInInspector] public GameObject playerInstance;
     private GameObject spawnedCampFire;
-
-    [Header("Status")]
-    public HealthBar healthBar;
-    public int maxHealth;
-    public StaminaBar staminaBar;
-    public float maxStamina;
 
     public NavMeshSurface navMeshSurface;
 
@@ -35,6 +21,16 @@ public class GameManager : MonoBehaviour
     public GameObject darkBackground;
 
     public KeyCode togglePauseKey = KeyCode.Escape;
+
+    [Header("Managers")]
+    public VoxelGrid voxelGrid;
+    public InventoryManager inventoryManager;
+    public DayNightCycle dayNightCycle;
+    public EnemySpawner enemySpawner;
+    public PlayerStatsManager playerStatsManager;
+    public CompassBar compassBar;
+    public FoodManager foodManager;
+    public AnimalSpawner animalSpawner;
 
     public static GameManager Instance;
 
@@ -47,17 +43,23 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         StartCoroutine(GenerateWorldThenSpawnStuff());
-
-        healthBar.SetMaxHealth(maxHealth);
-        staminaBar.SetMaxStamina(maxStamina);
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(togglePauseKey) && !InventoryManager.Instance.IsExtensionOpen())
+        if (Input.GetKeyDown(togglePauseKey))
         {
-            if (isPaused) ResumeGame();
-            else PauseGame();
+            if (InventoryManager.Instance.JustClosedExtension)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                return;
+            }
+
+            if (isPaused)
+                ResumeGame();
+            else
+                PauseGame();
         }
     }
 
@@ -102,6 +104,8 @@ public class GameManager : MonoBehaviour
 
         if (campFire != null)
             StartCoroutine(WaitAndSpawnObject(campFire, center, obj => spawnedCampFire = obj));
+
+        compassBar.SetCampfireTransform(spawnedCampFire);
     }
 
     // Coroutine to wait for terrain generation to complete
@@ -192,6 +196,10 @@ public class GameManager : MonoBehaviour
         inventoryManager.SetPlayer(playerInstance);
         dayNightCycle.SetPlayer(playerInstance);
         enemySpawner.SetPlayer(playerInstance);
+        playerStatsManager.SetPlayer(playerInstance);
+        compassBar.SetPlayer(playerInstance);
+        foodManager.SetPlayer(playerInstance);
+        animalSpawner.SetPlayer(playerInstance);
 
         CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         if (cinemachineCamera != null)

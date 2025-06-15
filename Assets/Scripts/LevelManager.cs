@@ -10,6 +10,7 @@ public class LevelManager : MonoBehaviour
     private int currentExp = 0;
     public GameObject expBar;
     public TextMeshProUGUI levelText;
+    public PlayerStatsManager playerStatsManager;
 
     void Start()
     {
@@ -37,6 +38,15 @@ public class LevelManager : MonoBehaviour
         UpdateMaxExp();
         UpdateExpBar();
         levelText.text = level.ToString();
+
+        int pointsToAdd = 1;
+
+        if (level % 10 == 0)
+            pointsToAdd = 5;
+        else if (level % 5 == 0)
+            pointsToAdd = 3;
+        
+        playerStatsManager.AddPoints(pointsToAdd);
     }
 
     private void UpdateMaxExp()

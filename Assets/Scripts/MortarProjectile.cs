@@ -7,12 +7,26 @@ public class MortarProjectile : MonoBehaviour
     public GameObject explosionEffect;
     public float arcHeight = 5f;
 
+    [SerializeField] float turnSpeed = 5f;
+    Transform target;
+
     private Rigidbody rb;
     private int damage;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+    }
+
+    void FixedUpdate()
+    {
+        if (target == null) return;
+
+        Vector3 direction = (target.position - transform.position).normalized;
+        Vector3 newVelocity = Vector3.Lerp(rb.linearVelocity.normalized, direction, turnSpeed * Time.fixedDeltaTime) * rb.linearVelocity.magnitude;
+
+        rb.linearVelocity = newVelocity;
+        transform.forward = rb.linearVelocity.normalized;
     }
 
     public void Launch(Vector3 targetPosition, int damageAmount)
@@ -54,6 +68,9 @@ public class MortarProjectile : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = hits[i];
+
+            if (hit.GetComponent<Enemy>() == null) continue;
+
             if (hit.TryGetComponent(out BreakableObject breakable))
             {
                 breakable.TakeDamage(damage, false);
@@ -64,5 +81,10 @@ public class MortarProjectile : MonoBehaviour
             Instantiate(explosionEffect, transform.position, Quaternion.identity);
 
         Destroy(gameObject);
+    }
+
+    public void SetTarget(Transform currentTarget)
+    {
+        target = currentTarget;
     }
 }

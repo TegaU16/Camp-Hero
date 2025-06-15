@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 474.8356
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.06652
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 465.12805
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_LocalRotation.w
@@ -87,6 +87,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 2065840878841600857, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       propertyPath: m_Layer
@@ -878,13 +882,16 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
   rangedAttackRange: 10
-  detectionRange: 15
   attackRange: 2
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
   moveSpeed: 3.5
   retaliateDuration: 4
+  preferredTargets: 0400000002000000010000000000000003000000
+  distanceWeight: 1
+  damageMemoryWeight: -5
+  objectiveThreatWeight: -3
 --- !u!195 &5104923096022953671
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1020,8 +1027,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 0.8, z: 1}
-  m_Center: {x: 0, y: 0.4, z: 0.6}
+  m_Size: {x: 2, y: 0.8, z: 1.4}
+  m_Center: {x: 0, y: 0.4, z: 0.7}
 --- !u!114 &3346718071084815821
 MonoBehaviour:
   m_ObjectHideFlags: 0

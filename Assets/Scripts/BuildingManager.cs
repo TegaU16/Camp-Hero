@@ -4,6 +4,8 @@ using UnityEngine;
 public class BuildingManager : MonoBehaviour
 {
     private Item selectedItem;
+    private Item previousItem;
+
     public LayerMask placementMask;
     private GameObject currentGhost;
 
@@ -15,67 +17,102 @@ public class BuildingManager : MonoBehaviour
 
     private bool isPlacingWall = false;
     private readonly Dictionary<Vector3Int, WallSegment> placedWalls = new();
-    private List<GameObject> ghostWallObjects = new();
+    private readonly List<GameObject> ghostWallObjects = new();
+
+    public KeyCode rotateBuildingKey = KeyCode.R;
+
+    private int currentRotationIndex = 0;
+    private static readonly Quaternion[] rotations = {
+        Quaternion.Euler(0, 0, 0),
+        Quaternion.Euler(0, 90, 0),
+        Quaternion.Euler(0, 180, 0),
+        Quaternion.Euler(0, 270, 0)
+    };
 
     void Update()
     {
         if (GameManager.Instance.isPaused) return;
 
-        if (!InventoryManager.Instance.IsExtensionOpen())
+        if (InventoryManager.Instance.IsExtensionOpen())
         {
-            selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+            ClearGhostIfNeeded();
+            previousItem = null;
+            return;
+        }
 
-            if (selectedItem != null && selectedItem.itemType == ItemType.Building)
+        selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+
+        if (selectedItem == null || selectedItem.itemType != ItemType.Building)
+        {
+            ClearGhostIfNeeded();
+            previousItem = null;
+            return;
+        }
+
+        if (selectedItem != previousItem)
+        {
+            ClearGhostIfNeeded();
+            ClearGhostWalls();
+            currentGhost = null;
+            previousItem = selectedItem;
+            currentRotationIndex = 0;
+        }
+
+        if (selectedItem.buildingGhost == null) return;
+
+        isPlacingWall = selectedItem.buildingGhost.GetComponent<WallSegment>() != null;
+
+        if (isPlacingWall)
+        {
+            UpdateWallGhostAnchorPosition();
+
+            if (currentGhost != null)
             {
-                if (selectedItem.buildingGhost != null)
-                {
-                    isPlacingWall = selectedItem.buildingGhost.GetComponent<WallSegment>() != null;
-
-                    if (isPlacingWall)
-                    {
-                        UpdateGhostAnchorPosition();
-
-                        if (currentGhost != null)
-                        {
-                            ShowGhostWall(currentGhost.transform.position);
-                        }
-
-                        if (Input.GetMouseButtonDown(1) && currentGhost != null)
-                        {
-                            PlaceWall(currentGhost.transform.position);
-                        }
-                    }
-                    else
-                    {
-                        // Normal building logic
-                        if (currentGhost == null)
-                        {
-                            currentGhost = Instantiate(selectedItem.buildingGhost);
-                            DisableGhostColliders(currentGhost);
-                            SetAllScriptsEnabled(currentGhost, false);
-                        }
-
-                        UpdateGhostPosition();
-
-                        if (Input.GetMouseButtonDown(1))
-                        {
-                            PlaceObject();
-                        }
-                    }
-                }
+                ShowGhostWall(currentGhost.transform.position);
             }
-            else if (currentGhost != null)
+
+            if (Input.GetMouseButtonDown(1) && currentGhost != null)
             {
-                ClearVisualIndicators();
-                Destroy(currentGhost);
+                PlaceWall(currentGhost.transform.position);
             }
         }
-        else if (currentGhost != null)
+        else
+        {
+            if (currentGhost == null)
+            {
+                currentGhost = Instantiate(selectedItem.buildingGhost);
+                currentGhost.transform.rotation = rotations[currentRotationIndex];
+                DisableGhostColliders(currentGhost);
+                SetAllScriptsEnabled(currentGhost, false);
+            }
+
+            UpdateGhostPosition();
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                PlaceObject();
+            }
+        }
+
+        if (Input.GetKeyDown(rotateBuildingKey))
+        {
+            if (currentGhost != null)
+            {
+                currentRotationIndex = (currentRotationIndex + 1) % rotations.Length;
+                currentGhost.transform.rotation = rotations[currentRotationIndex];
+            }
+        }
+    }
+
+    void ClearGhostIfNeeded()
+    {
+        if (currentGhost != null)
         {
             ClearVisualIndicators();
             Destroy(currentGhost);
         }
     }
+
 
     void UpdateGhostPosition()
     {
@@ -85,7 +122,10 @@ public class BuildingManager : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, placementMask))
         {
             Vector3 snappedPosition = GetSnappedPosition(hit.point);
-            currentGhost.transform.position = snappedPosition;
+
+            // Offset the position by half the size to center the building
+            Vector3 offset = new((buildingSize.x - 1) * gridSize / 2f, 0, (buildingSize.y - 1) * gridSize / 2f);
+            currentGhost.transform.position = snappedPosition + offset;
 
             if (!IsAreaFree(currentGhost, snappedPosition))
             {
@@ -115,7 +155,7 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    void UpdateGhostAnchorPosition()
+    void UpdateWallGhostAnchorPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, placementMask))
@@ -177,9 +217,13 @@ public class BuildingManager : MonoBehaviour
         {
             Vector3 snappedPosition = GetSnappedPosition(hit.point);
 
+            Vector2Int buildingSize = selectedItem.buildingSize;
+            Vector3 offset = new((buildingSize.x - 1) * gridSize / 2f, 0, (buildingSize.y - 1) * gridSize / 2f);
+            Vector3 finalPosition = snappedPosition + offset;
+
             if (IsAreaFree(currentGhost, snappedPosition))
             {
-                GameObject placedObject = Instantiate(selectedItem.buildingGhost, snappedPosition, currentGhost.transform.rotation);
+                GameObject placedObject = Instantiate(selectedItem.buildingGhost, finalPosition, currentGhost.transform.rotation);
                 SetAllScriptsEnabled(placedObject, true);
 
                 voxelGrid.MarkAreaOccupied(placedObject);
@@ -288,7 +332,7 @@ public class BuildingManager : MonoBehaviour
         {
             Vector3 pos = anchor + gridSize * i * dir;
 
-            GameObject wallGhost = Instantiate(wallPrefab, pos, Quaternion.identity);
+            GameObject wallGhost = Instantiate(wallPrefab, pos, rotations[currentRotationIndex]);
             SetAllScriptsEnabled(wallGhost, false);
             ghostWallObjects.Add(wallGhost); // Track it
 
@@ -334,7 +378,7 @@ public class BuildingManager : MonoBehaviour
             Vector3 pos = anchor + gridSize * i * dir;
             Vector3Int gridPos = WorldToGrid(pos);
 
-            GameObject wall = Instantiate(wallPrefab, pos, Quaternion.identity);
+            GameObject wall = Instantiate(wallPrefab, pos, rotations[currentRotationIndex]);
             SetAllScriptsEnabled(wall, true);
             voxelGrid.MarkAreaOccupied(wall);
             InventoryManager.Instance.UseSelectedItem();

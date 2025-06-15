@@ -1,4 +1,4 @@
-Shader "Custom/FlatVoxelLighting"
+﻿Shader "Custom/FlatVoxelLighting"
 {
     Properties
     {
@@ -16,14 +16,19 @@ Shader "Custom/FlatVoxelLighting"
         Pass
         {
             CGPROGRAM
+            #pragma target 3.0
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_fwdbase
+            #pragma multi_compile_shadowcaster
+
             #include "UnityCG.cginc"
+            #include "AutoLight.cginc"
 
             // Shader properties
-            fixed4 _Color;
-            fixed4 _Ambient;
-            fixed4 _LightColor;
+            float4 _Color;
+            float4 _Ambient;
+            float4 _LightColor;
             float4 _LightDirection;
             sampler2D _MainTex; // The texture sampler
 
@@ -41,8 +46,9 @@ Shader "Custom/FlatVoxelLighting"
             struct v2f
             {
                 float4 pos : SV_POSITION;
-                float3 normal : TEXCOORD0;
-                float2 uv : TEXCOORD1; // Pass UVs to the fragment shader
+                float2 uv : TEXCOORD0;
+                float4 worldNormal : TEXCOORD1;
+                SHADOW_COORDS(2)
             };
 
             // Vertex shader: transforms vertex and normal
@@ -50,26 +56,30 @@ Shader "Custom/FlatVoxelLighting"
             {
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
-                o.normal = UnityObjectToWorldNormal(v.normal);
+                o.worldNormal = float4(UnityObjectToWorldNormal(v.normal), 0);
                 o.uv = v.uv; // Pass the UVs
+                TRANSFER_SHADOW(o);
                 return o;
             }
 
-            // Fragment shader: apply lighting and texture
-            fixed4 frag (v2f i) : SV_Target
+            // Fragment shader
+            float4 frag(v2f i) : SV_Target
             {
-                // Calculate directional light strength based on normals
-                float lightStrength = max(0, dot(normalize(i.normal), normalize(_LightDirection.xyz)));
-                fixed4 lighting = _Ambient + _LightColor * lightStrength;
+                float3 normal = normalize(i.worldNormal.xyz);
+                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
 
-                // Apply global day/night light multiplier
+                float ndotl = max(0, dot(normal, lightDir));
+
+                // Sample shadow map
+                float shadow = SHADOW_ATTENUATION(i);
+
+                float4 lighting = _Ambient + _LightColor * ndotl * shadow;
                 lighting *= _LightMultiplier;
 
-                // Sample the texture color at the given UV coordinate
-                fixed4 texColor = tex2D(_MainTex, i.uv) * _Color;
+                float4 texColor = tex2D(_MainTex, i.uv) * _Color;
+                texColor.rgb *= lighting.rgb;
 
-                // Multiply the texture color with the calculated lighting
-                return texColor * lighting;
+                return texColor;
             }
             ENDCG
         }

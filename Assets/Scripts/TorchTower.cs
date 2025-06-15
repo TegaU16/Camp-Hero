@@ -4,11 +4,12 @@ using UnityEngine;
 public class TorchTower : Defense
 {
     public GameObject beamPrefab;
-    private readonly List<GameObject> activeBeams = new();
     public int baseDamagePerSecond = 10;
     public int maxTargets = 5;
 
     private readonly List<Transform> targets = new();
+    private readonly Dictionary<Transform, GameObject> targetToBeam = new();
+    private readonly Dictionary<Transform, float> damageBuffer = new();
 
     protected override void Update()
     {
@@ -17,39 +18,85 @@ public class TorchTower : Defense
         fireCooldown -= Time.deltaTime;
 
         UpdateTargets();
+        CleanUpBeams();
 
         int activeTargets = targets.Count;
         float damagePerTarget = (activeTargets > 0) ? baseDamagePerSecond / Mathf.Max(1f, activeTargets) : 0f;
 
-        for (int i = 0; i < activeTargets; i++)
+        foreach (Transform target in targets)
         {
-            if (i >= activeBeams.Count)
+            if (!IsTargetAlive(target)) continue;
+
+            // Assign or reuse a beam for this target
+            if (!targetToBeam.ContainsKey(target))
             {
-                GameObject newBeam = Instantiate(beamPrefab, firePoint.position, Quaternion.identity, transform);
-                activeBeams.Add(newBeam);
+                GameObject beam = Instantiate(beamPrefab, firePoint.position, Quaternion.identity, transform);
+                targetToBeam[target] = beam;
             }
 
-            LineRenderer lr = activeBeams[i].GetComponent<LineRenderer>();
+            GameObject beamObj = targetToBeam[target];
+            LineRenderer lr = beamObj.GetComponent<LineRenderer>();
             lr.enabled = true;
             lr.SetPosition(0, firePoint.position);
-            lr.SetPosition(1, targets[i].position);
+            lr.SetPosition(1, target.position);
 
-            Transform target = targets[i];
-
-            if (target.TryGetComponent(out Enemy enemy) &&
-                    enemy.TryGetComponent(out BreakableObject breakable))
+            if (fireCooldown <= 0f)
             {
-                breakable.TakeDamage((int)(damagePerTarget * Time.deltaTime), false);
+                if (target.TryGetComponent(out BreakableObject breakable))
+                {
+                    float damage = damagePerTarget;
+
+                    if (!damageBuffer.ContainsKey(target))
+                        damageBuffer[target] = 0f;
+
+                    damageBuffer[target] += damage;
+
+                    int wholeDamage = Mathf.FloorToInt(damageBuffer[target]);
+                    if (wholeDamage > 0)
+                    {
+                        breakable.TakeDamage(wholeDamage, false);
+                        damageBuffer[target] -= wholeDamage;
+                    }
+                }
             }
         }
 
-        for (int i = activeTargets; i < activeBeams.Count; i++)
+        // Apply cooldown only once per tick
+        if (fireCooldown <= 0f)
         {
-            activeBeams[i].GetComponent<LineRenderer>().enabled = false;
+            fireCooldown = 1f / fireRate;
         }
     }
 
-    protected override void FindTarget() { } // Disabled in favor of multi-targeting
+    private void CleanUpBeams()
+    {
+        List<Transform> toRemove = new();
+        foreach (var pair in targetToBeam)
+        {
+            // Clean up if the target is dead or out of range or no longer selected
+            bool isDead = !IsTargetAlive(pair.Key);
+            bool isOutOfRange = !targets.Contains(pair.Key);
+
+            if (isDead || isOutOfRange || pair.Key == null)
+            {
+                if (pair.Value != null)
+                    pair.Value.GetComponent<LineRenderer>().enabled = false;
+
+                toRemove.Add(pair.Key);
+            }
+        }
+
+        foreach (Transform key in toRemove)
+        {
+            targetToBeam.Remove(key);
+            damageBuffer.Remove(key);
+        }
+
+        // Also remove dead enemies from the targets list
+        targets.RemoveAll(t => t == null || !IsTargetAlive(t));
+    }
+
+    protected override void FindTarget() { } // Not used
 
     private void UpdateTargets()
     {
@@ -67,10 +114,15 @@ public class TorchTower : Defense
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = hits[i];
-            if (hit.CompareTag("Enemy"))
+            if (hit.GetComponent<Enemy>() != null)
             {
-                targets.Add(hit.transform);
-                if (targets.Count >= maxTargets) break;
+                Transform targetTransform = hit.transform;
+
+                if (IsTargetAlive(targetTransform) && !targets.Contains(targetTransform))
+                {
+                    targets.Add(targetTransform);
+                    if (targets.Count >= maxTargets) break;
+                }
             }
         }
     }

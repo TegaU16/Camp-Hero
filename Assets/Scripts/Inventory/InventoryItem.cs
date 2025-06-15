@@ -1,7 +1,8 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour
+public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public static InventoryItem selectedItem;
 
@@ -99,6 +100,19 @@ public class InventoryItem : MonoBehaviour
         {
             countText.gameObject.SetActive(false);
         }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (item != null)
+        {
+            ItemTooltipUI.Instance.ShowTooltip(item.itemName, GetComponent<RectTransform>());
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ItemTooltipUI.Instance.HideTooltip();
     }
 
     public void StretchToFit(float padding)

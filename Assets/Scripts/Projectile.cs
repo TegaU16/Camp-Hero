@@ -90,6 +90,10 @@ public class Projectile : MonoBehaviour
                 breakable.TakeDamage(damage, false);
             }
         }
+        else if (target.TryGetComponent(out BreakableObject breakable))
+        {
+            breakable.TakeDamage(damage, false);
+        }
 
         Destroy(gameObject);
     }

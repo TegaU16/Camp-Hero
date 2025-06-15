@@ -6,7 +6,9 @@ public class Targetable : MonoBehaviour
     {
         Campfire,
         Player,
-        Structure
+        Structure,
+        Wall,
+        Defense
     }
 
     public TargetType targetType;

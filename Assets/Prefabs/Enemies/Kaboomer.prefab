@@ -41,7 +41,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 475.97565
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_LocalPosition.y
@@ -49,7 +49,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 463.47098
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -122,6 +122,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
       objectReference: {fileID: 0}
     - target: {fileID: 4148015472848725986, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       propertyPath: m_Layer
@@ -260,13 +264,13 @@ MonoBehaviour:
   projectilePrefab: {fileID: 309557753819694897, guid: d51470ba7fe6be3428772ed8778327b2, type: 3}
   projectileSpawnPoint: {fileID: 7802702386979314340}
   rangedAttackRange: 10
-  detectionRange: 15
   attackRange: 2
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
   moveSpeed: 3.5
   retaliateDuration: 4
+  preferredTargets: 0100000004000000000000000200000003000000
 --- !u!54 &1414102576053208910
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -310,7 +314,7 @@ NavMeshAgent:
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 0

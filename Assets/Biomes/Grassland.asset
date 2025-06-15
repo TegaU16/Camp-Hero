@@ -59,8 +59,8 @@ MonoBehaviour:
       m_RotationOrder: 4
     heightExponent: 2
   treePrefabs:
-  - {fileID: 8591218156893636354, guid: 88d78acf9ac98df47bc6f56480210fed, type: 3}
-  - {fileID: 8162512180153588859, guid: 71f20903c012c20449dc0891952e9e4f, type: 3}
+  - {fileID: 1244159935425263200, guid: 57821cfde7c434d429f63454073bd8d1, type: 3}
+  - {fileID: 2961914770492385751, guid: 45725f0cd4e852c4997c3de99dbb9323, type: 3}
   - {fileID: 5711773323634268441, guid: 0b670481dae22f64da8670e6c03a76f7, type: 3}
   - {fileID: 148668723942211389, guid: 9457c69857c418a4eacf0cef7775e7ff, type: 3}
   rockPrefabs:

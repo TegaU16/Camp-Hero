@@ -19,7 +19,16 @@ public class Defense : MonoBehaviour
 
         fireCooldown -= Time.deltaTime;
 
-        FindTarget();
+        if (currentTarget != null && !IsTargetAlive(currentTarget))
+        {
+            currentTarget = null;
+        }
+
+        if (currentTarget == null)
+        {
+            FindTarget();
+        }
+
         if (currentTarget != null && fireCooldown <= 0f)
         {
             Fire();
@@ -45,7 +54,11 @@ public class Defense : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = hits[i];
-            if (hit.CompareTag("Enemy"))
+
+            Enemy enemy = hit.GetComponent<Enemy>();
+            BreakableObject breakable = hit.GetComponent<BreakableObject>();
+
+            if (enemy != null && breakable != null && IsTargetAlive(hit.transform))
             {
                 float dist = Vector3.Distance(transform.position, hit.transform.position);
                 if (dist < shortestDistance)
@@ -66,5 +79,18 @@ public class Defense : MonoBehaviour
         GameObject projectileObj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         if (projectileObj.TryGetComponent(out Projectile projectile))
             projectile.SetTarget(currentTarget, damage);
+    }
+
+    protected bool IsTargetAlive(Transform target)
+    {
+        if (target == null || !target.gameObject.activeInHierarchy) return false;
+
+        if (!target.TryGetComponent(out Enemy enemy)) return false;
+
+        Enemy.State enemyState = enemy.GetCurrentState();
+        if (enemyState == Enemy.State.Dead) return false;
+
+        float dist = Vector3.Distance(transform.position, target.position);
+        return dist <= range;
     }
 }

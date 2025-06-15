@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
@@ -13,7 +14,6 @@ public class Enemy : MonoBehaviour
     public Transform projectileSpawnPoint;
     public float rangedAttackRange = 10f;
 
-    public float detectionRange = 15f;
     public float attackRange = 2f;
     public float attackCooldown = 2f;
     public int damage = 10;
@@ -37,7 +37,17 @@ public class Enemy : MonoBehaviour
     private float lastAttackedTime;
     [SerializeField] private float retaliateDuration = 4f; // How long to remember attacker
 
+    private float stuckTimer = 0f;
+    private const float stuckThreshold = 1.5f;
+
     private BreakableObject breakableObject;
+
+    [SerializeField] private List<Targetable.TargetType> preferredTargets = new();
+
+    [Header("Scoring Weights")]
+    public float distanceWeight = 1f;
+    public float damageMemoryWeight = -5f;
+    public float objectiveThreatWeight = -3f;
 
     void Awake()
     {
@@ -65,7 +75,7 @@ public class Enemy : MonoBehaviour
 
         if (currentState == State.Dead) return;
 
-        if (currentTarget == null) currentTarget = campfireTarget;
+        ValidateTarget();
 
         float distance = Vector3.Distance(transform.position, currentTarget.position);
 
@@ -73,11 +83,6 @@ public class Enemy : MonoBehaviour
 
         switch (currentState)
         {
-            case State.Idle:
-                currentTarget = campfireTarget;
-                currentState = State.Chasing;
-                break;
-
             case State.Chasing:
                 if (!isAttacking)
                 {
@@ -85,9 +90,24 @@ public class Enemy : MonoBehaviour
                     agent.SetDestination(currentTarget.position);
                 }
 
-                if (currentTarget.CompareTag("Player") && distance > detectionRange + 2f)
+                // Re-issue destination if something is clearly wrong
+                if (!agent.hasPath || agent.velocity.sqrMagnitude < 0.01f)
                 {
-                    currentTarget = campfireTarget;
+                    stuckTimer += Time.deltaTime;
+
+                    if (stuckTimer >= stuckThreshold)
+                    {
+                        if (agent.isOnNavMesh && agent.enabled)
+                        {
+                            agent.SetDestination(currentTarget.position);
+                            Debug.LogWarning($"{name} stuck for {stuckTimer:F1}s, reissuing destination");
+                            stuckTimer = 0f;
+                        }
+                    }
+                }
+                else
+                {
+                    stuckTimer = 0f; // Reset if moving normally
                 }
 
                 if (attackType == AttackType.Melee && distance <= attackRange)
@@ -123,7 +143,10 @@ public class Enemy : MonoBehaviour
                 {
                     isAttacking = false;
                     currentState = State.Chasing;
+                    if (agent.isOnNavMesh && agent.enabled && currentTarget != null)
+                        agent.SetDestination(currentTarget.position);
                 }
+
                 break;
 
             case State.RangedAttacking:
@@ -147,20 +170,37 @@ public class Enemy : MonoBehaviour
         }
 
         // Update animator speed parameter (for blending idle/walk nicely)
-        float currentSpeed = agent.velocity.magnitude;
-        float normalizedSpeed = currentSpeed / moveSpeed;
-        animator.SetFloat("Speed", normalizedSpeed, 0.2f, Time.deltaTime);
+        if (!agent.isStopped && agent.remainingDistance > agent.stoppingDistance)
+        {
+            float currentSpeed = agent.velocity.magnitude;
+            float normalizedSpeed = currentSpeed / moveSpeed;
+            animator.SetFloat("Speed", normalizedSpeed, 0.2f, Time.deltaTime);
+        }
+        else if (currentState == State.Chasing)
+        {
+            // Force walk animation if chasing but agent not moving due to close target
+            animator.SetFloat("Speed", 1f, 0.2f, Time.deltaTime);
+        }
+        else
+        {
+            animator.SetFloat("Speed", 0f, 0.2f, Time.deltaTime);
+        }
+
+        if (agent.velocity == Vector3.zero && currentState == State.Chasing)
+        {
+            //Debug.LogWarning($"{name} is in Chasing state but velocity is 0. Remaining distance: {agent.remainingDistance}, stopping distance: {agent.stoppingDistance}, has path: {agent.hasPath}");
+        }
     }
 
     void OnAnimatorMove()
     {
         if (currentState == State.Chasing || currentState == State.Attacking)
         {
-            // Use deltaPosition to move manually
+            /*// Use deltaPosition to move manually
             transform.position += animator.deltaPosition;
 
             // Optional: Match NavMeshAgent position to prevent drifting
-            agent.nextPosition = transform.position;
+            agent.nextPosition = transform.position;*/
         }
     }
 
@@ -236,7 +276,7 @@ public class Enemy : MonoBehaviour
                 targetRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
             }
         }
-        else if (currentTarget.TryGetComponent(out BreakableObject targetBreakable))
+        else if (currentTarget.GetComponentInParent<BreakableObject>() is BreakableObject targetBreakable)
         {
             targetBreakable.TakeDamage(damage, false);
         }
@@ -281,56 +321,29 @@ public class Enemy : MonoBehaviour
 
     public void ResetEnemy(Vector3 spawnPosition)
     {
-        if (ragdollController.IsSetup)
-        {
-            ragdollController.DisableRagdoll();
-        }
+        PooledAIUtility.ResetAI(
+            this,
+            agent,
+            animator,
+            spawnPosition,
+            ragdollController
+        );
 
-        if (animator != null)
-        {
-            animator.enabled = true;
-            animator.Rebind(); // <---- very important to reset animator properly
-            animator.Update(0f); // <---- immediately update the animator
-        }
-
-        currentState = State.Idle;
-
-        if (agent != null)
-        {
-            agent.enabled = true;
-
-            if (agent.isOnNavMesh)
-            {
-                agent.Warp(spawnPosition);
-            }
-            else
-            {
-                // If not on navmesh yet, manually move and then try to place
-                transform.position = spawnPosition;
-                if (NavMesh.SamplePosition(spawnPosition, out NavMeshHit hit, 5f, NavMesh.AllAreas))
-                {
-                    agent.Warp(hit.position);
-                }
-                else
-                {
-                    Debug.LogWarning("Couldn't find valid NavMesh position for respawning enemy.");
-                }
-            }
-
-            agent.isStopped = false;
-        }
+        currentState = State.Chasing;
+        currentTarget = campfireTarget;
 
         if (breakableObject != null)
         {
             breakableObject.ResetObject();
         }
-
-        gameObject.SetActive(true);
     }
 
     void ScanForTargets()
     {
-        // Retaliation check
+        if (currentState == State.Attacking || currentState == State.RangedAttacking)
+            return;
+
+        // Retaliation still overrides for now
         if (recentAttacker != null && Time.time - lastAttackedTime <= retaliateDuration)
         {
             if (currentTarget != recentAttacker)
@@ -342,57 +355,99 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        Transform bestTarget = campfireTarget;
-        float closestDistance = Mathf.Infinity;
+        Targetable[] allTargets = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
 
-        Collider[] hits = new Collider[20];
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, detectionRange, hits);
+        TargetScore bestScore = null;
 
-        if (hitCount == hits.Length)
+        foreach (Targetable t in allTargets)
         {
-            Collider[] expandedArray = new Collider[hitCount * 2];
-            hitCount = Physics.OverlapSphereNonAlloc(transform.position, detectionRange, expandedArray);
-            hits = expandedArray;
-        }
+            if (t == null || !t.gameObject.activeInHierarchy)
+                continue;
 
-        bool foundHighPriorityPlayer = false;
+            float distance = Vector3.Distance(transform.position, t.transform.position);
+            int priority = GetTargetPriority(t.targetType);
+            float damageScore = (t.transform == recentAttacker) ? damageMemoryWeight : 0f;
+            float objectiveThreat = EvaluateObjectiveThreat(t);
 
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider hit = hits[i];
-            if (hit.TryGetComponent(out Targetable targetable))
+            TargetScore score = new(t.transform, priority, distance * distanceWeight, damageScore, objectiveThreat);
+
+            if (bestScore == null || score.finalScore < bestScore.finalScore)
             {
-                float dist = Vector3.Distance(transform.position, hit.transform.position);
-
-                if (targetable.targetType == Targetable.TargetType.Player && dist <= 5f)
-                {
-                    bestTarget = hit.transform;
-                    foundHighPriorityPlayer = true;
-                    break;  // Immediate priority
-                }
-
-                if (!foundHighPriorityPlayer && dist < closestDistance)
-                {
-                    bestTarget = hit.transform;
-                    closestDistance = dist;
-                }
+                bestScore = score;
             }
         }
 
-        if (foundHighPriorityPlayer || Time.time - lastTargetChangeTime >= targetMemoryTime)
+        if (bestScore != null && bestScore.target != currentTarget &&
+            (Time.time - lastTargetChangeTime >= targetMemoryTime || bestScore.finalScore < GetScoreForTarget(currentTarget)))
         {
-            if (bestTarget != currentTarget)
+            Debug.Log($"{name} switching to {bestScore.target.name} with score {bestScore.finalScore:F2}");
+            lastTarget = currentTarget;
+            currentTarget = bestScore.target;
+            lastTargetChangeTime = Time.time;
+
+            if (agent.isOnNavMesh && agent.enabled)
             {
-                lastTarget = bestTarget;
-                lastTargetChangeTime = Time.time;
-                currentTarget = bestTarget;
+                agent.SetDestination(currentTarget.position);
             }
         }
+    }
+
+    private int GetTargetPriority(Targetable.TargetType type)
+    {
+        if (preferredTargets != null && preferredTargets.Count > 0)
+        {
+            int index = preferredTargets.IndexOf(type);
+            if (index >= 0)
+                return index;
+        }
+
+        return int.MaxValue;
+    }
+
+    private float GetScoreForTarget(Transform target)
+    {
+        if (target == null) return float.MaxValue;
+
+        float distance = Vector3.Distance(transform.position, target.position);
+
+        Targetable targetable = target.GetComponent<Targetable>();
+        int priority = targetable != null ? GetTargetPriority(targetable.targetType) : int.MaxValue;
+
+        float damageScore = (target == recentAttacker) ? damageMemoryWeight : 0f;
+        float objectiveScore = EvaluateObjectiveThreat(targetable);
+
+        return priority + (distance * distanceWeight) + damageScore + objectiveScore;
+    }
+
+    private float EvaluateObjectiveThreat(Targetable targetable)
+    {
+        if (targetable == null) return 0f;
+
+        // You can adjust this logic for smarter threat detection
+        if (targetable.targetType == Targetable.TargetType.Campfire)
+            return -5f; // Strong incentive to destroy the objective
+
+        return 0f;
     }
 
     public void OnAttacked(Transform attacker)
     {
         recentAttacker = attacker;
         lastAttackedTime = Time.time;
+    }
+
+    public State GetCurrentState()
+    {
+        return currentState;
+    }
+
+    private void ValidateTarget()
+    {
+        if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
+        {
+            currentTarget = campfireTarget;
+            if (agent.isOnNavMesh && agent.enabled)
+                agent.SetDestination(campfireTarget.position);
+        }
     }
 }

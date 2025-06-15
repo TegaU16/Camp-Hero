@@ -43,6 +43,9 @@ public class Item : ScriptableObject
     [Header("Food")]
     public float foodValue;
 
+    [Header("Farming")]
+    public PlantData plantData;
+
     [Header("Fuel")]
     public float fuelValue;
 

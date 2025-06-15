@@ -83,6 +83,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: adbce6439a592654d835aeda3826e249, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9209752305801862440}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: adbce6439a592654d835aeda3826e249, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5177790254792255507}
     - targetCorrespondingSourceObject: {fileID: -496313417935751258, guid: adbce6439a592654d835aeda3826e249, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4122604574616088430}
@@ -168,6 +171,22 @@ MonoBehaviour:
   leftPole: {fileID: 3896402846117168962}
   rightPole: {fileID: 8650922651598103044}
   connectorToRight: {fileID: 3790353816891435815}
+--- !u!208 &5177790254792255507
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4886152691077762485}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.7, y: 1.3, z: 0.1}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1.3, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &5308721763213618960 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8745376412234096652, guid: adbce6439a592654d835aeda3826e249, type: 3}

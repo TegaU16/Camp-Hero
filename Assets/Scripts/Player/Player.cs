@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     private float buffer = 0f;
     public float bufferCooldown = 5f;
     public float jumpDecrease = 10f;
+    public PlayerAttributes playerAttributes;
+    private PlayerCombat playerCombat;
 
     [Header("Body Settings")]
     public CharacterController controller;
@@ -47,12 +49,21 @@ public class Player : MonoBehaviour
             Debug.LogError("Main Camera not found! Ensure there is a Camera tagged as 'MainCamera' in the scene.");
         }
 
+        playerCombat = GetComponent<PlayerCombat>();
+
         healthBar = FindAnyObjectByType<HealthBar>();
         staminaBar = FindAnyObjectByType<StaminaBar>();
 
-        controller = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>();
-        ragdollController = GetComponent<SimpleRagdollController>();
+        if (controller == null) controller = GetComponent<CharacterController>();
+        if (animator == null) animator = GetComponent<Animator>();
+        if (ragdollController == null) ragdollController = GetComponent<SimpleRagdollController>();
+        if (playerAttributes == null) playerAttributes = GetComponent<PlayerAttributes>();
+
+        health.ResetHealth(playerAttributes.MaxHealth);
+        healthBar.SetMaxHealth(playerAttributes.MaxHealth);
+        staminaBar.SetMaxStamina(playerAttributes.MaxStamina);
+
+        UpdateVitals();
     }
 
     // Update is called once per frame
@@ -65,6 +76,8 @@ public class Player : MonoBehaviour
         if (cam == null) return;
         
         if (animator == null ||  animator.enabled == false) return;
+
+        float currentStamina = staminaBar.GetStamina();
 
         // Check if the player is grounded using CharacterController's built-in isGrounded property
         bool isGrounded = controller.isGrounded;
@@ -94,7 +107,7 @@ public class Player : MonoBehaviour
 
                 Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
-                if (Input.GetKey(sprintKey) && staminaBar.slider.value > 0)
+                if (Input.GetKey(sprintKey) && currentStamina > 0)
                 {
                     controller.Move(sprintSpeed * Time.deltaTime * moveDir.normalized);
 
@@ -118,17 +131,18 @@ public class Player : MonoBehaviour
 
             if (isGrounded)
             {
-                bool isSprinting = Input.GetKey(sprintKey) && staminaBar.slider.value > 0;
+                bool isSprinting = Input.GetKey(sprintKey) && currentStamina > 0;
                 float moveSpeed = direction.magnitude * (isSprinting ? sprintSpeed : speed);
                 animator.SetFloat("Speed", moveSpeed);
 
-                if (Input.GetButtonDown("Jump") && staminaBar.slider.value > 0)
+                if (Input.GetButtonDown("Jump") && currentStamina > 0)
                 {
                     velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
                     // Tween the stamina bar decrease
-                    float targetStamina = staminaBar.slider.value - jumpDecrease;
+                    float targetStamina = currentStamina - jumpDecrease;
                     staminaBar.slider.DOValue(targetStamina, 0.5f); // 0.5f is the duration of the tween
+                    staminaBar.SetCurrentStamina((int)targetStamina);
 
                     buffer = 0f; // Reset the timer after jumping
                 }
@@ -179,24 +193,6 @@ public class Player : MonoBehaviour
         cameraTarget.position = smoothed;
     }
 
-    public void TakeDamage(int damage)
-    {
-        if (health == null)
-        {
-            Debug.Log("Health is null!");
-        }
-
-        if (healthBar == null)
-        {
-            Debug.Log("Healthbar is null!");
-        }
-
-        if (health != null && healthBar != null)
-        {
-            health.TakeDamage(damage, healthBar);
-        }
-    }
-
     public void Die()
     {
         animator.enabled = false;
@@ -222,5 +218,36 @@ public class Player : MonoBehaviour
         ragdollController.DisableRagdoll();
         animator.enabled = true;
         GameManager.Instance.RespawnPlayer(this);
+    }
+
+    public void UpdateVitals()
+    {
+        int oldMaxHealth = health.maxHealth;
+        int oldMaxStamina = (int)staminaBar.maxStamina;
+
+        health.maxHealth = playerAttributes.MaxHealth;
+        staminaBar.maxStamina = playerAttributes.MaxStamina;
+
+        // Optionally heal or refill stamina proportionally
+        int currentHealth = health.GetHealth();
+        currentHealth += health.maxHealth - oldMaxHealth;
+
+        int currentStamina = (int)staminaBar.GetStamina();
+        currentStamina += (int)staminaBar.maxStamina - oldMaxStamina;
+
+        // Clamp so it never exceeds new max
+        currentHealth = Mathf.Clamp(currentHealth, 0, health.maxHealth);
+        currentStamina = Mathf.Clamp(currentStamina, 0, (int)staminaBar.maxStamina);
+
+        health.SetHealth(currentHealth, healthBar);
+        staminaBar.SetNewStamina(currentStamina);
+
+        staminaBar.incrementRate = playerAttributes.StaminaRegenRate;
+
+        if (playerCombat != null)
+        {
+            playerCombat.damageMultiplier = playerAttributes.MeleeDamageMultiplier;
+            playerCombat.critMultiplier = playerAttributes.CritChanceMultiplier;
+        }
     }
 }

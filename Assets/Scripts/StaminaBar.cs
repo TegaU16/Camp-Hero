@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,20 +7,57 @@ public class StaminaBar : MonoBehaviour
     public Slider slider;
     public float decrementRate;
     public float incrementRate;
+    public TextMeshProUGUI staminaText;
+    public float maxStamina;
+    private float currentStamina;
 
     public void SetMaxStamina(float stamina)
     {
-        slider.maxValue = stamina;
-        slider.value = stamina;
+        maxStamina = stamina;
+        currentStamina = stamina;
+
+        slider.maxValue = maxStamina;
+        slider.value = currentStamina;
+        UpdateStaminaText((int)currentStamina);
     }
 
     public void DecreaseStamina()
     {
-        slider.value -= decrementRate * Time.deltaTime;
+        currentStamina -= decrementRate * Time.deltaTime;
+        slider.value = currentStamina;
+        UpdateStaminaText((int)currentStamina);
     }
 
     public void IncreaseStamina()
     {
-        slider.value += incrementRate * Time.deltaTime;
+        if (currentStamina < maxStamina)
+        {
+            currentStamina += incrementRate * Time.deltaTime;
+            slider.value = currentStamina;
+            UpdateStaminaText((int)currentStamina);
+        }
+    }
+
+    public void SetNewStamina(int stamina)
+    {
+        slider.maxValue = maxStamina;
+        SetCurrentStamina(stamina);
+        slider.value = currentStamina;
+    }
+
+    public void SetCurrentStamina(int stamina)
+    {
+        currentStamina = stamina;
+        UpdateStaminaText(stamina);
+    }
+
+    public float GetStamina()
+    {
+        return currentStamina;
+    }
+
+    private void UpdateStaminaText(int staminaValue)
+    {
+        staminaText.text = staminaValue.ToString();
     }
 }

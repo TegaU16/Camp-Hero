@@ -20,8 +20,8 @@ public class BreakableObject : MonoBehaviour
     }
 
     public GameObject damagePopupPrefab;
-    public float maxHealth;
-    private float health;
+    public int maxHealth;
+    private int health;
     public int expDropped;
     public Drop[] drops;
     public ObjectType type;
@@ -42,22 +42,29 @@ public class BreakableObject : MonoBehaviour
     {
         if (isDestroyed) return;
 
-        ShowDamagePopup(damage, crit);
+        if (health > 0) ShowDamagePopup(damage, crit);
 
-        if (health <= damage)
+        health -= damage;
+        health = Mathf.Max(health, 0);
+
+        if (health == 0)
         {
-            // Tell the Enemy (if there is one) to die first
             if (TryGetComponent(out Enemy enemy))
             {
                 enemy.Die();
-                return; // Enemy will handle deactivation
+                return;
+            }
+
+            if (TryGetComponent(out Animal animal))
+            {
+                animal.Die();
+                return;
             }
 
             DestroyObject();
         }
         else
         {
-            health -= damage;
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
             if (hitEffectManager != null)
             {
@@ -117,7 +124,7 @@ public class BreakableObject : MonoBehaviour
                 }
             }
 
-            GameManager.Instance.voxelGrid.MarkAreaOccupied(gameObject);
+            GameManager.Instance.voxelGrid.MarkAreaOccupied(gameObject, false);
             Destroy(gameObject);
         }
     }

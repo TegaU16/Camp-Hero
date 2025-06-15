@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class PlayerCombat : MonoBehaviour
@@ -14,7 +13,10 @@ public class PlayerCombat : MonoBehaviour
 
     private Animator animator;
 
+    [HideInInspector] public float damageMultiplier;
+    [HideInInspector] public float critMultiplier;
     [HideInInspector] public bool isCritical = false;
+
     public AttackHitbox playerAttackHitbox;
     private const float reductionFactor = 2f;
 
@@ -107,7 +109,9 @@ public class PlayerCombat : MonoBehaviour
         float maxDamage = selectedItem.attackDamage[1];
         float damage = Random.Range(minDamage, maxDamage);
 
-        bool isCrit = Random.Range(0, 100) < selectedItem.critChance;
+        float critChanceWithLuck = selectedItem.critChance * critMultiplier;
+        critChanceWithLuck = Mathf.Clamp(critChanceWithLuck, 0f, 100f);
+        bool isCrit = Random.Range(0f, 100f) < critChanceWithLuck;
 
         bool isTypeMatched = IsTypeMatched(hitObject, selectedItem);
         bool isToolLevelSufficient = selectedItem.toolLevel >= hitObject.objectLevel;
@@ -121,12 +125,12 @@ public class PlayerCombat : MonoBehaviour
 
         if (isToolValid)
         {
-            return isCrit ? (int)(damage * selectedItem.critFactor) : (int)damage;
+            return isCrit ? (int)(damage * selectedItem.critFactor * damageMultiplier) : (int)(damage * damageMultiplier);
         }
         else
         {
-            float damageModifier = isCrit ? selectedItem.critFactor / (reductionFactor * 2) : 1 / (reductionFactor * 2);
-            return (int)(damage * damageModifier);
+            float damageReduction = isCrit ? selectedItem.critFactor / (reductionFactor * 2) : 1 / (reductionFactor * 2);
+            return (int)(damage * damageReduction * damageMultiplier);
         }
     }
 

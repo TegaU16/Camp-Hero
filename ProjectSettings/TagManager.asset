@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Pickable
   - Campfire
+  - Enemy
   layers:
   - Default
   - TransparentFX

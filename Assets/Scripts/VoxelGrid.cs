@@ -12,8 +12,8 @@ public class VoxelGrid : MonoBehaviour
     public float maxHeight = 5f;
     public float heightScale = 0.5f;
 
-    [SerializeField] private float simulationDistance = 10f;
-    [SerializeField] private float viewDistance = 2f; // For object spawning/visibility
+    public float simulationDistance = 10f;
+    public float viewDistance = 2f; // For object spawning/visibility
     [SerializeField] private ColliderPool colliderPool;
     public StructureManager structureManager;
 
@@ -32,6 +32,8 @@ public class VoxelGrid : MonoBehaviour
     private GameObject player;
     private Vector3 playerPosition;
     private readonly List<VoxelChunk> chunks = new();
+
+    public AnimalSpawner animalSpawner;
 
     public List<BiomeData> biomes;
     public NoiseSettings biomeNoiseSettings;
@@ -61,6 +63,7 @@ public class VoxelGrid : MonoBehaviour
             return;
         }
 
+        animalSpawner.groundLayer = groundLayer;
         seed = worldSeed;
         worldName = name;
         GenerateTerrain();
@@ -103,6 +106,8 @@ public class VoxelGrid : MonoBehaviour
                 {
                     Debug.Log($"No save data for chunk at: {chunk.chunkPosition}");
                 }
+
+                animalSpawner.chunks.Add(chunk);
 
                 GenerateChunkTerrain(chunk, chunkPosition);
                 SpawnObjectsInChunk(chunk);
@@ -477,15 +482,13 @@ public class VoxelGrid : MonoBehaviour
 
     void ManageChunks()
     {
-        if (player != null)
-        {
-            playerPosition = player.transform.position;
-        }
-        else
+        if (player == null)
         {
             Debug.LogWarning("Player is not assigned!");
             return;
         }
+
+        playerPosition = player.transform.position;
 
         foreach (VoxelChunk chunk in chunks)
         {
@@ -499,6 +502,7 @@ public class VoxelGrid : MonoBehaviour
                 {
                     SaveSystem.SaveChunk(worldName, chunk);
                     DespawnObjectsInChunk(chunk);
+
                     chunk.objectsSpawned = false;
                 }
 

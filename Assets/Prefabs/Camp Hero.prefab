@@ -72,7 +72,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 474.69125
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -80,7 +80,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 462.18472
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -223,6 +223,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5815059403363927581}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7684721203216780649}
     - targetCorrespondingSourceObject: {fileID: 5533620285979073690, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5440184646153987930}
@@ -975,7 +978,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Center: {x: 0, y: 0.57, z: 0}
 --- !u!114 &1996262938143030659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,6 +999,7 @@ MonoBehaviour:
   healthBar: {fileID: 0}
   bufferCooldown: 5
   jumpDecrease: 10
+  playerAttributes: {fileID: -7684721203216780649}
   controller: {fileID: 6310698463607491907}
   itemHolder: {fileID: 2271770579043854081}
   turnSmoothTime: 0.1
@@ -1017,6 +1021,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   comboResetTime: 1
   maxCombo: 3
+  damageMultiplier: 0
+  critMultiplier: 0
   isCritical: 0
   playerAttackHitbox: {fileID: 2794915849877835204}
 --- !u!114 &4936235539335103463
@@ -1116,3 +1122,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 1, z: 1}
   m_Center: {x: 0, y: 0.5, z: 0.5}
+--- !u!114 &-7684721203216780649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8748831185352778365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2f69bc48e82e1a4e858056a0b2ec7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
