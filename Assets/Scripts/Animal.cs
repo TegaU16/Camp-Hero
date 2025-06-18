@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,24 +18,23 @@ public class Animal : MonoBehaviour
 
     float wanderTimer;
 
+    public bool IsActiveAI { get; private set; } = false;
+
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         breakableObject = GetComponent<BreakableObject>();
         ragdollController = GetComponent<SimpleRagdollController>();
-    }
 
-    void Start()
-    {
-        // If using Init, this may get overwritten.
-        wanderCenter = transform.position;
-        PickNewDestination();
-        wanderTimer = wanderInterval;
+        agent.updatePosition = true;
+        agent.updateRotation = false;
     }
 
     void Update()
     {
+        if (!IsActiveAI) return;
+
         wanderTimer += Time.deltaTime;
 
         if (wanderTimer >= wanderInterval)
@@ -47,7 +47,12 @@ public class Animal : MonoBehaviour
         animator.SetFloat("Speed", moveSpeed);
     }
 
-    void PickNewDestination()
+    void OnAnimatorMove()
+    {
+        // Usually empty or optional — just disables Unity’s auto-motion
+    }
+
+    private void PickNewDestination()
     {
         Vector2 rand = Random.insideUnitCircle * wanderRadius;
         Vector3 newTarget = wanderCenter + new Vector3(rand.x, 0, rand.y);
@@ -72,6 +77,23 @@ public class Animal : MonoBehaviour
 
         wanderCenter = spawnPosition;
         wanderTimer = wanderInterval;
+        IsActiveAI = true;
+
+        StartCoroutine(DelayedPickNewDestination());
+    }
+
+    private IEnumerator DelayedPickNewDestination()
+    {
+        // Wait 1 frame to guarantee agent is valid
+        yield return null;
+
+        if (agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+            agent.isStopped = false;
+        }
+
+        PickNewDestination();
     }
 
     public void Die()

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 public class AnimalSpawner : MonoBehaviour
 {
@@ -114,13 +115,25 @@ public class AnimalSpawner : MonoBehaviour
 
                 if (Physics.Raycast(candidatePos + Vector3.up * 100f, Vector3.down, out RaycastHit animalHit, 200f, groundLayer))
                 {
-                    Vector3 spawnPos = animalHit.point;
+                    Vector3 candidateSpawn = animalHit.point;
 
-                    Animal animal = AnimalPool.Instance.GetAnimal(spawnPos, chunk);
-                    animal.transform.parent = null;
+                    if (NavMesh.SamplePosition(candidateSpawn, out NavMeshHit navHit, 5f, NavMesh.AllAreas))
+                    {
+                        Vector3 spawnPos = navHit.position;
 
-                    animalsList.Add(animal);
-                    currentAnimalCount++;
+                        Animal animal = AnimalPool.Instance.GetAnimal(spawnPos, chunk);
+                        animal.transform.parent = null;
+
+                        animalsList.Add(animal);
+                        currentAnimalCount++;
+
+                        Debug.DrawRay(candidatePos, Vector3.up * 5f, Color.red, 10f);
+                        Debug.DrawRay(navHit.position, Vector3.up * 5f, Color.green, 10f);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[SpawnAnimalsForChunk] No NavMesh near {candidateSpawn}!");
+                    }
                 }
 
                 yield return new WaitForSeconds(0.05f);

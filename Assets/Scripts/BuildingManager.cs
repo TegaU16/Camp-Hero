@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -226,6 +227,8 @@ public class BuildingManager : MonoBehaviour
                 GameObject placedObject = Instantiate(selectedItem.buildingGhost, finalPosition, currentGhost.transform.rotation);
                 SetAllScriptsEnabled(placedObject, true);
 
+                StartCoroutine(BouncePlacedObject(placedObject.transform));
+
                 voxelGrid.MarkAreaOccupied(placedObject);
 
                 InventoryManager.Instance.UseSelectedItem();
@@ -234,6 +237,34 @@ public class BuildingManager : MonoBehaviour
                 ClearVisualIndicators();
             }
         }
+    }
+
+    IEnumerator BouncePlacedObject(Transform objTransform)
+    {
+        Vector3 originalScale = objTransform.localScale;
+        Vector3 shrunkenScale = originalScale * 0.8f; // 80% size
+
+        float duration = 0.1f; // shrink duration
+        float elapsed = 0f;
+
+        // Shrink
+        while (elapsed < duration)
+        {
+            objTransform.localScale = Vector3.Lerp(originalScale, shrunkenScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        objTransform.localScale = shrunkenScale;
+
+        // Expand back
+        elapsed = 0f;
+        while (elapsed < duration)
+        {
+            objTransform.localScale = Vector3.Lerp(shrunkenScale, originalScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        objTransform.localScale = originalScale;
     }
 
     void SetGhostAlpha(float alpha)

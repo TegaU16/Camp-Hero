@@ -2027,8 +2027,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 978931152}
   m_HandleRect: {fileID: 978931151}
   m_Direction: 2
-  m_Value: -0.00000020345057
-  m_Size: 0.50000006
+  m_Value: 0
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2419,7 +2419,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryUI: {fileID: 720469266}
-  startItems: []
+  startItems:
+  - {fileID: 11400000, guid: 43b54fcb8e3bd9d4a877249ce935f87e, type: 2}
   itemEquip: {fileID: 591501346}
   discoveredItems: []
   inventoryUIHandler: {fileID: 360374391}
@@ -4986,7 +4987,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeOfDay: 7
-  dayDurationInSeconds: 720
+  dayDurationInSeconds: 40
   sun: {fileID: 410087040}
   moon: {fileID: 1463855988}
   sunColor:
@@ -7781,6 +7782,7 @@ GameObject:
   - component: {fileID: 983386735}
   - component: {fileID: 983386736}
   - component: {fileID: 983386737}
+  - component: {fileID: 983386738}
   m_Layer: 0
   m_Name: Animal Spawner
   m_TagString: Untagged
@@ -7796,7 +7798,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983386734}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7815,8 +7817,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c19a709653cb70c4eb7497847ca3191b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animalSpawner: {fileID: 983386737}
   animalPrefab: {fileID: 111912941036290077, guid: 51f3cc7fbc4f54f4e952527578a3fc8a, type: 3}
   initialPoolSize: 5
+  poolGraveyardPosition: {x: 0, y: -1000, z: 0}
 --- !u!114 &983386737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7837,6 +7841,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   globalAnimalCap: 20
+--- !u!114 &983386738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983386734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37123568558880145b610c05afaee9d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &989977467
 GameObject:
   m_ObjectHideFlags: 0
@@ -11952,6 +11968,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 8748831185352778365, guid: fad48bb3b175630419b4a3daec9fafe3, type: 3}
   campFire: {fileID: 3959252520251244358, guid: 9867f713dcfe84b48839fc79dcba0aa4, type: 3}
+  animalSystemGameObject: {fileID: 983386734}
   playerInstance: {fileID: 0}
   navMeshSurface: {fileID: 1243168125}
   pauseMenuUI: {fileID: 592048405}
@@ -12278,7 +12295,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2019047479}
   m_HandleRect: {fileID: 2019047478}
   m_Direction: 2
-  m_Value: 1.0000002
+  m_Value: 1.0000004
   m_Size: 0.5000001
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -13693,7 +13710,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 150.00002}
+  m_AnchoredPosition: {x: 0, y: 149.99998}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1726591892

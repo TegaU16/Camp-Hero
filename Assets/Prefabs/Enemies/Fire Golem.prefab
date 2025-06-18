@@ -126,9 +126,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5847898099171611442}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 5104923096022953671}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
@@ -148,6 +145,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3346718071084815821}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3745046083675803282}
     - targetCorrespondingSourceObject: {fileID: 5533620285979073690, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2052325187061142272}
@@ -866,32 +866,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
   m_PrefabInstance: {fileID: 7823523478955984963}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5847898099171611442
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6941125607410677010}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackType: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  rangedAttackRange: 10
-  attackRange: 2
-  attackCooldown: 2
-  damage: 10
-  knockbackForce: 5
-  moveSpeed: 3.5
-  retaliateDuration: 4
-  preferredTargets: 0400000002000000010000000000000003000000
-  distanceWeight: 1
-  damageMemoryWeight: -5
-  objectiveThreatWeight: -3
 --- !u!195 &5104923096022953671
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1044,3 +1018,29 @@ MonoBehaviour:
   targetableLayer:
     serializedVersion: 2
     m_Bits: 448
+--- !u!114 &3745046083675803282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6941125607410677010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackType: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  rangedAttackRange: 10
+  attackRange: 2
+  attackCooldown: 2
+  damage: 10
+  knockbackForce: 5
+  moveSpeed: 3.5
+  retaliateDuration: 4
+  preferredTargets: 0400000002000000010000000000000003000000
+  distanceWeight: 1
+  damageMemoryWeight: -5
+  objectiveThreatWeight: -3

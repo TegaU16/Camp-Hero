@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 {
     public GameObject playerPrefab;
     public GameObject campFire;
+    public GameObject animalSystemGameObject;
 
     [HideInInspector] public GameObject playerInstance;
     private GameObject spawnedCampFire;
@@ -106,6 +107,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(WaitAndSpawnObject(campFire, center, obj => spawnedCampFire = obj));
 
         compassBar.SetCampfireTransform(spawnedCampFire);
+        animalSystemGameObject.SetActive(true);
     }
 
     // Coroutine to wait for terrain generation to complete
