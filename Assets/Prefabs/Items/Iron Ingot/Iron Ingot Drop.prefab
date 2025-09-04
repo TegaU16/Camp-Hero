@@ -66,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1091800375035758817, guid: 2fe8b2b7c8cb39f498518218b71f3497, type: 3}
       propertyPath: m_Name
-      value: Iron Ingot Variant
+      value: Iron Ingot Drop
       objectReference: {fileID: 0}
     - target: {fileID: 1091800375035758817, guid: 2fe8b2b7c8cb39f498518218b71f3497, type: 3}
       propertyPath: m_Layer
@@ -144,10 +144,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2038125842940712915}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -178,7 +178,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

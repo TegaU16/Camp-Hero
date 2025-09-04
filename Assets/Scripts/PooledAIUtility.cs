@@ -9,7 +9,6 @@ public static class PooledAIUtility
     /// </summary>
     public static void ResetAI(
     MonoBehaviour agentBehaviour,
-    NavMeshAgent navAgent,
     Animator animator,
     Vector3 spawnPosition,
     SimpleRagdollController ragdollController = null)
@@ -24,13 +23,7 @@ public static class PooledAIUtility
             animator.Update(0f);
         }
 
-        if (navAgent != null && navAgent.enabled)
-            navAgent.enabled = false;
-
         agentBehaviour.transform.position = spawnPosition;
-
-        if (navAgent != null)
-            navAgent.enabled = true;
 
         agentBehaviour.gameObject.SetActive(true);
     }

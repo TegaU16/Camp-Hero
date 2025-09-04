@@ -64,8 +64,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furnace Equip
       objectReference: {fileID: 0}
+    - target: {fileID: 8673004242649606558, guid: e3b58988654e82041b0ff6f1a550a4e5, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -8179482325830803360, guid: e3b58988654e82041b0ff6f1a550a4e5, type: 3}
+    - {fileID: -5507401888529500531, guid: e3b58988654e82041b0ff6f1a550a4e5, type: 3}
+    - {fileID: 390982493042822516, guid: e3b58988654e82041b0ff6f1a550a4e5, type: 3}
+    - {fileID: 6732521275165675599, guid: e3b58988654e82041b0ff6f1a550a4e5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

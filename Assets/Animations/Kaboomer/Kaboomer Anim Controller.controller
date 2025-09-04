@@ -9,7 +9,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: RangedAttack
+    m_ConditionEvent: ProjectileAttack
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5984696257194018206}
@@ -67,13 +67,13 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -943185009354252017}
-    m_Position: {x: 461.1815, y: 51.62642, z: 0}
+    m_Position: {x: 620, y: 210, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 8537089316914435741}
     m_Position: {x: 350, y: 160, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5984696257194018206}
-    m_Position: {x: 570, y: 210, z: 0}
+    m_Position: {x: 350, y: 260, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: 1073699171523665075}
@@ -82,8 +82,8 @@ AnimatorStateMachine:
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 100, y: 210, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_EntryPosition: {x: 640, y: 120, z: 0}
+  m_ExitPosition: {x: 860, y: 160, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -943185009354252017}
 --- !u!1102 &-943185009354252017
@@ -139,7 +139,7 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: RangedAttack
+  - m_Name: ProjectileAttack
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -212,7 +212,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shoot Attack
+  m_Name: Projectile Attack
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:

@@ -1,0 +1,119 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class KeyStructureSpawner : MonoBehaviour
+{
+    public VoxelGrid voxelGrid;
+    public GameObject[] trialStructurePrefabs;
+
+    private readonly List<Vector3> keyStructurePositions = new();
+
+    public IEnumerator SpawnKeyStructures(float worldSize, Vector3 worldCenter, Action<float> onProgress = null)
+    {
+        System.Random rng = new(voxelGrid.seed);
+        HashSet<Vector2Int> usedChunks = new();
+
+        float chunkSize = voxelGrid.chunkSize * voxelGrid.voxelSize;
+        int gridSize = voxelGrid.gridSize;
+
+        float minDistanceFromCenter = worldSize * 0.2f;
+        float maxDistanceFromCenter = worldSize * 0.45f;
+
+        foreach (GameObject trialStructurePrefab in trialStructurePrefabs)
+        {
+            bool placed = false;
+            int attempts = 0;
+            const int maxAttempts = 100; // Avoid infinite loops
+
+            while (!placed && attempts < maxAttempts)
+            {
+                attempts++;
+
+                int x = rng.Next(0, gridSize);
+                int z = rng.Next(0, gridSize);
+                Vector2Int chunkCoord = new(x, z);
+
+                if (usedChunks.Contains(chunkCoord))
+                    continue;
+
+                Vector3 position = new(
+                    x * chunkSize + chunkSize / 2f,
+                    0f,
+                    z * chunkSize + chunkSize / 2f
+                );
+
+                float dist = Vector2.Distance(new Vector2(position.x, position.z), new Vector2(worldCenter.x, worldCenter.z));
+                if (dist < minDistanceFromCenter || dist > maxDistanceFromCenter)
+                    continue;
+
+                usedChunks.Add(chunkCoord);
+
+                Vector3 groundPos = AdjustHeightToTerrain(position);
+                keyStructurePositions.Add(groundPos);
+
+                GameObject placedStructure = Instantiate(trialStructurePrefab, groundPos, Quaternion.identity);
+                voxelGrid.MarkAreaOccupied(placedStructure, true, true);
+
+                int index = Array.IndexOf(trialStructurePrefabs, trialStructurePrefab);
+                onProgress?.Invoke((float)(index + 1) / trialStructurePrefabs.Length);
+
+                KeyStructureCenter centerMarker = placedStructure.GetComponentInChildren<KeyStructureCenter>(true);
+                if (centerMarker != null)
+                {
+                    voxelGrid.MarkAreaOccupied(centerMarker.gameObject, true, false);
+                }
+                else
+                {
+                    Debug.LogWarning($"No KeyStructureCenter component found in {trialStructurePrefab.name}");
+                }
+
+                if (voxelGrid.chunkMap.TryGetValue(chunkCoord, out VoxelChunk chunk))
+                {
+                    placedStructure.transform.parent = chunk.chunkObject.transform;
+                    chunk.objects.Add(placedStructure);
+                    chunk.hasKeyStructure = true;
+                }
+
+                placed = true;
+            }
+
+            if (!placed)
+            {
+                Debug.LogWarning($"Failed to place structure {trialStructurePrefab.name} after {maxAttempts} attempts.");
+            }
+
+            yield return null;
+        }
+    }
+
+    private Vector3 AdjustHeightToTerrain(Vector3 position)
+    {
+        Vector3 rayStart = position + Vector3.up * 200f;
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f))
+        {
+            return hit.point;
+        }
+        else
+        {
+            Debug.LogWarning($"No terrain found below key structure position: {position}");
+            return position;
+        }
+    }
+
+    public bool IsNearKeyStructure(Vector3 pos, float radius = 20f)
+    {
+        foreach (Vector3 keyPos in keyStructurePositions)
+        {
+            if (Vector3.Distance(pos, keyPos) < radius)
+                return true;
+        }
+        return false;
+    }
+
+    public List<Vector3> GetKeyStructurePositions()
+    {
+        return keyStructurePositions;
+    }
+}

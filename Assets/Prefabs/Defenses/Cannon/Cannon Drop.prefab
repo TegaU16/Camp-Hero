@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6834869226508100709, guid: a2557d5cdc314674180f0f7dfe6771cb, type: 3}
       propertyPath: m_Name
-      value: Cannon Build Variant
+      value: Cannon Drop
       objectReference: {fileID: 0}
     - target: {fileID: 6834869226508100709, guid: a2557d5cdc314674180f0f7dfe6771cb, type: 3}
       propertyPath: m_Layer
@@ -99,10 +99,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2196351459013957399}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

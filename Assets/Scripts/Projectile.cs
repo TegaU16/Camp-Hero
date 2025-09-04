@@ -66,18 +66,7 @@ public class Projectile : MonoBehaviour
         {
             if (targetable.TryGetComponent(out Health targetHealth))
             {
-                HealthBar healthBar = null;
-                if (targetable.targetType == Targetable.TargetType.Player)
-                {
-                    if (target.TryGetComponent(out Player player))
-                        healthBar = player.healthBar;
-                }
-                else
-                {
-                    healthBar = target.GetComponent<HealthBar>();
-                }
-
-                targetHealth.TakeDamage(damage, healthBar);
+                targetHealth.TakeDamage(damage);
 
                 if (target.TryGetComponent(out Rigidbody rb))
                 {

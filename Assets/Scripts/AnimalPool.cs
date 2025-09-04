@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.AI;
-using System.Collections;
 
 public class AnimalPool : MonoBehaviour
 {
@@ -20,19 +18,6 @@ public class AnimalPool : MonoBehaviour
         Instance = this;
     }
 
-    void Start()
-    {
-        CreateInitialPool();
-    }
-
-    public void CreateInitialPool()
-    {
-        for (int i = 0; i < initialPoolSize; i++)
-        {
-            CreateAnimal();
-        }
-    }
-
     private void CreateAnimal()
     {
         Animal newAnimal = Instantiate(animalPrefab);
@@ -40,42 +25,53 @@ public class AnimalPool : MonoBehaviour
         newAnimal.gameObject.SetActive(false);
     }
 
-    public Animal GetAnimal(Vector3 spawnPos, VoxelChunk chunk)
+    public Animal GetAnimal(Vector3 spawnPos)
     {
         if (pool.Count == 0) CreateAnimal();
 
-        Animal a = pool.Dequeue();
+        Animal animal = pool.Dequeue();
 
-        // Do NOT warp again — you already did it!
-        // Just enable agent:
-        if (a.TryGetComponent(out NavMeshAgent agent))
-        {
-            agent.enabled = true;
-            agent.Warp(spawnPos);
-        }
+        animal.gameObject.SetActive(true);
 
-        a.transform.position = spawnPos;
+        // Disable animator before positioning:
+        animal.animator.enabled = false;
 
-        a.gameObject.SetActive(true);
-        a.Init(spawnPos, chunk);
+        // Set position and rotation first:
+        animal.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
 
-        return a;
+        // Call Init, but do NOT enable animator inside Init anymore:
+        animal.Init(spawnPos);
+
+        // Reset animator pose BEFORE enabling:
+        animal.ResetAnimatorPose();
+
+        // Now enable Animator:
+        animal.animator.enabled = true;
+
+        return animal;
     }
 
-    public void ReturnAnimal(Animal a)
+    public void ReturnAnimal(Animal animal)
     {
-        if (a.TryGetComponent(out NavMeshAgent agent))
-        {
-            // Fully stop & disable agent first
-            agent.ResetPath();
-            agent.isStopped = true;
-            agent.enabled = false; // 👈 KEY STEP!
+        animal.CancelInvoke();
+        animal.StopAllCoroutines();
 
-            // Now it's safe to move transform
-            a.transform.position = poolGraveyardPosition;
+        if (animal.TryGetComponent(out Animator animator))
+        {
+            animator.enabled = true;
+            animator.SetFloat("Speed", 0f);
         }
 
-        a.gameObject.SetActive(false);
-        pool.Enqueue(a);
+        if (animal.TryGetComponent(out SimpleRagdollController ragdollController))
+        {
+            ragdollController.DisableRagdoll();
+        }
+
+        animal.IsActiveAI = false;
+
+        animal.transform.position = poolGraveyardPosition;
+        animal.gameObject.SetActive(false);
+
+        pool.Enqueue(animal);
     }
 }

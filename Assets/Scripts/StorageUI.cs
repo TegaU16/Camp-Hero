@@ -15,14 +15,14 @@ public class StorageUI : MonoBehaviour
     {
         linkedStorage = storage;
 
-        foreach (var storedItem in linkedStorage.items)
+        foreach (StoredItem storedItem in linkedStorage.items)
         {
             storedItem.ResolveItemFromName();
         }
 
         ClearSlots();
         gameObject.SetActive(true);
-        InventoryManager.Instance.darkBackground.SetActive(true);
+        InventoryManager.Instance.OnInventoryOpen();
         BuildSlots();
     }
 
@@ -47,7 +47,7 @@ public class StorageUI : MonoBehaviour
 
             if (i < linkedStorage.items.Count)
             {
-                var storedItem = linkedStorage.items[i];
+                StoredItem storedItem = linkedStorage.items[i];
                 if (storedItem != null && storedItem.item != null) // Add null check
                 {
                     GameObject itemGO = Instantiate(inventoryItemPrefab, slot.transform);
@@ -65,7 +65,7 @@ public class StorageUI : MonoBehaviour
 
     private void ClearSlots()
     {
-        foreach (var slot in slotInstances)
+        foreach (GameObject slot in slotInstances)
         {
             Destroy(slot);
         }

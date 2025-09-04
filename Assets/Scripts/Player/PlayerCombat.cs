@@ -12,6 +12,7 @@ public class PlayerCombat : MonoBehaviour
     private bool canChain = false;
 
     private Animator animator;
+    private Player player;
 
     [HideInInspector] public float damageMultiplier;
     [HideInInspector] public float critMultiplier;
@@ -30,6 +31,7 @@ public class PlayerCombat : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        player = GetComponent<Player>();
     }
 
     void Update()
@@ -70,6 +72,7 @@ public class PlayerCombat : MonoBehaviour
                 }
             }
 
+            player.FreezeMovement();
             animator.SetTrigger("Attack");
             animator.SetInteger("Combo Step", comboStep);
             lastAttackTime = Time.time;
@@ -79,19 +82,20 @@ public class PlayerCombat : MonoBehaviour
     }
 
     // Called via animation event during each attack animation
-    public void EnableNextComboWindow()
+    void EnableNextComboWindow()
     {
         canChain = true;
     }
 
     // Called via animation event at the end of the final attack
-    public void EndCombo()
+    void EndCombo()
     {
         ResetCombo();
     }
 
     private void ResetCombo()
     {
+        player.ResetMovement();
         comboStep = 0;
         animator.SetInteger("Combo Step", 0);
         canChain = false;
@@ -141,7 +145,7 @@ public class PlayerCombat : MonoBehaviour
         if (selectedItem.toolType == ToolType.None || hitObject.type == BreakableObject.ObjectType.None)
             return true;
 
-        return toolToObjectMap.TryGetValue(selectedItem.toolType, out var breakableTypes)
+        return toolToObjectMap.TryGetValue(selectedItem.toolType, out HashSet<BreakableObject.ObjectType> breakableTypes)
             && breakableTypes.Contains(hitObject.type);
     }
 }

@@ -8,7 +8,7 @@ public class SimpleRagdollController : MonoBehaviour
     public Collider[] collidersToIgnore;
 
     [SerializeField] private Animator animator;
-    [SerializeField] private UnityEngine.AI.NavMeshAgent agent;
+    [SerializeField] private VoxelAgent agent;
 
     public bool IsSetup { get; private set; } = false;
 
@@ -20,6 +20,9 @@ public class SimpleRagdollController : MonoBehaviour
         Collider mainCollider = GetComponent<Collider>();
         allColliders = System.Array.FindAll(allColliders, col => col != mainCollider);
 
+        Rigidbody rootRigidbody = GetComponent<Rigidbody>();
+        allRigidbodies = System.Array.FindAll(allRigidbodies, rb => rb != rootRigidbody);
+
         DisableRagdoll();
     }
 
@@ -27,7 +30,10 @@ public class SimpleRagdollController : MonoBehaviour
     {
         if (!IsSetup)
         {
-            foreach (var rb in allRigidbodies)
+            if (TryGetComponent(out CharacterController cc)) cc.enabled = false;
+
+            // Enable physics on all rigidbodies
+            foreach (Rigidbody rb in allRigidbodies)
             {
                 rb.isKinematic = false;
                 rb.linearDamping = 2f;
@@ -37,12 +43,10 @@ public class SimpleRagdollController : MonoBehaviour
 
             StartCoroutine(FreezeAfterTime(3f));
 
-            foreach (var col in allColliders)
+            foreach (Collider col in allColliders)
             {
                 if (col.GetComponent<CharacterController>() == null)
-                {
                     col.enabled = true;
-                }
             }
 
             if (animator != null)
@@ -57,16 +61,18 @@ public class SimpleRagdollController : MonoBehaviour
 
     public void DisableRagdoll()
     {
-        foreach (var rb in allRigidbodies)
+        foreach (Rigidbody rb in allRigidbodies)
             rb.isKinematic = true;
 
-        foreach (var col in allColliders)
+        foreach (Collider col in allColliders)
         {
             if (col.GetComponent<CharacterController>() == null && !ToIgnore(col))
             {
                 col.enabled = false;
             }
         }
+
+        if (TryGetComponent(out CharacterController cc)) cc.enabled = true;
 
         if (animator != null)
             animator.enabled = true;
@@ -93,7 +99,8 @@ public class SimpleRagdollController : MonoBehaviour
     IEnumerator FreezeAfterTime(float delay)
     {
         yield return new WaitForSeconds(delay);
-        foreach (var rb in allRigidbodies)
+        foreach (Rigidbody
+            rb in allRigidbodies)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;

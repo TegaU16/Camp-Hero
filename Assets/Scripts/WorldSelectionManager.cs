@@ -2,6 +2,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class WorldSelectionManager : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class WorldSelectionManager : MonoBehaviour
     public Transform worldListParent;
     public GameObject worldButtonPrefab;
 
+    private string WorldsPath => Path.Combine(Application.persistentDataPath, "Worlds");
+
     public void Setup()
     {
         LoadWorldList();
@@ -28,44 +31,55 @@ public class WorldSelectionManager : MonoBehaviour
 
     public void CreateWorld()
     {
-        string worldName = worldNameInput.text;
-        string seed = seedInput.text;
+        string worldName = worldNameInput.text.Trim();
+        if (string.IsNullOrEmpty(worldName)) return;
 
-        if (string.IsNullOrEmpty(seed))
-            seed = Random.Range(0, int.MaxValue).ToString();
+        string seedString = string.IsNullOrEmpty(seedInput.text)
+            ? Random.Range(0, int.MaxValue).ToString()
+            : seedInput.text.Trim();
 
-        // Save to PlayerPrefs for the current session
-        PlayerPrefs.SetString("WorldName", worldName);
-        PlayerPrefs.SetString("Seed", seed);
+        string worldDir = Path.Combine(WorldsPath, worldName);
+        if (!Directory.Exists(worldDir))
+            Directory.CreateDirectory(Path.Combine(worldDir, "chunks"));
 
-        // Save metadata to disk
-        WorldMetadata metadata = new() { worldName = worldName, seed = seed };
-        string path = Application.persistentDataPath + $"/{worldName}.json";
-        File.WriteAllText(path, JsonUtility.ToJson(metadata));
+        WorldMetaData metadata = new()
+        {
+            worldName = worldName,
+            seed = seedString,
+            createdDate = System.DateTime.Now.ToString(),
+            lastPlayedDate = System.DateTime.Now.ToString()
+        };
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+        string metaPath = Path.Combine(worldDir, "meta.json");
+        File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+
+        selectedWorldName = worldName;
+        selectedSeed = seedString;
+
+        WorldSession.CurrentWorldName = selectedWorldName;
+        WorldSession.CurrentSeed = selectedSeed;
+
+        SceneManager.LoadScene("GameScene");
     }
+
 
     void LoadWorldList()
     {
         foreach (Transform child in worldListParent)
-        {
             Destroy(child.gameObject);
-        }
 
-        string[] files = Directory.GetFiles(Application.persistentDataPath, "*.json");
+        if (!Directory.Exists(WorldsPath)) return;
 
-        foreach (string file in files)
+        foreach (string dir in Directory.GetDirectories(WorldsPath))
         {
-            string json = File.ReadAllText(file);
-            WorldMetadata metadata = JsonUtility.FromJson<WorldMetadata>(json);
+            string metaPath = Path.Combine(dir, "meta.json");
+            if (!File.Exists(metaPath)) continue;
+
+            string json = File.ReadAllText(metaPath);
+            WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
 
             GameObject buttonObj = Instantiate(worldButtonPrefab, worldListParent);
             buttonObj.GetComponentInChildren<TextMeshProUGUI>().text = metadata.worldName;
-
-            // Capture local copy for lambda
-            string worldName = metadata.worldName;
-            string seed = metadata.seed;
 
             buttonObj.GetComponent<Button>().onClick.AddListener(() =>
             {
@@ -74,7 +88,7 @@ public class WorldSelectionManager : MonoBehaviour
 
                 playButton.interactable = true;
                 deleteButton.interactable = true;
-                editButton.interactable = true; // optional
+                editButton.interactable = true;
             });
         }
     }
@@ -83,37 +97,34 @@ public class WorldSelectionManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(selectedWorldName)) return;
 
-        PlayerPrefs.SetString("WorldName", selectedWorldName);
-        PlayerPrefs.SetString("Seed", selectedSeed);
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+        string metaPath = Path.Combine(WorldsPath, selectedWorldName, "meta.json");
+        if (!File.Exists(metaPath)) return;
+
+        string json = File.ReadAllText(metaPath);
+        WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
+        metadata.lastPlayedDate = System.DateTime.Now.ToString();
+        File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+
+        WorldSession.CurrentWorldName = selectedWorldName;
+        WorldSession.CurrentSeed = selectedSeed;
+
+        SceneManager.LoadScene("GameScene");
     }
 
     public void DeleteSelectedWorld()
     {
         if (string.IsNullOrEmpty(selectedWorldName)) return;
 
-        string path = Application.persistentDataPath + $"/{selectedWorldName}.json";
-        if (File.Exists(path))
-            File.Delete(path);
+        string worldDir = Path.Combine(WorldsPath, selectedWorldName);
+        if (Directory.Exists(worldDir))
+            Directory.Delete(worldDir, true);
 
-        // Clear selection and reload list
         selectedWorldName = null;
         selectedSeed = null;
         playButton.interactable = false;
         deleteButton.interactable = false;
         editButton.interactable = false;
 
-        // Destroy all existing buttons and reload
-        foreach (Transform child in worldListParent)
-            Destroy(child.gameObject);
-
         LoadWorldList();
     }
-}
-
-[System.Serializable]
-public class WorldMetadata
-{
-    public string worldName;
-    public string seed;
 }

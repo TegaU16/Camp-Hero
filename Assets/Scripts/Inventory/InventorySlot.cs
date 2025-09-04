@@ -74,26 +74,29 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 // Reduce original count and refresh
                 originalItem.count -= splitCount;
                 originalItem.RefreshCount();
-                Debug.Log($"[HandleRightClick] Reduced original item count to: {originalItem.count}");
 
                 // Create new split item
                 GameObject splitItemGo = Instantiate(InventoryManager.Instance.inventoryItemPrefab, transform);
                 splitItemGo.name = "SplitItem_" + originalItem.item.name;
-                Debug.Log($"[HandleRightClick] Instantiated split item: {splitItemGo.name}, parent: {splitItemGo.transform.parent.name}");
 
                 InventoryItem splitItem = splitItemGo.GetComponent<InventoryItem>();
                 splitItem.SetItem(originalItem.item, splitCount);
-                Debug.Log($"[HandleRightClick] Split item initialized with count: {splitItem.count}");
+
+                splitItem.transform.SetParent(transform.root);
+                splitItem.transform.SetAsLastSibling();
 
                 InventoryItem.selectedItem = originalItem;
                 originalItem.GetComponent<Image>().raycastTarget = false;
 
-                Debug.Log($"[HandleRightClick] Starting FollowCursor for: {InventoryItem.selectedItem.name}");
                 StartCoroutine(FollowCursor(InventoryItem.selectedItem));
             }
             else
             {
-                Debug.LogWarning("[HandleRightClick] Cannot split stack of 1.");
+                InventoryItem.selectedItem = originalItem;
+                originalItem.transform.SetParent(transform.root);
+                originalItem.transform.SetAsLastSibling();
+                originalItem.GetComponent<Image>().raycastTarget = false;
+                StartCoroutine(FollowCursor(InventoryItem.selectedItem));
             }
         }
         else
@@ -111,7 +114,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         InventoryItem.selectedItem.GetComponent<Image>().raycastTarget = true;
 
-        if (InventoryManager.InventoryUI != null && IsItemInsideInventory(InventoryManager.InventoryUI, Input.mousePosition))
+        if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
         {
             if (IsItemAllowedInSlot(InventoryItem.selectedItem.item))
             {
@@ -132,12 +135,12 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                     }
                 }
 
-                StopCoroutine(FollowCursor(InventoryItem.selectedItem));
+                StopAllCoroutines();
             }
             else
             {
                 InventoryItem.selectedItem.RevertToOriginalSlot();
-                StopCoroutine(FollowCursor(InventoryItem.selectedItem));
+                StopAllCoroutines();
             }
         }
         else
@@ -175,7 +178,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         InventoryItem.selectedItem.GetComponent<Image>().raycastTarget = true;
 
         // Use the centralized InventoryUI reference to check if the item is inside the inventory
-        if (InventoryManager.InventoryUI != null && IsItemInsideInventory(InventoryManager.InventoryUI, Input.mousePosition))
+        if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
         {
             HandleItemDrop(eventData);
         }
@@ -235,6 +238,11 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         return null;
     }
 
+    private bool IsItemInsideDeleteSlot(RectTransform deleteSlotRectTransform, Vector2 itemPosition)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(deleteSlotRectTransform, itemPosition, null);
+    }
+
     private void UpdateInventorySlot()
     {
         Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
@@ -280,11 +288,6 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             SlotType.Smelting => item.itemType == ItemType.Smelting,
             _ => true,
         };
-    }
-
-    private bool IsItemInsideInventory(RectTransform inventoryRectTransform, Vector2 itemPosition)
-    {
-        return RectTransformUtility.RectangleContainsScreenPoint(inventoryRectTransform, itemPosition, null);
     }
 
     private void DropSelectedItem()

@@ -10,7 +10,7 @@ public class EnemyPool : MonoBehaviour
 
     void Start()
     {
-        foreach (var tier in enemyTiers)
+        foreach (EnemyTier tier in enemyTiers)
         {
             List<GameObject> pool = new();
             for (int i = 0; i < poolSizePerTier; i++)
@@ -31,7 +31,7 @@ public class EnemyPool : MonoBehaviour
             return null;
         }
 
-        foreach (var enemy in pools[prefab])
+        foreach (GameObject enemy in pools[prefab])
         {
             if (!enemy.activeInHierarchy)
             {
@@ -62,6 +62,17 @@ public class EnemyPool : MonoBehaviour
     public List<EnemyTier> GetAvailableTiers(int currentDay)
     {
         return enemyTiers.FindAll(tier => currentDay >= tier.unlockDay);
+    }
+
+    public GameObject GetPrefabByName(string prefabName)
+    {
+        foreach (EnemyTier tier in enemyTiers)
+        {
+            if (tier.prefab.name == prefabName)
+                return tier.prefab;
+        }
+
+        return null;
     }
 }
 

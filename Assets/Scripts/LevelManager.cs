@@ -12,7 +12,22 @@ public class LevelManager : MonoBehaviour
     public TextMeshProUGUI levelText;
     public PlayerStatsManager playerStatsManager;
 
-    void Start()
+    public static LevelManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+    private void Start()
+    {
+        UpdateUI();
+    }
+
+    void UpdateUI()
     {
         UpdateExpBar();
         UpdateMaxExp();
@@ -35,9 +50,7 @@ public class LevelManager : MonoBehaviour
     public void IncreaseLevel()
     {
         level += 1;
-        UpdateMaxExp();
-        UpdateExpBar();
-        levelText.text = level.ToString();
+        UpdateUI();
 
         int pointsToAdd = 1;
 
@@ -55,7 +68,7 @@ public class LevelManager : MonoBehaviour
 
         if (expBar != null)
         {
-            if (expBar.TryGetComponent<Slider>(out var expSlider))
+            if (expBar.TryGetComponent(out Slider expSlider))
             {
                 expSlider.maxValue = maxExp;
             }
@@ -66,10 +79,31 @@ public class LevelManager : MonoBehaviour
     {
         if (expBar != null)
         {
-            if (expBar.TryGetComponent<Slider>(out var expSlider))
+            if (expBar.TryGetComponent(out Slider expSlider))
             {
                 expSlider.DOValue(currentExp, 0.5f).SetEase(Ease.OutQuad);
             }
         }
+    }
+
+    public LevelData GetLevelData()
+    {
+        LevelData levelData = new()
+        {
+            level = level,
+            maxExp = maxExp,
+            currentExp = currentExp
+        };
+
+        return levelData;
+    }
+
+    public void SetLevelData(LevelData levelData)
+    {
+        level = levelData.level;
+        maxExp = levelData.maxExp;
+        currentExp = levelData.currentExp;
+
+        UpdateUI();
     }
 }

@@ -1,278 +1,466 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
+[RequireComponent(typeof(CharacterController))]
 public class Enemy : MonoBehaviour
 {
+    // -------------------- ENUMS --------------------
     public enum State { Idle, Chasing, Attacking, RangedAttacking, Dead }
-    private State currentState = State.Idle;
-
     public enum AttackType { Melee, Ranged, Mixed }
+
+    // -------------------- STATE --------------------
+    [Header("State")]
+    private State currentState = State.Idle;
     public AttackType attackType = AttackType.Melee;
+    private bool isActive;
+    private bool isAttacking = false;
+    private Transform currentTarget;
+    private Transform recentAttacker;
+    private Transform campfireTarget;
+    private float attackTimer;
+    private float nextTargetSwitchTime;
 
-    public GameObject projectilePrefab;
-    public Transform projectileSpawnPoint;
-    public float rangedAttackRange = 10f;
-
+    // -------------------- COMBAT --------------------
+    [Header("Combat Settings")]
     public float attackRange = 2f;
+    public float rangedAttackRange = 10f;
     public float attackCooldown = 2f;
     public int damage = 10;
     public float knockbackForce = 5f;
-    private bool isAttacking = false;
 
-    private Transform currentTarget;
-    private Transform campfireTarget;
+    [Header("Combat References")]
+    public Sprite enemyIcon;
+    public BreakableObject breakableObject;
+    [SerializeField] private List<MonoBehaviour> rangedAttackScripts = new();
 
-    private Transform lastTarget;
-    private float lastTargetChangeTime;
-    private readonly float targetMemoryTime = 2f;
+    private IRangedAttackBehavior currentRangedAttack;
+    private readonly List<IRangedAttackBehavior> rangedAttacks = new();
 
-    private NavMeshAgent agent;
-    private Animator animator;
-    private SimpleRagdollController ragdollController;
-    private float attackTimer;
+    // -------------------- MOVEMENT --------------------
+    [Header("Movement")]
     public float moveSpeed = 3.5f;
+    private float cachedMoveSpeed;
+    private Vector3 knockbackVelocity = Vector3.zero;
+    private float verticalVelocity = 0f;
+    [SerializeField] private float gravity = -9.8f;
 
-    private Transform recentAttacker;
-    private float lastAttackedTime;
-    [SerializeField] private float retaliateDuration = 4f; // How long to remember attacker
+    private Vector3 latestSpawnPos;
+    private bool justSpawned;
 
-    private float stuckTimer = 0f;
-    private const float stuckThreshold = 1.5f;
-
-    private BreakableObject breakableObject;
-
+    // -------------------- AI TARGETING --------------------
+    [Header("Targeting")]
     [SerializeField] private List<Targetable.TargetType> preferredTargets = new();
+    private readonly HashSet<Transform> blockedTargets = new();
 
+    [SerializeField] private float targetStickTime = 3f;
+    [SerializeField] private float minTargetMovementThreshold = 1f;
+    [SerializeField] private float repathCooldown = 0.5f;
+    [SerializeField] private float repathDistanceThreshold = 1f;
+    private Vector3 lastTargetPosition;
+    private float lastRepathTime = -999f;
+
+    // -------------------- PATHFINDING --------------------
+    [Header("Pathfinding")]
+    private Vector3Int frozenPathTarget = new(-999, 0, -999);
+    private float lastPathRequestTime = -999f;
+    [SerializeField] private float pathRequestCooldown = 0.2f;
+
+    // -------------------- SCORING --------------------
     [Header("Scoring Weights")]
     public float distanceWeight = 1f;
     public float damageMemoryWeight = -5f;
     public float objectiveThreatWeight = -3f;
 
-    void Awake()
+    // -------------------- REFERENCES --------------------
+    [Header("References")]
+    public VoxelAgent agent;
+    public Animator animator;
+    public SimpleRagdollController ragdollController;
+    public CharacterController characterController;
+    private VoxelGrid voxelGrid;
+    private Transform myTransform;
+
+    private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        agent.updatePosition = true;
-        agent.updateRotation = false;
-        animator = GetComponent<Animator>();
-        ragdollController = GetComponent<SimpleRagdollController>();
-        breakableObject = GetComponent<BreakableObject>();
+        myTransform = transform;
+
+        foreach (MonoBehaviour script in rangedAttackScripts)
+        {
+            if (script is IRangedAttackBehavior attack)
+            {
+                rangedAttacks.Add(attack);
+            }
+            else
+            {
+                Debug.LogWarning($"{script.name} does not implement IRangedAttackBehavior!");
+            }
+        }
     }
 
-    void Start()
+    private void Start()
     {
         campfireTarget = GameObject.FindGameObjectWithTag("Campfire").transform;
         currentTarget = campfireTarget;
         currentState = State.Chasing;
+        cachedMoveSpeed = moveSpeed;
 
-        agent.speed = moveSpeed;
-        agent.stoppingDistance = attackRange - 0.2f;
+        if (!isActive)
+            Init(myTransform.position);
     }
 
-    void Update()
+    private void OnEnable()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (EnemyManager.Instance != null)
+            EnemyManager.Instance.RegisterEnemy(this);
+    }
 
-        if (currentState == State.Dead) return;
+    private void OnDisable()
+    {
+        if (EnemyManager.Instance != null)
+            EnemyManager.Instance.UnregisterEnemy(this);
+    }
 
-        ValidateTarget();
+    private void Update()
+    {
+        if (GameManager.Instance.isPaused || currentState == State.Dead)
+            return;
 
-        float distance = Vector3.Distance(transform.position, currentTarget.position);
-
-        ScanForTargets();
+        ValidateTarget(EnemyManager.Instance.GetActiveTargets());
+        float distanceToTarget = Vector3.Distance(myTransform.position, currentTarget.position);
 
         switch (currentState)
         {
             case State.Chasing:
-                if (!isAttacking)
-                {
-                    agent.isStopped = false;
-                    agent.SetDestination(currentTarget.position);
-                }
-
-                // Re-issue destination if something is clearly wrong
-                if (!agent.hasPath || agent.velocity.sqrMagnitude < 0.01f)
-                {
-                    stuckTimer += Time.deltaTime;
-
-                    if (stuckTimer >= stuckThreshold)
-                    {
-                        if (agent.isOnNavMesh && agent.enabled)
-                        {
-                            agent.SetDestination(currentTarget.position);
-                            Debug.LogWarning($"{name} stuck for {stuckTimer:F1}s, reissuing destination");
-                            stuckTimer = 0f;
-                        }
-                    }
-                }
-                else
-                {
-                    stuckTimer = 0f; // Reset if moving normally
-                }
-
-                if (attackType == AttackType.Melee && distance <= attackRange)
-                {
-                    BeginMeleeAttack();
-                }
-                else if (attackType == AttackType.Ranged && distance <= rangedAttackRange)
-                {
-                    BeginRangedAttack();
-                }
-                else if (attackType == AttackType.Mixed)
-                {
-                    if (distance <= attackRange)
-                        BeginMeleeAttack();
-                    else if (distance <= rangedAttackRange)
-                        BeginRangedAttack();
-                }
-
+                HandleChasing(distanceToTarget);
                 break;
-
             case State.Attacking:
-                agent.isStopped = true;
-                transform.LookAt(new Vector3(currentTarget.position.x, transform.position.y, currentTarget.position.z));
-
-                attackTimer += Time.deltaTime;
-                if (attackTimer >= attackCooldown)
-                {
-                    Attack();
-                    attackTimer = 0f;
-                }
-
-                if (distance > attackRange + 0.5f)
-                {
-                    isAttacking = false;
-                    currentState = State.Chasing;
-                    if (agent.isOnNavMesh && agent.enabled && currentTarget != null)
-                        agent.SetDestination(currentTarget.position);
-                }
-
+                HandleAttacking(distanceToTarget);
                 break;
-
             case State.RangedAttacking:
-                transform.LookAt(new Vector3(currentTarget.position.x, transform.position.y, currentTarget.position.z));
-
-                if (distance > rangedAttackRange + 1f)
-                {
-                    currentState = State.Chasing;
-                    isAttacking = false;
-                }
+                HandleRangedAttacking(distanceToTarget);
                 break;
         }
 
-        if (agent.enabled && agent.remainingDistance > agent.stoppingDistance)
+        if (currentState == State.Idle && currentTarget != null)
         {
-            Vector3 move = agent.desiredVelocity;
-            if (move != Vector3.zero)
+            SetChasing();
+        }
+
+        if (currentState == State.Chasing && currentTarget != null && !agent.HasPath)
+        {
+            if (Time.time - lastPathRequestTime > 1f) // retry every 1s
             {
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(move), Time.deltaTime * 10f);
+                frozenPathTarget = new(-999, 0, -999); // reset frozen path
+                TryRequestPath(GetTargetGridPosition(currentTarget.position));
             }
         }
+    }
 
-        // Update animator speed parameter (for blending idle/walk nicely)
-        if (!agent.isStopped && agent.remainingDistance > agent.stoppingDistance)
+    void FixedUpdate()
+    {
+        if (!isActive || currentState == State.Dead) return;
+
+        agent.UpdateAgent();
+
+        Vector3 move = Vector3.zero;
+
+        if (agent.WantsToMove())
         {
-            float currentSpeed = agent.velocity.magnitude;
-            float normalizedSpeed = currentSpeed / moveSpeed;
-            animator.SetFloat("Speed", normalizedSpeed, 0.2f, Time.deltaTime);
+            // Only horizontal motion from the agent
+            Vector3 agentMove = agent.GetMovementThisFrame();
+            move.x = agentMove.x;
+            move.z = agentMove.z;
         }
-        else if (currentState == State.Chasing)
+
+        // Apply vertical forces regardless of agent movement
+        if (characterController.isGrounded)
         {
-            // Force walk animation if chasing but agent not moving due to close target
-            animator.SetFloat("Speed", 1f, 0.2f, Time.deltaTime);
+            if (verticalVelocity < 0)
+                verticalVelocity = 0f;
         }
         else
         {
-            animator.SetFloat("Speed", 0f, 0.2f, Time.deltaTime);
+            verticalVelocity += gravity * Time.fixedDeltaTime;
         }
 
-        if (agent.velocity == Vector3.zero && currentState == State.Chasing)
+        move.y = verticalVelocity + (agent.GetTargetY() - myTransform.position.y) * 10f;
+
+        // Apply knockback
+        move += knockbackVelocity;
+        knockbackVelocity = -Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
+
+        // Finally move
+        Vector3 displacement = moveSpeed * Time.fixedDeltaTime * move;
+        characterController.Move(displacement);
+
+        // Speed animation param (based only on horizontal agent movement)
+        //float horizontalSpeed = new Vector3(displacement.x, 0f, displacement.z).magnitude / (moveSpeed * Time.fixedDeltaTime);
+        //animator.SetFloat("Speed", horizontalSpeed, 0.2f, Time.fixedDeltaTime);
+    }
+
+    private void HandleChasing(float distanceToTarget)
+    {
+        if (Time.time - lastRepathTime > repathCooldown &&
+            Vector3.Distance(currentTarget.position, lastTargetPosition) > repathDistanceThreshold)
         {
-            //Debug.LogWarning($"{name} is in Chasing state but velocity is 0. Remaining distance: {agent.remainingDistance}, stopping distance: {agent.stoppingDistance}, has path: {agent.hasPath}");
+            lastTargetPosition = currentTarget.position;
+            lastRepathTime = Time.time;
+
+            if (distanceToTarget > rangedAttackRange * 1.5f || distanceToTarget > attackRange * 1.5f)
+            {
+                AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
+            }
+
+            Vector3Int to = GetTargetGridPosition(lastTargetPosition);
+
+            TryRequestPath(to);
         }
+
+        HandleAttackTrigger(distanceToTarget);
+    }
+
+    private void HandleAttacking(float distanceToTarget)
+    {
+        myTransform.LookAt(new Vector3(currentTarget.position.x, myTransform.position.y, currentTarget.position.z));
+
+        if (!isAttacking)
+            attackTimer += Time.deltaTime;
+
+        if (attackTimer >= attackCooldown)
+        {
+            animator.SetTrigger("Attack");
+            isAttacking = true;
+            attackTimer = 0f;
+        }
+
+        if (distanceToTarget > attackRange + 0.5f)
+        {
+            ResetMovement();
+            isAttacking = false;
+            currentState = State.Chasing;
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
+        }
+    }
+
+    private void HandleRangedAttacking(float distanceToTarget)
+    {
+        myTransform.LookAt(new Vector3(currentTarget.position.x, myTransform.position.y, currentTarget.position.z));
+
+        if (!isAttacking)
+            attackTimer += Time.deltaTime;
+
+        if (attackTimer >= attackCooldown)
+        {
+            if (rangedAttacks.Count == 0)
+            {
+                Debug.LogWarning($"{name} has no ranged attacks!");
+                return;
+            }
+
+            int index = Random.Range(0, rangedAttacks.Count);
+            currentRangedAttack = rangedAttacks[index];
+
+            switch (currentRangedAttack.AttackName)
+            {
+                case "Laser":
+                    animator.SetTrigger("LaserAttack");
+                    break;
+                case "Projectile":
+                    animator.SetTrigger("ProjectileAttack");
+                    break;
+                case "SpawnOnTarget":
+                    animator.SetTrigger("SpawnAttack");
+                    break;
+                default:
+                    animator.SetTrigger("RangedAttack");
+                    break;
+            }
+
+            isAttacking = true;
+            attackTimer = 0f;
+        }
+
+        if (distanceToTarget > rangedAttackRange + 1f)
+        {
+            ResetMovement();
+            isAttacking = false;
+            currentState = State.Chasing;
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
+        }
+    }
+
+    private void HandleAttackTrigger(float distanceToTarget)
+    {
+        if (attackType == AttackType.Melee && distanceToTarget <= attackRange)
+            BeginMeleeAttack();
+        else if (attackType == AttackType.Ranged && distanceToTarget <= rangedAttackRange)
+            BeginRangedAttack();
+        else if (attackType == AttackType.Mixed)
+        {
+            if (distanceToTarget <= attackRange)
+                BeginMeleeAttack();
+            else if (distanceToTarget <= rangedAttackRange)
+                BeginRangedAttack();
+        }
+    }
+
+    private void TryRequestPath(Vector3Int targetGrid)
+    {
+        Vector3Int from = GetTargetGridPosition(myTransform.position);
+
+        if (agent.CanWalkDirectly(from, targetGrid))
+        {
+            frozenPathTarget = new(-999, 0, -999);
+            agent.StartTracking(currentTarget);
+            return;
+        }
+
+        float timeSinceLast = Time.time - lastPathRequestTime;
+        float distToFrozen = Vector3Int.Distance(targetGrid, frozenPathTarget);
+
+        if (frozenPathTarget == new Vector3Int(-999, 0, -999) || distToFrozen >= minTargetMovementThreshold || timeSinceLast >= pathRequestCooldown)
+        {
+            frozenPathTarget = targetGrid;
+            agent.StopTracking();
+            agent.RequestPath(frozenPathTarget);
+            lastPathRequestTime = Time.time;
+        }
+    }
+
+    private Vector3Int GetTargetGridPosition(Vector3 worldPos)
+    {
+        if (voxelGrid == null)
+            voxelGrid = FindFirstObjectByType<VoxelGrid>();
+
+        int x = Mathf.RoundToInt(worldPos.x);
+        int z = Mathf.RoundToInt(worldPos.z);
+        float y = voxelGrid.GetHeightAt(x, z);
+        return new Vector3Int(x, Mathf.RoundToInt(y), z);
+    }
+
+    private void ValidateTarget(List<Targetable> potentialTargets)
+    {
+        bool targetIsInvalid = currentTarget == null || !currentTarget.gameObject.activeInHierarchy;
+
+        if (targetIsInvalid)
+        {
+            AssignBestTarget(potentialTargets);
+
+            if (currentTarget == null)
+                currentTarget = campfireTarget;
+
+            SetChasing();
+
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
+        }
+        else if (Time.time >= nextTargetSwitchTime)
+        {
+            AssignBestTarget(potentialTargets);
+        }
+    }
+
+    public void Init(Vector3 spawnPos)
+    {
+        if (voxelGrid == null)
+        {
+            voxelGrid = FindFirstObjectByType<VoxelGrid>();
+        }
+
+        latestSpawnPos = spawnPos;
+        agent.Init(spawnPos);
+        isActive = true;
+        justSpawned = true;
+
+        AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
+
+        if (currentTarget == null)
+            currentTarget = campfireTarget;
+
+        SetChasing();
+
+        TryRequestPath(GetTargetGridPosition(currentTarget.position));
+    }
+
+    public void ApplyKnockback(Vector3 dir, float strength)
+    {
+        knockbackVelocity = dir.normalized * strength;
+    }
+
+    public void OnAttacked(Transform attacker)
+    {
+        recentAttacker = attacker;
     }
 
     void OnAnimatorMove()
     {
-        if (currentState == State.Chasing || currentState == State.Attacking)
+        if (justSpawned)
         {
-            /*// Use deltaPosition to move manually
-            transform.position += animator.deltaPosition;
-
-            // Optional: Match NavMeshAgent position to prevent drifting
-            agent.nextPosition = transform.position;*/
+            characterController.enabled = false;
+            myTransform.position = latestSpawnPos;
+            characterController.enabled = true;
+            justSpawned = false;
         }
-    }
-
-    void Attack()
-    {
-        isAttacking = true;
-        animator.SetTrigger("Attack");
     }
 
     void BeginMeleeAttack()
     {
-        isAttacking = true;
-        agent.isStopped = true;
-        agent.ResetPath();
+        FreezeMovement();
+        agent.StopPath();
+        animator.SetFloat("Speed", 0f);
         currentState = State.Attacking;
-        Attack();
-        attackTimer = 0f;
     }
 
     void BeginRangedAttack()
     {
-        isAttacking = true;
-        agent.isStopped = true;
-        agent.ResetPath();
+        FreezeMovement();
+        agent.StopPath();
+        animator.SetFloat("Speed", 0f);
         currentState = State.RangedAttacking;
-        animator.SetTrigger("RangedAttack");
-        attackTimer = 0f;
     }
 
     // Called by animation event
     void RangedAttack()
     {
-        if (projectilePrefab != null && projectileSpawnPoint != null && currentTarget != null)
-        {
-            Vector3 direction = (currentTarget.position - projectileSpawnPoint.position).normalized;
+        if (currentRangedAttack == null || currentTarget == null)
+            return;
 
-            GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, Quaternion.LookRotation(direction));
-            if (projectile.TryGetComponent(out Projectile projectileScript))
-            {
-                projectileScript.SetTarget(currentTarget, damage);
-            }
-        }
+        currentRangedAttack.ExecuteAttack(myTransform, currentTarget, damage);
+        currentRangedAttack = null;
     }
 
-    public void EndAttack()
+    // Called by animation event
+    void EndAttack()
     {
         isAttacking = false;
+        ResetMovement();
     }
 
-    public void DealDamage(Targetable targetable)
+    public void FreezeMovement()
+    {
+        if (moveSpeed != 0) // cache only if actually moving
+            cachedMoveSpeed = moveSpeed;
+        moveSpeed = 0;
+    }
+
+    public void ResetMovement()
+    {
+        moveSpeed = cachedMoveSpeed;
+    }
+
+    public void DealDamage()
     {
         if (currentTarget == null) return;
 
-        float distance = Vector3.Distance(transform.position, currentTarget.position);
+        float distance = Vector3.Distance(myTransform.position, currentTarget.position);
         if (distance > attackRange + 0.5f) return;
 
         if (currentTarget.TryGetComponent(out Health targetHealth))
         {
-            HealthBar healthBar;
-            if (targetable.targetType == Targetable.TargetType.Player)
-            {
-                healthBar = currentTarget.GetComponent<Player>().healthBar;
-            } 
-            else
-            {
-                healthBar = currentTarget.GetComponent<HealthBar>();
-            }
-            targetHealth.TakeDamage(damage, healthBar);
+            targetHealth.TakeDamage(damage);
 
             if (currentTarget.TryGetComponent(out Rigidbody targetRb))
             {
-                Vector3 knockbackDir = (currentTarget.position - transform.position).normalized;
+                Vector3 knockbackDir = (currentTarget.position - myTransform.position).normalized;
                 targetRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
             }
         }
@@ -293,10 +481,6 @@ public class Enemy : MonoBehaviour
         {
             ragdollController.EnableRagdoll();
         }
-        else
-        {
-            Debug.LogWarning("No SimpleRagdollCreator found!");
-        }
 
         // Optionally: Play a sound or spawn a death effect here
 
@@ -308,7 +492,7 @@ public class Enemy : MonoBehaviour
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null)
         {
-            spawner.DecreaseEnemyCount();
+            if (!TryGetComponent<TrialEnemyMarker>(out _)) spawner.DecreaseEnemyCount();
         }
 
         if (breakableObject != null)
@@ -323,13 +507,12 @@ public class Enemy : MonoBehaviour
     {
         PooledAIUtility.ResetAI(
             this,
-            agent,
             animator,
             spawnPosition,
             ragdollController
         );
 
-        currentState = State.Chasing;
+        SetChasing();
         currentTarget = campfireTarget;
 
         if (breakableObject != null)
@@ -338,56 +521,55 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void ScanForTargets()
+    public void SetChasing()
+    {
+        currentState = State.Chasing;
+    }
+
+    public void AssignBestTarget(List<Targetable> potentialTargets)
     {
         if (currentState == State.Attacking || currentState == State.RangedAttacking)
             return;
 
-        // Retaliation still overrides for now
-        if (recentAttacker != null && Time.time - lastAttackedTime <= retaliateDuration)
-        {
-            if (currentTarget != recentAttacker)
-            {
-                lastTarget = recentAttacker;
-                lastTargetChangeTime = Time.time;
-                currentTarget = recentAttacker;
-            }
+        if (Time.time < nextTargetSwitchTime)
             return;
-        }
 
-        Targetable[] allTargets = FindObjectsByType<Targetable>(FindObjectsSortMode.None);
+        Transform bestTarget = null;
+        float bestScore = float.MaxValue;
 
-        TargetScore bestScore = null;
-
-        foreach (Targetable t in allTargets)
+        foreach (Targetable t in potentialTargets)
         {
-            if (t == null || !t.gameObject.activeInHierarchy)
-                continue;
+            if (t == null || !t.gameObject.activeInHierarchy) continue;
+            if (blockedTargets.Contains(t.transform)) continue;
 
-            float distance = Vector3.Distance(transform.position, t.transform.position);
-            int priority = GetTargetPriority(t.targetType);
-            float damageScore = (t.transform == recentAttacker) ? damageMemoryWeight : 0f;
-            float objectiveThreat = EvaluateObjectiveThreat(t);
-
-            TargetScore score = new(t.transform, priority, distance * distanceWeight, damageScore, objectiveThreat);
-
-            if (bestScore == null || score.finalScore < bestScore.finalScore)
+            float score = GetScoreForTarget(t.transform);
+            if (score < bestScore)
             {
                 bestScore = score;
+                bestTarget = t.transform;
             }
         }
 
-        if (bestScore != null && bestScore.target != currentTarget &&
-            (Time.time - lastTargetChangeTime >= targetMemoryTime || bestScore.finalScore < GetScoreForTarget(currentTarget)))
+        if (bestTarget != null)
         {
-            Debug.Log($"{name} switching to {bestScore.target.name} with score {bestScore.finalScore:F2}");
-            lastTarget = currentTarget;
-            currentTarget = bestScore.target;
-            lastTargetChangeTime = Time.time;
-
-            if (agent.isOnNavMesh && agent.enabled)
+            if (bestTarget != currentTarget)
             {
-                agent.SetDestination(currentTarget.position);
+                currentTarget = bestTarget;
+                SetChasing();
+                agent.StartTracking(currentTarget);
+                TryRequestPath(GetTargetGridPosition(currentTarget.position));
+                nextTargetSwitchTime = Time.time + targetStickTime;
+            }
+        }
+        else
+        {
+            if (currentTarget != campfireTarget)
+            {
+                currentTarget = campfireTarget;
+                SetChasing();
+                agent.StartTracking(currentTarget);
+                nextTargetSwitchTime = Time.time + targetStickTime;
+                TryRequestPath(GetTargetGridPosition(currentTarget.position));
             }
         }
     }
@@ -408,7 +590,7 @@ public class Enemy : MonoBehaviour
     {
         if (target == null) return float.MaxValue;
 
-        float distance = Vector3.Distance(transform.position, target.position);
+        float distance = Vector3.Distance(myTransform.position, target.position);
 
         Targetable targetable = target.GetComponent<Targetable>();
         int priority = targetable != null ? GetTargetPriority(targetable.targetType) : int.MaxValue;
@@ -423,31 +605,14 @@ public class Enemy : MonoBehaviour
     {
         if (targetable == null) return 0f;
 
-        // You can adjust this logic for smarter threat detection
         if (targetable.targetType == Targetable.TargetType.Campfire)
-            return -5f; // Strong incentive to destroy the objective
+            return -5f;
 
         return 0f;
-    }
-
-    public void OnAttacked(Transform attacker)
-    {
-        recentAttacker = attacker;
-        lastAttackedTime = Time.time;
     }
 
     public State GetCurrentState()
     {
         return currentState;
-    }
-
-    private void ValidateTarget()
-    {
-        if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
-        {
-            currentTarget = campfireTarget;
-            if (agent.isOnNavMesh && agent.enabled)
-                agent.SetDestination(campfireTarget.position);
-        }
     }
 }

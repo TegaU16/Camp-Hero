@@ -26,7 +26,7 @@ public class CraftingRecipe : ScriptableObject
         if (itemsRequiredToUnlock == null || itemsRequiredToUnlock.Length == 0)
         {
             // Default: unlock if ANY requirement is discovered
-            foreach (var req in requirements)
+            foreach (Requirement req in requirements)
             {
                 if (discoveredItems.Contains(req.requiredItem))
                     return true;
@@ -35,7 +35,7 @@ public class CraftingRecipe : ScriptableObject
         }
 
         // Custom: unlock only if ALL listed unlock items have been discovered
-        foreach (var unlockItem in itemsRequiredToUnlock)
+        foreach (Item unlockItem in itemsRequiredToUnlock)
         {
             if (!discoveredItems.Contains(unlockItem))
                 return false;

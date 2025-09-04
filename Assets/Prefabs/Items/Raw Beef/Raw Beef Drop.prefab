@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6931524597629100174, guid: 8a3f747699da3334292eef5ad36a9619, type: 3}
       propertyPath: m_Name
-      value: Raw Beef Variant
+      value: Raw Beef Drop
       objectReference: {fileID: 0}
     - target: {fileID: 6931524597629100174, guid: 8a3f747699da3334292eef5ad36a9619, type: 3}
       propertyPath: m_Layer
@@ -174,7 +174,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

@@ -1,126 +1,279 @@
-using System.Collections;
+ï»¿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
-public class Animal : MonoBehaviour
+[RequireComponent(typeof(CharacterController))]
+public class Animal : MonoBehaviour, ISimulatable
 {
-    [HideInInspector] public VoxelChunk ownerChunk;
-
-    private NavMeshAgent agent;
-    private Animator animator;
+    [Header("Components")]
+    private Transform myTransform;  // Cached transform
+    public Animator animator;
     private BreakableObject breakableObject;
     private SimpleRagdollController ragdollController;
+    public VoxelAgent agent;
+    private CharacterController characterController;
 
-    Vector3 wanderCenter;
-    [SerializeField] float wanderRadius = 5f;
-    [SerializeField] float wanderInterval = 2f;
+    [Header("Voxel Settings")]
+    private VoxelGrid voxelGrid;
 
-    float wanderTimer;
+    [Header("Wander Settings")]
+    public float wanderRadius = 10f;
+    public float waitTimeMin = 2f;
+    public float waitTimeMax = 5f;
 
-    public bool IsActiveAI { get; private set; } = false;
+    [Header("Movement Settings")]
+    [SerializeField] private float gravity = -9.8f;
+    private float verticalVelocity = 0f;
+
+    private Coroutine wanderCoroutine;
+
+    // Movement state
+    private Vector3Int currentGridPos;
+    private Vector3 latestSpawnPos;
+    private bool justSpawned = false;
+
+    private Vector3 knockbackVelocity = Vector3.zero;
+
+    public bool IsActiveAI { get; set; } = false;
 
     void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
+        myTransform = transform;
         animator = GetComponent<Animator>();
+        characterController = GetComponent<CharacterController>();
+        agent = GetComponent<VoxelAgent>();
         breakableObject = GetComponent<BreakableObject>();
         ragdollController = GetComponent<SimpleRagdollController>();
-
-        agent.updatePosition = true;
-        agent.updateRotation = false;
     }
 
-    void Update()
+    void Start()
     {
-        if (!IsActiveAI) return;
+        currentGridPos = WorldToGrid(myTransform.position);
 
-        wanderTimer += Time.deltaTime;
-
-        if (wanderTimer >= wanderInterval)
+        if (!IsActiveAI)
         {
-            PickNewDestination();
-            wanderTimer = 0f;
+            Init(myTransform.position);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (!IsActiveAI)
+        {
+            Debug.LogWarning($"{name} is not active AI");
+            return;
         }
 
-        float moveSpeed = agent.velocity.magnitude;
-        animator.SetFloat("Speed", moveSpeed);
+        currentGridPos = WorldToGrid(myTransform.position);
+
+        agent.UpdateAgent();
+
+        Vector3 move;
+
+        if (agent.WantsToMove())
+        {
+            move = agent.GetMovementThisFrame();
+
+            float targetY = agent.GetTargetY();
+            float yDiff = targetY - myTransform.position.y;
+
+            if (characterController.isGrounded)
+            {
+                if (verticalVelocity < 0)
+                    verticalVelocity = -1f;
+            }
+            else
+            {
+                verticalVelocity += gravity * Time.fixedDeltaTime;
+            }
+
+            move.y = verticalVelocity + yDiff * 10f;
+
+            move += knockbackVelocity;
+            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
+
+            characterController.Move(move * Time.fixedDeltaTime);
+
+            float speed = agent.GetCurrentSpeedFraction();
+            animator.SetFloat("Speed", speed, 0.2f, Time.fixedDeltaTime);
+        }
+        else
+        {
+            verticalVelocity = 0f;
+            knockbackVelocity = Vector3.zero;
+
+            animator.SetFloat("Speed", 0f, 0.2f, Time.fixedDeltaTime);
+        }
     }
 
     void OnAnimatorMove()
     {
-        // Usually empty or optional — just disables Unity’s auto-motion
-    }
-
-    private void PickNewDestination()
-    {
-        Vector2 rand = Random.insideUnitCircle * wanderRadius;
-        Vector3 newTarget = wanderCenter + new Vector3(rand.x, 0, rand.y);
-
-        if (NavMesh.SamplePosition(newTarget, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        if (justSpawned)
         {
-            agent.SetDestination(hit.position);
+            characterController.enabled = false;
+            myTransform.position = latestSpawnPos;
+            characterController.enabled = true;
+
+            justSpawned = false;
         }
     }
 
-    public void Init(Vector3 spawnPosition, VoxelChunk ownerChunk)
+    public void Init(Vector3 spawnPosition)
     {
-        this.ownerChunk = ownerChunk;
+        if (voxelGrid == null)
+        {
+            voxelGrid = FindFirstObjectByType<VoxelGrid>();
 
-        PooledAIUtility.ResetAI(
-            this,
-            agent,
-            animator,
-            spawnPosition,
-            ragdollController
-        );
+            if (voxelGrid == null)
+            {
+                Debug.LogError($"[{name}] voxelGrid is STILL NULL after search! Aborting Init.");
+                return; // Abort if still null
+            }
+        }
 
-        wanderCenter = spawnPosition;
-        wanderTimer = wanderInterval;
+        if (PathfinderManager.Instance == null)
+        {
+            Debug.LogError("[Animal] PathfinderManager.Instance is null during Init!");
+        }
+
+        latestSpawnPos = spawnPosition;
+
+        agent.SetVoxelGrid(voxelGrid); // <-- Now voxelGrid is guaranteed valid
+
+        agent.CancelPath();
+        agent.Init(spawnPosition);
+        characterController.enabled = false;
+        myTransform.position = spawnPosition;
+        characterController.enabled = true;
+
+        ResetAnimatorPose();
+        verticalVelocity = 0f;
+        knockbackVelocity = Vector3.zero;
+
+        justSpawned = true;
         IsActiveAI = true;
 
-        StartCoroutine(DelayedPickNewDestination());
-    }
+        if (wanderCoroutine != null)
+            StopCoroutine(wanderCoroutine);
 
-    private IEnumerator DelayedPickNewDestination()
-    {
-        // Wait 1 frame to guarantee agent is valid
-        yield return null;
-
-        if (agent.isOnNavMesh)
-        {
-            agent.ResetPath();
-            agent.isStopped = false;
-        }
-
-        PickNewDestination();
+        wanderCoroutine = StartCoroutine(WanderRoutine());
     }
 
     public void Die()
     {
+        IsActiveAI = false;
         animator.enabled = false;
+        if (ragdollController != null) ragdollController.EnableRagdoll();
 
-        if (ragdollController != null)
+        if (wanderCoroutine != null)
         {
-            ragdollController.EnableRagdoll();
+            StopCoroutine(wanderCoroutine);
+            wanderCoroutine = null;
         }
-        else
-        {
-            Debug.LogWarning("No SimpleRagdollCreator found!");
-        }
-
-        // Optionally: Play a sound or spawn a death effect here
 
         Invoke(nameof(Despawn), 5f);
     }
 
     private void Despawn()
     {
-        if (breakableObject != null)
-        {
-            breakableObject.DestroyObject();
-        }
-
+        if (breakableObject != null) breakableObject.DestroyObject();
+        wanderCoroutine = null;
         AnimalPool.Instance.ReturnAnimal(this);
     }
+
+    IEnumerator WanderRoutine()
+    {
+        if (voxelGrid == null)
+            voxelGrid = FindFirstObjectByType<VoxelGrid>();
+
+        yield return new WaitForSeconds(1f);
+
+        while (true)
+        {
+            Vector3Int targetGrid = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
+
+            agent.CancelPath();
+            if (agent.CanWalkDirectly(currentGridPos, targetGrid))
+            {
+                agent.SetDirectTarget(targetGrid);
+            }
+            else
+            {
+                agent.RequestPath(targetGrid);
+            }
+
+            while (agent.HasPath)
+                yield return null;
+
+            yield return new WaitForSeconds(Random.Range(waitTimeMin, waitTimeMax));
+        }
+    }
+
+    public List<Vector3Int> ComputeWanderPathAsync(Vector3Int targetGrid)
+    {
+        PathfinderManager pfm = PathfinderManager.Instance;
+
+        if (!pfm.IsWalkable(targetGrid))
+        {
+            Vector3Int fallback = pfm.FindNearestUnblocked(targetGrid);
+            targetGrid = fallback;
+        }
+
+        GridAStar pathfinder = pfm.BuildLocalPathfinder();
+        return pathfinder.FindPath(currentGridPos, targetGrid);
+    }
+
+    public void ApplyWanderPath(List<Vector3Int> newPath)
+    {
+        if (newPath == null || newPath.Count == 0)
+        {
+            Vector3Int newTarget = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
+            WanderManager.Instance.Enqueue(new WanderRequest(this, newTarget, () => { }));
+            return;
+        }
+
+        agent.OnPathResult(newPath);
+    }
+
+    private Vector3Int WorldToGrid(Vector3 worldPos)
+    {
+        return new Vector3Int(
+            Mathf.RoundToInt(worldPos.x),
+            0,
+            Mathf.RoundToInt(worldPos.z)
+        );
+    }
+
+    private Vector3Int PickRandomNearbyGrid(Vector3Int center, int radius)
+    {
+        Vector3Int offset = new(
+            Random.Range(-radius, radius + 1),
+            0,
+            Random.Range(-radius, radius + 1)
+        );
+
+        Vector3Int target = center + offset;
+
+        target.x = Mathf.Clamp(target.x, 0, voxelGrid.gridSize * voxelGrid.chunkSize - 1);
+        target.z = Mathf.Clamp(target.z, 0, voxelGrid.gridSize * voxelGrid.chunkSize - 1);
+
+        float height = voxelGrid.GetHeightAt(target.x, target.z);
+        target.y = Mathf.RoundToInt(height);
+
+        return target;
+    }
+
+    public void ApplyKnockback(Vector3 dir, float strength)
+    {
+        knockbackVelocity = dir.normalized * strength;
+    }
+
+    public void ResetAnimatorPose()
+    {
+        animator.Rebind();
+        animator.Update(0f);
+    }
+
+    public void OnSimulateStart() => enabled = true;
+    public void OnSimulateStop() => enabled = false;
 }

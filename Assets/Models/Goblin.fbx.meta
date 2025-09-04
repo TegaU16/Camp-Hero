@@ -29,6 +29,31 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: palette.005
     second: {fileID: 2100000, guid: 924bd27942a507d45b12503437548c96, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Goblin Arm
+    second: {fileID: 2800000, guid: bfefd096de2a8754983266e1be2f43b5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Goblin Foot
+    second: {fileID: 2800000, guid: 290f6760da0082740b5d4bb716ba181b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Goblin Head
+    second: {fileID: 2800000, guid: 6144fb93a5ef26e41b4842f2aa43e9db, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Goblin Torso
+    second: {fileID: 2800000, guid: 02cd63e3dd03fac479da9c17b9380dd2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Goblin Waist
+    second: {fileID: 2800000, guid: b3648249bd8e3054bab7047e91bf1478, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -55,7 +80,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -93,8 +118,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
@@ -114,7 +139,7 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: 
+    rootMotionBoneName: Root
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

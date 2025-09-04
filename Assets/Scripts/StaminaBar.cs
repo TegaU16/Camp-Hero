@@ -11,6 +11,20 @@ public class StaminaBar : MonoBehaviour
     public float maxStamina;
     private float currentStamina;
 
+    private void Awake()
+    {
+        UIManager.Instance.RegisterStaminaBar(this);
+    }
+
+    public void Initialize(float maxStamina, float currentStamina)
+    {
+        this.maxStamina = maxStamina;
+        this.currentStamina = currentStamina;
+        slider.maxValue = maxStamina;
+        slider.value = currentStamina;
+        UpdateStaminaText((int)currentStamina);
+    }
+
     public void SetMaxStamina(float stamina)
     {
         maxStamina = stamina;

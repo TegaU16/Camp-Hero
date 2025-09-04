@@ -8,7 +8,7 @@ public class FurnaceUI : MonoBehaviour
     public InventorySlot fuelSlot;
 
     public Slider fuelBar;
-    public Slider progressBar;
+    public Image progressBar;
 
     private FurnaceUnit linkedFurnace;
 
@@ -17,7 +17,7 @@ public class FurnaceUI : MonoBehaviour
         linkedFurnace = unit;
         gameObject.SetActive(true);
         InventoryManager.Instance.mainInventory.SetActive(true);
-        InventoryManager.Instance.darkBackground.SetActive(true);
+        InventoryManager.Instance.OnInventoryOpen();
 
         linkedFurnace.inputSlot = inputSlot;
         linkedFurnace.outputSlot = outputSlot;
@@ -51,7 +51,7 @@ public class FurnaceUI : MonoBehaviour
             if (fuelBar != null)
                 fuelBar.value = linkedFurnace.GetFuelRatio();
             if (progressBar != null)
-                progressBar.value = linkedFurnace.smeltProgress;
+                progressBar.fillAmount = linkedFurnace.smeltProgress;
         }
     }
 }

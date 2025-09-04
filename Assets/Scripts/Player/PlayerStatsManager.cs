@@ -5,6 +5,7 @@ public class PlayerStatsManager : MonoBehaviour
 {
     public static PlayerStatsManager Instance;
     public TextMeshProUGUI availablePointsText;
+    public TMP_InputField pointsToAddField;
     public PlayerStats stats = new();
     private Player player;
 
@@ -13,31 +14,44 @@ public class PlayerStatsManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        availablePointsText.text = stats.availablePoints.ToString();
+    }
+
     public void AllocatePoint(string statName)
     {
         if (stats.availablePoints <= 0)
             return;
 
+        int pointsToAdd = 1;
+
+        string enteredPointsToAdd = pointsToAddField.text;
+        if (int.TryParse(enteredPointsToAdd, out int num))
+        {
+            pointsToAdd = Mathf.Min(num, stats.availablePoints);
+        }
+
         switch (statName.ToLower())
         {
             case "strength":
-                stats.strength.Value++;
+                stats.strength.Value += pointsToAdd;
                 stats.strength.LevelText.text = $"Lv. {stats.strength.Value + 1}";
                 break;
             case "vitality":
-                stats.vitality.Value++;
+                stats.vitality.Value += pointsToAdd;
                 stats.vitality.LevelText.text = $"Lv. {stats.vitality.Value + 1}";
                 break;
             case "endurance":
-                stats.endurance.Value++;
+                stats.endurance.Value += pointsToAdd;
                 stats.endurance.LevelText.text = $"Lv. {stats.endurance.Value + 1}";
                 break;
             case "stamina":
-                stats.stamina.Value++;
+                stats.stamina.Value += pointsToAdd;
                 stats.stamina.LevelText.text = $"Lv. {stats.stamina.Value + 1}";
                 break;
             case "luck":
-                stats.luck.Value++;
+                stats.luck.Value += pointsToAdd;
                 stats.luck.LevelText.text = $"Lv. {stats.luck.Value + 1}";
                 break;
             default:
@@ -45,7 +59,7 @@ public class PlayerStatsManager : MonoBehaviour
                 return;
         }
 
-        stats.availablePoints--;
+        stats.availablePoints -= pointsToAdd;
         UpdateAvailablePoints();
 
         if (player != null)
@@ -60,9 +74,9 @@ public class PlayerStatsManager : MonoBehaviour
         UpdateAvailablePoints();
     }
 
-    private void UpdateAvailablePoints()
+    public void UpdateAvailablePoints()
     {
-        availablePointsText.text = $"Available Points: {stats.availablePoints}";
+        availablePointsText.text = $"{stats.availablePoints}";
     }
 
     public void SetPlayer(GameObject playerObj)

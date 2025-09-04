@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryUIHandler : MonoBehaviour
 {
-    public InventorySlot[] inventorySlots; // Reference to all inventory slots
-    public RectTransform inventoryPanel;  // Reference to the entire inventory UI panel
+    public List<InventorySlot> inventorySlots;
+    public RectTransform inventoryPanel;
+    public RectTransform deleteSlot;
 
     private void Update()
     {
@@ -20,27 +22,28 @@ public class InventoryUIHandler : MonoBehaviour
 
     private void HandleClick(bool isLeft)
     {
+        if (InventoryManager.InventoryUI == null) return;
+
         Vector2 mousePosition = Input.mousePosition;
 
-        if (RectTransformUtility.RectangleContainsScreenPoint(inventoryPanel, mousePosition))
-        {
-            foreach (var slot in inventorySlots)
-            {
-                if (RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
-                {
-                    if (isLeft)
-                        slot.HandleLeftClick();
-                    else
-                        slot.HandleRightClick();
-                    return;
-                }
-            }
-        }
-        else
+        if (RectTransformUtility.RectangleContainsScreenPoint(deleteSlot, mousePosition))
         {
             if (InventoryItem.selectedItem != null)
             {
                 DropSelectedItem();
+            }
+            return;
+        }
+
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
+            {
+                if (isLeft)
+                    slot.HandleLeftClick();
+                else
+                    //slot.HandleRightClick();
+                return;
             }
         }
     }
@@ -49,5 +52,10 @@ public class InventoryUIHandler : MonoBehaviour
     {
         InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
         Destroy(InventoryItem.selectedItem.gameObject);
+    }
+
+    public int GetSlotIndex(InventorySlot slot)
+    {
+        return inventorySlots.IndexOf(slot);
     }
 }

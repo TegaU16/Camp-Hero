@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,20 +7,27 @@ public class FurnaceManager : MonoBehaviour
 {
     public static FurnaceManager Instance;
 
-    [Header("UI")]
+    [Header("General UI")]
     public Transform furnaceItemParent;
     public GameObject requirementPrefabParent;
-    public Image progressFill;
-    public InventorySlot inputSlot;
-    public InventorySlot outputSlot;
     public GameObject furnaceItemPrefab;
     public FurnaceUI furnaceUI;
     public GameObject inventoryMenu;
 
+    [Header("Process Section")]
+    public Image progressFill;
+    public InventorySlot inputSlot;
+    public InventorySlot outputSlot;
+
+    [Header("Info Section")]
+    public Image resultImage;
+    public TextMeshProUGUI resultName;
+    public Image requiredImage;
+    public TextMeshProUGUI requiredName;
+
     public const float fuelDecreaseRate = -0.01f;
 
     [Header("State")]
-    private FurnaceItem selectedItem;
     public SmeltingDatabase smeltingDatabase;
     private readonly List<SmeltingRecipe> unlockedRecipes = new();
 
@@ -32,7 +40,6 @@ public class FurnaceManager : MonoBehaviour
     void Start()
     {
         progressFill.fillAmount = 0;
-        selectedItem = null;
     }
 
     public void TryUnlockRecipes(List<Item> discoveredItems)
@@ -62,29 +69,11 @@ public class FurnaceManager : MonoBehaviour
     {
         if (furnaceItem.recipe.requiredItem != null)
         {
-            // Clear all existing requirement entries
-            foreach (Transform child in requirementPrefabParent.transform)
-            {
-                Destroy(child.gameObject);
-            }
+            resultImage.sprite = furnaceItem.recipe.resultItem.icon;
+            requiredImage.sprite = furnaceItem.recipe.requiredItem.icon;
 
-            GameObject reqGO = Instantiate(furnaceItem.requirementPrefab, requirementPrefabParent.transform);
-
-            // Set requirement background
-            Image bg = reqGO.GetComponent<Image>();
-            if (bg != null && furnaceItem.requirementBackground != null)
-                bg.sprite = Instantiate(furnaceItem.requirementBackground.sprite);
-
-            // Set requirement icon
-            Transform iconTransform = reqGO.transform.Find("Req. Icon");
-            if (iconTransform != null)
-            {
-                if (iconTransform.TryGetComponent<Image>(out var iconImage))
-                    iconImage.sprite = furnaceItem.recipe.requiredItem.icon;
-            }
-
-            // Update selected item
-            selectedItem = furnaceItem;
+            resultName.text = furnaceItem.recipe.resultItem.name;
+            requiredName.text = furnaceItem.recipe.requiredItem.name;
         }
     }
 
@@ -96,5 +85,18 @@ public class FurnaceManager : MonoBehaviour
     public void Close()
     {
         furnaceUI.Close();
+    }
+
+    public void SaveSmeltingProgress()
+    {
+        SaveSystem.SaveSmelting(GameManager.Instance.currentWorldName, unlockedRecipes);
+    }
+
+    public void LoadSmeltingProgress()
+    {
+        unlockedRecipes.Clear();
+        unlockedRecipes.AddRange(
+            SaveSystem.LoadSmelting(GameManager.Instance.currentWorldName, smeltingDatabase)
+        );
     }
 }

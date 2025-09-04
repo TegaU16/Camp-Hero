@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1904878581342297375, guid: 815cf67629dac7d459c3dd989372645c, type: 3}
       propertyPath: m_Name
-      value: Adamantite Pickaxe Variant
+      value: Adamantite Pickaxe Drop
       objectReference: {fileID: 0}
     - target: {fileID: 1904878581342297375, guid: 815cf67629dac7d459c3dd989372645c, type: 3}
       propertyPath: m_Layer
@@ -135,7 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 0.56086814, g: 0.08388037, b: 0.87169814, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
@@ -146,10 +146,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6737923815482584788}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

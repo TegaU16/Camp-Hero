@@ -60,7 +60,7 @@ public class StorageUnit : MonoBehaviour, IInteractable, ISaveableObject
 
     public string SaveState()
     {
-        foreach (var stored in items)
+        foreach (StoredItem stored in items)
             stored.SyncNameFromItem();
 
         return JsonUtility.ToJson(this);
@@ -70,7 +70,7 @@ public class StorageUnit : MonoBehaviour, IInteractable, ISaveableObject
     {
         JsonUtility.FromJsonOverwrite(json, this);
 
-        foreach (var stored in items)
+        foreach (StoredItem stored in items)
             stored.ResolveItemFromName();
     }
 }

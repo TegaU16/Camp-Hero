@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class StructureManager : MonoBehaviour
 {
     public List<StructureTemplate> structureTemplates;
-    public Dictionary<Vector2Int, VoxelChunk> chunkMap;
 
     public List<WorldStructure> activeStructures = new();
     public VoxelGrid voxelGrid;
@@ -13,23 +11,30 @@ public class StructureManager : MonoBehaviour
 
     public BuildingManager buildingManager;
 
+    int chunkSize;
+    int gridSize;
+    float voxelSize;
+
     public float minSpacing;
 
-    void Start()
+    private void Start()
     {
-        chunkMap = new Dictionary<Vector2Int, VoxelChunk>();
+        chunkSize = voxelGrid.chunkSize;
+        gridSize = voxelGrid.gridSize;
+        voxelSize = voxelGrid.voxelSize;
     }
 
     public void SpawnStructuresInChunk(VoxelChunk chunk)
     {
         Vector3 chunkPosition = chunk.chunkObject.transform.position;
-        int chunkSize = voxelGrid.chunkSize;
+        
+        Vector3 worldCenter = new((chunkSize * gridSize) * 0.5f * voxelSize, 0f, (chunkSize * gridSize) * 0.5f * voxelSize);
 
         for (int cx = 0; cx < chunkSize; cx++)
         {
             for (int cz = 0; cz < chunkSize; cz++)
             {
-                Vector3 basePosition = chunkPosition + new Vector3((cx + 0.5f) * voxelGrid.voxelSize, 100f, (cz + 0.5f) * voxelGrid.voxelSize);
+                Vector3 basePosition = chunkPosition + new Vector3((cx + 0.5f) * voxelSize, 100f, (cz + 0.5f) * voxelSize);
 
                 if (Physics.Raycast(basePosition, Vector3.down, out RaycastHit hit, 200f, voxelGrid.groundLayer))
                 {
@@ -41,7 +46,8 @@ public class StructureManager : MonoBehaviour
                     bool tooClose = false;
                     foreach (WorldStructure existingStructure in activeStructures)
                     {
-                        if (Vector3.Distance(existingStructure.worldOrigin, structureSpawnPos) < minSpacing)
+                        if ((Vector3.Distance(existingStructure.worldOrigin, structureSpawnPos) < minSpacing) ||
+                            (Vector3.Distance(worldCenter, structureSpawnPos) < minSpacing))
                         {
                             tooClose = true;
                             break;
@@ -98,7 +104,7 @@ public class StructureManager : MonoBehaviour
 
             voxelGrid.MarkAreaOccupied(part);
 
-            foreach (var storage in part.GetComponentsInChildren<StorageUnit>())
+            foreach (StorageUnit storage in part.GetComponentsInChildren<StorageUnit>())
             {
                 LootTableReference lootRef = storage.GetComponent<LootTableReference>();
                 if (lootRef != null && lootRef.lootTable != null)
@@ -160,7 +166,7 @@ public class StructureManager : MonoBehaviour
     {
         Vector2Int chunkKey = new(chunkX, chunkZ);
 
-        if (chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
+        if (voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
         {
             return chunk.heightMap;
         }

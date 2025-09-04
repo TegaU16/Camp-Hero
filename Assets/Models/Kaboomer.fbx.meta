@@ -3,67 +3,7 @@ guid: 177a267c81cdfcf43a67dca8fd4962e3
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Arm-Left Mat
-    second: {fileID: 2100000, guid: b30ea32df8c1bcf4dafc33b57955b004, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Arm-Right Mat
-    second: {fileID: 2100000, guid: 50d037b9f1485704f80817f0d1536780, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Foot Mat
-    second: {fileID: 2100000, guid: 8bb06bd079d170240aeaeb2b1884397c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Head Mat
-    second: {fileID: 2100000, guid: 335e30cc978eef443aeb9272f3b32558, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Torso Mat
-    second: {fileID: 2100000, guid: ce2d01cc525ff7d4884a02125d6c2644, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Waist Mat
-    second: {fileID: 2100000, guid: dbce3272ebcd6444bb7de499446e1e33, type: 2}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Arm-Left
-    second: {fileID: 2800000, guid: b0b6df4f0c778744fa4dea754da37407, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Arm-Right
-    second: {fileID: 2800000, guid: 503424c03a161b74a8bf806d18dd3d43, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Foot
-    second: {fileID: 2800000, guid: b8d0c2d42802604449fabe964b449352, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Head
-    second: {fileID: 2800000, guid: e028fa02c8952db4db9d6e395d075395, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Torso
-    second: {fileID: 2800000, guid: 608e8a34ca9e85e4e80f85825b0a4236, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Kaboomer Waist
-    second: {fileID: 2800000, guid: 7970801ff078dfd439a7403ccb390cc7, type: 3}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -128,8 +68,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
@@ -149,7 +89,7 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: 
+    rootMotionBoneName: Root
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

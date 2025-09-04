@@ -33,6 +33,8 @@ public class BreakableObject : MonoBehaviour
     [HideInInspector] public VoxelChunk owningChunk;
     [HideInInspector] public int savedObjectIndex = -1;
 
+    [SerializeField] private Transform torsoBone;
+
     private void Start()
     {
         ResetObject();
@@ -103,21 +105,17 @@ public class BreakableObject : MonoBehaviour
                 // Clamp the value to ensure it's within the range even if something unexpected happens
                 dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
 
-                itemDrop.drop.SpawnObject(pos, dropAmount);
+                itemDrop.drop.SpawnObject(pos, dropAmount, torsoBone);
             }
         }
 
-        LevelManager levelManager = FindFirstObjectByType<LevelManager>();
-        if (levelManager != null)
-        {
-            levelManager.AddExp(expDropped);
-        }
-
+        LevelManager.Instance.AddExp(expDropped);
+        
         if (!isOrganism)
         {
             if (owningChunk != null && savedObjectIndex >= 0 && savedObjectIndex < owningChunk.savedObjects.Count)
             {
-                var saved = owningChunk.savedObjects[savedObjectIndex];
+                SpawnedObjectData saved = owningChunk.savedObjects[savedObjectIndex];
                 if (saved.position == transform.position)
                 {
                     owningChunk.savedObjects.RemoveAt(savedObjectIndex);
@@ -134,4 +132,8 @@ public class BreakableObject : MonoBehaviour
         isDestroyed = false;
         health = maxHealth;
     }
+
+    public int GetHealth() => health;
+
+    public void SetHealth(int currentHealth) => health = currentHealth;
 }

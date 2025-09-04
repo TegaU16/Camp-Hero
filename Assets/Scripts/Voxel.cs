@@ -4,12 +4,10 @@ using UnityEngine;
 public class Voxel
 {
     public Vector3 position;
-    public byte lightLevel;
 
     public Voxel(Vector3 pos)
     {
         position = pos;
-        lightLevel = 0;
     }
 }
 
@@ -35,63 +33,82 @@ public class SpawnedObjectData
     }
 }
 
-[System.Serializable]
-public class ChunkSaveData
-{
-    public Vector3 chunkPosition;
-    public List<SpawnedObjectData> spawnedObjects = new();
-}
-
 public class VoxelChunk
 {
     public GameObject chunkObject;
-    public Vector3 chunkPosition;
+    public Vector3 chunkPosition; // Use as cached world pos
 
     [System.NonSerialized]
     public Voxel[,] voxels;
 
-    public List<GameObject> objects;
-    public List<Vector3> savedObjectPositions;
-    public List<SpawnedObjectData> savedObjects;
-    public List<ISimulatable> simulatedEntities;
+    public List<GameObject> objects = new();
+    public List<Vector3> savedObjectPositions = new();
+    public List<SpawnedObjectData> savedObjects = new();
+    public List<ISimulatable> simulatedEntities = new();
     public BiomeData biome;
     public Mesh generatedMesh;
     public float[,] heightMap;
-    public bool visualsEnabled;
 
-    public bool objectsSpawned;
-    public bool structureSpawned;
+    public bool visualsEnabled = false;
+    public bool simulationEnabled = false;
+    public bool objectsSpawned = false;
+    public bool structureSpawned = false;
+    public bool hasNaturalObjects = false;
+    public bool hasKeyStructure = false;
+    public bool wasLoadedFromSave = false;
 
-    public bool wasLoadedFromSave;
+    public MeshRenderer[] cachedRenderers;
+    public Collider[] cachedColliders;
 
     public VoxelChunk(GameObject chunkObject, int chunkSize)
     {
         this.chunkObject = chunkObject;
-        this.chunkPosition = chunkObject.transform.position;
-        this.voxels = new Voxel[chunkSize, chunkSize];
-        this.objects = new List<GameObject>();
-        this.savedObjectPositions = new List<Vector3>();
-        this.savedObjects = new List<SpawnedObjectData>();
+        chunkPosition = chunkObject.transform.position;
+        voxels = new Voxel[chunkSize, chunkSize];
+        heightMap = new float[chunkSize, chunkSize];
 
-        this.objectsSpawned = false;
-        this.structureSpawned = false;
-
-        this.simulatedEntities = new List<ISimulatable>();
-        this.heightMap = new float[chunkSize, chunkSize];
-        this.wasLoadedFromSave = false;
+        // Cache renderers and colliders at creation
+        cachedRenderers = chunkObject.GetComponentsInChildren<MeshRenderer>();
+        cachedColliders = chunkObject.GetComponentsInChildren<Collider>();
     }
-}
 
-[CreateAssetMenu(fileName = "NewBiome", menuName = "Voxel/Biome")]
-public class BiomeData : ScriptableObject
-{
-    public string biomeName;
-    public List<VoxelType> voxelTypes = new();
-    public NoiseSettings noiseSettings;
-    public List<GameObject> treePrefabs = new();
-    public List<GameObject> rockPrefabs = new();
-    public List<GameObject> treeClusterPrefabs = new();
-    public List<GameObject> rockClusterPrefabs = new();
+    public void SaveChunkFurnaces(ChunkSaveData data)
+    {
+        data.furnaceStates.Clear();
+        FurnaceUnit[] furnaces = chunkObject.GetComponentsInChildren<FurnaceUnit>();
+        foreach (FurnaceUnit furnace in furnaces)
+        {
+            data.furnaceStates.Add(furnace.SaveState());
+        }
+    }
+
+    public void LoadChunkFurnaces(ChunkSaveData data)
+    {
+        FurnaceUnit[] furnaces = chunkObject.GetComponentsInChildren<FurnaceUnit>();
+        for (int i = 0; i < furnaces.Length && i < data.furnaceStates.Count; i++)
+        {
+            furnaces[i].LoadState(data.furnaceStates[i]);
+        }
+    }
+
+    public void SaveChunkStorages(ChunkSaveData data)
+    {
+        data.storageStates.Clear();
+        StorageUnit[] storages = chunkObject.GetComponentsInChildren<StorageUnit>();
+        foreach (StorageUnit storage in storages)
+        {
+            data.storageStates.Add(storage.SaveState());
+        }
+    }
+
+    public void LoadChunkStorages(ChunkSaveData data)
+    {
+        StorageUnit[] storages = chunkObject.GetComponentsInChildren<StorageUnit>();
+        for (int i = 0; i < storages.Length && i < data.storageStates.Count; i++)
+        {
+            storages[i].LoadState(data.storageStates[i]);
+        }
+    }
 }
 
 [System.Serializable]
@@ -105,13 +122,4 @@ public class NoiseSettings
     public bool useHeightCurve = true;
     public AnimationCurve heightCurve = AnimationCurve.Linear(0, 0, 1, 1);
     public float heightExponent = 2f;
-}
-
-[System.Serializable]
-public class VoxelType
-{
-    public string name;
-    public float minHeight;
-    public float maxHeight;
-    public int atlasIndex;
 }

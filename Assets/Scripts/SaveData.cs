@@ -1,0 +1,132 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
+public class PlayerSaveData
+{
+    public Vector3 position;
+    public int maxHealth;
+    public int currentHealth;
+    public float maxStamina;
+    public float currentStamina;
+    public PlayerAttributesData attributes;
+    public List<ItemData> inventory;
+    public int availablePoints;
+    public LevelData levelData;
+}
+
+[System.Serializable]
+public class AnimalSaveData
+{
+    public string prefabName;
+    public Vector3 position;
+    public int currentHealth;
+}
+
+[System.Serializable]
+public class WorldAnimalData
+{
+    public List<AnimalSaveData> animals = new();
+}
+
+[System.Serializable]
+public class EnemySaveData
+{
+    public string prefabName;
+    public Vector3 position;
+    public int currentHealth;
+}
+
+[System.Serializable]
+public class WorldEnemyData
+{
+    public List<EnemySaveData> enemies = new();
+}
+
+[System.Serializable]
+public class WorldMetaData
+{
+    public string worldName;
+    public string seed;
+    public string createdDate;
+    public string lastPlayedDate;
+}
+
+[System.Serializable]
+public class ChunkSaveData
+{
+    public Vector3 chunkPosition;
+    public List<SpawnedObjectData> spawnedObjects;
+    public bool hasNaturalObjects;
+    public bool hasKeyStructure;
+
+    public List<string> furnaceStates = new();
+    public List<string> storageStates = new();
+}
+
+[System.Serializable]
+public class ItemData
+{
+    public string itemName;
+    public int count;
+    public int position;
+}
+
+[System.Serializable]
+public class PlayerAttributesData
+{
+    public int strength;
+    public int vitality;
+    public int endurance;
+    public int stamina;
+    public int luck;
+}
+
+[System.Serializable]
+public class LevelData
+{
+    public int level;
+    public int maxExp;
+    public int currentExp;
+}
+
+[System.Serializable]
+public class TrialAltarSaveData
+{
+    public int currentWave;
+    public bool trialCompleted;
+    public bool keyAvailable;
+}
+
+[System.Serializable]
+public class GemAltarSaveData
+{
+    public bool bossDefeated;
+    public bool isActivated;
+}
+
+[System.Serializable]
+public class CraftingSaveData
+{
+    public List<string> unlockedRecipeIDs = new(); // result item names
+}
+
+[System.Serializable]
+public class SmeltingSaveData
+{
+    public List<string> unlockedRecipeIDs = new(); // result item names
+}
+
+[System.Serializable]
+public class DayNightSaveData
+{
+    public float timeOfDay;
+    public int currentDay;
+}
+
+[System.Serializable]
+public class CampfireSaveData
+{
+    public int currentHealth;
+    public List<GemColor> unlockedGems;
+}

@@ -23,11 +23,10 @@ public class FoodManager : MonoBehaviour
     private void Eat(Item food)
     {
         if (!playerObj.TryGetComponent(out Health playerHealth)) return;
-        if (!playerObj.TryGetComponent(out Player playerScript)) return;
 
         if (playerHealth.GetHealth() < playerHealth.maxHealth)
         {
-            playerHealth.AddHealth((int)food.foodValue, playerScript.healthBar);
+            playerHealth.AddHealth((int)food.foodValue);
             InventoryManager.Instance.UseSelectedItem();
         }
     }

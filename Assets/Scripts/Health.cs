@@ -6,12 +6,9 @@ public class Health : MonoBehaviour
     private int currentHealth;
     private bool isDead = false;
 
-    void Start()
-    {
-        ResetHealth(maxHealth);
-    }
+    [HideInInspector] public HealthBar healthBar;
 
-    public void TakeDamage(int amount, HealthBar healthBar = null)
+    public void TakeDamage(int amount)
     {
         if (isDead) return;
 
@@ -22,7 +19,7 @@ public class Health : MonoBehaviour
         if (currentHealth <= 0) Die();
     }
 
-    public void AddHealth(int amount, HealthBar healthBar = null)
+    public void AddHealth(int amount)
     {
         if (isDead) return;
 
@@ -31,7 +28,7 @@ public class Health : MonoBehaviour
             healthBar.SetHealth(currentHealth);
     }
 
-    public void SetHealth(int health, HealthBar healthBar)
+    public void SetHealth(int health)
     {
         currentHealth = health;
         healthBar.SetHealth(health);

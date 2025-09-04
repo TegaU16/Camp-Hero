@@ -24,13 +24,13 @@ public class CraftingItem : MonoBehaviour
 
     public bool HasItems()
     {
-        foreach (var req in recipe.requirements)
+        foreach (CraftingRecipe.Requirement req in recipe.requirements)
         {
             int totalCount = 0;
 
             foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
             {
-                var itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+                InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
                 if (itemInSlot != null && itemInSlot.item == req.requiredItem)
                 {
                     totalCount += itemInSlot.count;

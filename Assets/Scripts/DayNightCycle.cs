@@ -143,4 +143,26 @@ public class DayNightCycle : MonoBehaviour
     {
         return timeOfDay >= 18f || timeOfDay <= 6f;
     }
+
+    public void SaveDayNight()
+    {
+        DayNightSaveData data = new DayNightSaveData
+        {
+            timeOfDay = this.timeOfDay,
+            currentDay = this.currentDay
+        };
+
+        SaveSystem.SaveDayNight(GameManager.Instance.currentWorldName, data);
+    }
+
+    public void LoadDayNight()
+    {
+        DayNightSaveData data = SaveSystem.LoadDayNight(GameManager.Instance.currentWorldName);
+        if (data != null)
+        {
+            timeOfDay = data.timeOfDay;
+            currentDay = data.currentDay;
+        }
+    }
+
 }

@@ -49,7 +49,7 @@ public class CraftingManager : MonoBehaviour
 
     public void TryUnlockRecipes(List<Item> discoveredItems)
     {
-        foreach (var recipe in craftingDatabase.allRecipes)
+        foreach (CraftingRecipe recipe in craftingDatabase.allRecipes)
         {
             if (!unlockedRecipes.Contains(recipe) && recipe.ShouldUnlock(discoveredItems))
             {
@@ -84,7 +84,7 @@ public class CraftingManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        foreach (var item in craftingItem.recipe.requirements)
+        foreach (CraftingRecipe.Requirement item in craftingItem.recipe.requirements)
         {
             if (item.requiredItem == null) continue;
 
@@ -104,9 +104,20 @@ public class CraftingManager : MonoBehaviour
             }
 
             // Set requirement count
-            TextMeshProUGUI countText = reqGO.GetComponentInChildren<TextMeshProUGUI>();
-            if (countText != null)
-                countText.text = item.count.ToString();
+            Transform count = reqGO.transform.Find("Req. Count");
+            if (count != null)
+            {
+                if (count.TryGetComponent(out TextMeshProUGUI countText))
+                    countText.text = item.count.ToString();
+            }
+
+            // Set requirement name
+            Transform name = reqGO.transform.Find("Req. Name");
+            if (name != null)
+            {
+                if (name.TryGetComponent(out TextMeshProUGUI nameText))
+                    nameText.text = item.requiredItem.name.ToString();
+            }
         }
 
         // Update selected item
@@ -126,31 +137,11 @@ public class CraftingManager : MonoBehaviour
             return;
 
         // Remove required items
-        foreach (var requirement in selectedItem.recipe.requirements)
+        foreach (CraftingRecipe.Requirement requirement in selectedItem.recipe.requirements)
         {
             int toRemove = requirement.count;
 
-            foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
-            {
-                InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
-
-                if (itemInSlot != null && itemInSlot.item == requirement.requiredItem)
-                {
-                    if (itemInSlot.count <= toRemove)
-                    {
-                        toRemove -= itemInSlot.count;
-                        Destroy(itemInSlot.gameObject);
-                    }
-                    else
-                    {
-                        itemInSlot.count -= toRemove;
-                        itemInSlot.RefreshCount();
-                        break;
-                    }
-                }
-
-                if (toRemove <= 0) break;
-            }
+            InventoryManager.Instance.ConsumeItem(requirement.requiredItem, toRemove);
         }
 
         StartCoroutine(DelayedAddCraftedItem(selectedItem.recipe.resultItem));
@@ -161,5 +152,18 @@ public class CraftingManager : MonoBehaviour
         yield return null; // wait 1 frame
         InventoryManager.Instance.AddItem(item);
         InventoryManager.Instance.EquipSelectedItem();
+    }
+
+    public void SaveCraftingProgress()
+    {
+        SaveSystem.SaveCrafting(GameManager.Instance.currentWorldName, unlockedRecipes);
+    }
+
+    public void LoadCraftingProgress()
+    {
+        unlockedRecipes.Clear();
+        unlockedRecipes.AddRange(
+            SaveSystem.LoadCrafting(GameManager.Instance.currentWorldName, craftingDatabase)
+        );
     }
 }

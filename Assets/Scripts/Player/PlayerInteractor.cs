@@ -53,20 +53,20 @@ public class PlayerInteractor : MonoBehaviour
                 {
                     currentInteractable = nearest;
 
-                    if (currentUIInstance != null)
+                    if (currentUIInstance == null)
                     {
-                        Destroy(currentUIInstance);
+                        currentUIInstance = Instantiate(worldUIIndicatorPrefab);
+                        currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
                     }
 
-                    currentUIInstance = Instantiate(worldUIIndicatorPrefab);
-                    currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
+                    currentUIInstance.SetActive(true);
                     currentUI.Setup(currentInteractable.GetInteractText(), currentInteractable.GetTransform());
                 }
 
                 if (Input.GetKeyDown(interactKey))
                 {
+                    currentUIInstance.SetActive(false);
                     currentInteractable.Interact();
-                    Destroy(currentUIInstance);
                     currentInteractable = null;
                 }
             }
@@ -76,7 +76,7 @@ public class PlayerInteractor : MonoBehaviour
 
                 if (currentUIInstance != null)
                 {
-                    Destroy(currentUIInstance);
+                    currentUIInstance.SetActive(false);
                 }
             }
         }

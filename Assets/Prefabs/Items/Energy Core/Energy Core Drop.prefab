@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 939546307154746809, guid: 2c2d907b2cb1bd748afb7be0e06d490b, type: 3}
       propertyPath: m_Name
-      value: Energy Core Equip Drop
+      value: Energy Core Drop
       objectReference: {fileID: 0}
     - target: {fileID: 939546307154746809, guid: 2c2d907b2cb1bd748afb7be0e06d490b, type: 3}
       propertyPath: m_Layer
@@ -147,7 +147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
@@ -158,10 +158,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6676364954662885867}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

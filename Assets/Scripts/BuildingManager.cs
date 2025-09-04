@@ -128,7 +128,9 @@ public class BuildingManager : MonoBehaviour
             Vector3 offset = new((buildingSize.x - 1) * gridSize / 2f, 0, (buildingSize.y - 1) * gridSize / 2f);
             currentGhost.transform.position = snappedPosition + offset;
 
-            if (!IsAreaFree(currentGhost, snappedPosition))
+            bool areaFree = IsAreaFree(currentGhost, snappedPosition);
+
+            if (!areaFree)
             {
                 SetGhostAlpha(0.2f);
             }
@@ -147,10 +149,7 @@ public class BuildingManager : MonoBehaviour
                     GameObject visualIndicator = Instantiate(gridSquarePrefab, worldPos, gridSquarePrefab.transform.rotation);
                     visualIndicators.Add(visualIndicator);
 
-                    if (!IsAreaFree(visualIndicator, visualIndicator.transform.position))
-                        visualIndicator.GetComponent<Renderer>().material.color = Color.red;
-                    else
-                        visualIndicator.GetComponent<Renderer>().material.color = Color.green;
+                    visualIndicator.GetComponent<Renderer>().material.color = areaFree ? Color.green : Color.red;
                 }
             }
         }
@@ -189,7 +188,7 @@ public class BuildingManager : MonoBehaviour
             for (int z = min.z; z <= max.z; z++)
             {
                 Vector3Int voxelPos = new(x, 0, z);
-                if (voxelGrid.IsOccupied(voxelPos))
+                if (!voxelGrid.IsBuildable(voxelPos))
                     return false;
             }
         }
@@ -349,7 +348,7 @@ public class BuildingManager : MonoBehaviour
         anchor = GetSnappedPosition(anchor);
         Vector3 dir = new(1, 0, 0); // +X direction for now
 
-        InventoryItem selectedInvItem = InventoryManager.Instance.GetInventoryItem();
+        InventoryItem selectedInvItem = InventoryManager.Instance.GetSelectedInventoryItem();
         GameObject wallPrefab = selectedItem.buildingGhost;
         int maxWalls = selectedInvItem.count;
 
@@ -380,7 +379,7 @@ public class BuildingManager : MonoBehaviour
         anchor = GetSnappedPosition(anchor);
         Vector3 dir = new(1, 0, 0); // +X direction for now
 
-        InventoryItem selectedInvItem = InventoryManager.Instance.GetInventoryItem();
+        InventoryItem selectedInvItem = InventoryManager.Instance.GetSelectedInventoryItem();
         GameObject wallPrefab = selectedItem.buildingGhost;
         int maxWalls = selectedInvItem.count;
 

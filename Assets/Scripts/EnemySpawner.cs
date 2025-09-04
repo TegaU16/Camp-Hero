@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
@@ -13,7 +14,7 @@ public class EnemySpawner : MonoBehaviour
     public LayerMask groundLayer;
 
     public DayNightCycle dayNightCycle;
-
+    public VoxelGrid voxelGrid;
     public EnemyPool enemyPool;
 
     void Start()
@@ -49,22 +50,29 @@ public class EnemySpawner : MonoBehaviour
     {
         if (player == null || enemyPool == null) return;
 
-        Vector3 spawnPos = player.transform.position + Random.onUnitSphere * spawnRadius;
-        spawnPos.y = player.transform.position.y;
+        Vector3 candidatePos = player.transform.position + Random.onUnitSphere * spawnRadius;
 
-        int day = dayNightCycle.GetCurrentDay();
-        var availableTiers = enemyPool.GetAvailableTiers(day);
-
-        if (availableTiers.Count == 0) return;
-
-        GameObject selectedPrefab = availableTiers[Random.Range(0, availableTiers.Count)].prefab;
-
-        GameObject enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
-
-        if (enemy != null)
+        if (Physics.Raycast(candidatePos + Vector3.up * 100f, Vector3.down, out RaycastHit enemyHit, 200f, groundLayer))
         {
-            enemy.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
-            currentEnemyCount++;
+            Vector3 spawnPos = enemyHit.point;
+
+            Vector3Int spawnPosInt = Vector3Int.RoundToInt(spawnPos);
+            if (voxelGrid.IsOccupied(spawnPosInt)) return;
+
+            int day = dayNightCycle.GetCurrentDay();
+            List<EnemyTier> availableTiers = enemyPool.GetAvailableTiers(day);
+
+            if (availableTiers.Count == 0) return;
+
+            GameObject selectedPrefab = availableTiers[Random.Range(0, availableTiers.Count)].prefab;
+
+            GameObject enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
+
+            if (enemy != null)
+            {
+                enemy.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
+                currentEnemyCount++;
+            }
         }
     }
 
@@ -89,5 +97,54 @@ public class EnemySpawner : MonoBehaviour
     {
         // For example, the maximum enemies increase by 5 for each day
         return Mathf.Min(currentDay * 5, 50); // Cap at 50 enemies max
+    }
+
+    public List<EnemySaveData> GetAllEnemySaveData()
+    {
+        List<EnemySaveData> dataList = new();
+        foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+        {
+            if (enemy == null) continue;
+
+            if (enemy.TryGetComponent(out BreakableObject breakable))
+            {
+                dataList.Add(new EnemySaveData
+                {
+                    prefabName = enemy.name.Replace("(Clone)", ""),
+                    position = enemy.transform.position,
+                    currentHealth = breakable.GetHealth()
+                });
+            }
+        }
+        return dataList;
+    }
+
+    public void SaveAllEnemies()
+    {
+        List<EnemySaveData> data = GetAllEnemySaveData();
+        SaveSystem.SaveEnemies(GameManager.Instance.currentWorldName, data);
+    }
+
+    public void LoadAllEnemies()
+    {
+        List<EnemySaveData> savedEnemies = SaveSystem.LoadEnemies(GameManager.Instance.currentWorldName);
+
+        if (savedEnemies != null)
+        {
+            foreach (EnemySaveData data in savedEnemies)
+            {
+                GameObject prefab = enemyPool.GetPrefabByName(data.prefabName);
+                if (prefab == null) continue;
+
+                Enemy enemy = enemyPool.GetEnemy(prefab, data.position).GetComponent<Enemy>();
+                if (enemy.TryGetComponent(out BreakableObject breakable))
+                {
+                    breakable.SetHealth(data.currentHealth);
+                }
+
+                // Register with manager
+                EnemyManager.Instance.RegisterEnemy(enemy);
+            }
+        }
     }
 }

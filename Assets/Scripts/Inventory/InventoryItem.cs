@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,7 +11,7 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public Item item;
 
     public int count = 1;
-    public Text countText;
+    public TextMeshProUGUI countText;
 
     private Transform originalParent;
     public float padding;

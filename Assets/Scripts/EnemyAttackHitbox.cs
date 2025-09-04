@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class EnemyAttackHitbox : MonoBehaviour
 {
@@ -14,7 +13,8 @@ public class EnemyAttackHitbox : MonoBehaviour
         enemyScript = GetComponentInParent<Enemy>();
     }
 
-    public void PerformHit()
+    // Called by animation event
+    void PerformHit()
     {
         ClearHits();
 
@@ -37,10 +37,8 @@ public class EnemyAttackHitbox : MonoBehaviour
 
         if (enemyScript == null) return;
 
-        if (other.TryGetComponent(out Targetable targetable))
-        {
-            enemyScript.DealDamage(targetable);
-        }
+        if (other.GetComponent<Targetable>() != null)
+            enemyScript.DealDamage();
     }
 
     public void ClearHits()

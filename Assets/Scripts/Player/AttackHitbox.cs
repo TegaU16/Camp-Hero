@@ -39,7 +39,6 @@ public class AttackHitbox : MonoBehaviour
         if (GameManager.Instance.isPaused) return;
 
         Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
-        if (selectedItem == null) return;
 
         BreakableObject breakable = other.GetComponentInParent<BreakableObject>();
         if (breakable == null) return;

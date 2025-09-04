@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.AI;
 
 public class AnimalSpawner : MonoBehaviour
 {
@@ -13,10 +12,6 @@ public class AnimalSpawner : MonoBehaviour
     public float clusterRadius = 5f;
     public LayerMask groundLayer;
 
-    private float spawnDistance;
-    private float despawnDistance;
-
-    private Transform player;
     private readonly Dictionary<VoxelChunk, List<Animal>> chunkAnimals = new();
 
     [Header("Mob Limits")]
@@ -26,53 +21,9 @@ public class AnimalSpawner : MonoBehaviour
 
     public int MaxAnimalsPerChunk => clusterCount * animalsPerCluster;
 
-    private void Start()
+    public IEnumerator SpawnAnimalsForChunk(VoxelChunk chunk)
     {
-        spawnDistance = voxelGrid.viewDistance * voxelGrid.chunkSize;
-        despawnDistance = spawnDistance + 30f;
-        StartCoroutine(ManageAnimals());
-    }
-
-    IEnumerator ManageAnimals()
-    {
-        while (true)
-        {
-            if (player != null)
-            {
-                Vector3 playerPos = player.position;
-
-                List<VoxelChunk> sortedChunks = new(chunks);
-                sortedChunks.Sort((a, b) =>
-                {
-                    float distA = Vector3.Distance(playerPos, a.chunkObject.transform.position);
-                    float distB = Vector3.Distance(playerPos, b.chunkObject.transform.position);
-                    return distA.CompareTo(distB);
-                });
-
-                foreach (var chunk in sortedChunks)
-                {
-                    float dist = Vector3.Distance(playerPos, chunk.chunkObject.transform.position);
-
-                    bool hasAnimals = chunkAnimals.ContainsKey(chunk) && chunkAnimals[chunk].Count > 0;
-
-                    if (dist < spawnDistance && !hasAnimals)
-                    {
-                        yield return StartCoroutine(SpawnAnimalsForChunk(chunk));
-                    }
-                    else if (dist > despawnDistance && hasAnimals)
-                    {
-                        DespawnAnimalsForChunk(chunk);
-                    }
-                }
-            }
-
-            yield return new WaitForSeconds(1f);
-        }
-    }
-
-    IEnumerator SpawnAnimalsForChunk(VoxelChunk chunk)
-    {
-        if (!chunkAnimals.TryGetValue(chunk, out var animalsList))
+        if (!chunkAnimals.TryGetValue(chunk, out List<Animal> animalsList))
         {
             animalsList = new List<Animal>();
             chunkAnimals[chunk] = animalsList;
@@ -89,22 +40,33 @@ public class AnimalSpawner : MonoBehaviour
             if (currentAnimalCount >= globalAnimalCap)
                 yield break;
 
+            // Pick a cluster center in this chunk
             Vector3 clusterCenter = new(
                 Random.Range(chunkOrigin.x, chunkOrigin.x + chunkSize),
                 0,
                 Random.Range(chunkOrigin.z, chunkOrigin.z + chunkSize)
             );
 
+            // Apply noise
+            float noise = Mathf.PerlinNoise(
+                clusterCenter.x * 0.05f,
+                clusterCenter.z * 0.05f
+            );
 
+            // Only spawn cluster if noise is above threshold
+            if (noise < 0.5f) continue;
+
+            // Project to ground
             if (Physics.Raycast(clusterCenter + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 200f, groundLayer))
             {
                 clusterCenter.y = hit.point.y;
             }
             else
             {
-                continue; // skip this cluster
+                continue;
             }
 
+            // Spawn animals in this cluster
             for (int j = 0; j < animalsPerCluster; j++)
             {
                 if (currentAnimalCount >= globalAnimalCap)
@@ -117,23 +79,15 @@ public class AnimalSpawner : MonoBehaviour
                 {
                     Vector3 candidateSpawn = animalHit.point;
 
-                    if (NavMesh.SamplePosition(candidateSpawn, out NavMeshHit navHit, 5f, NavMesh.AllAreas))
-                    {
-                        Vector3 spawnPos = navHit.position;
+                    Vector3 spawnPos = candidateSpawn;
 
-                        Animal animal = AnimalPool.Instance.GetAnimal(spawnPos, chunk);
-                        animal.transform.parent = null;
+                    Animal animal = AnimalPool.Instance.GetAnimal(spawnPos);
+                    animal.transform.parent = null;
 
-                        animalsList.Add(animal);
-                        currentAnimalCount++;
+                    animalsList.Add(animal);
+                    chunk.simulatedEntities.Add(animal);
 
-                        Debug.DrawRay(candidatePos, Vector3.up * 5f, Color.red, 10f);
-                        Debug.DrawRay(navHit.position, Vector3.up * 5f, Color.green, 10f);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[SpawnAnimalsForChunk] No NavMesh near {candidateSpawn}!");
-                    }
+                    currentAnimalCount++;
                 }
 
                 yield return new WaitForSeconds(0.05f);
@@ -141,23 +95,97 @@ public class AnimalSpawner : MonoBehaviour
         }
     }
 
-    void DespawnAnimalsForChunk(VoxelChunk chunk)
+    public void DespawnAnimalsForChunk(VoxelChunk chunk)
     {
         if (!chunkAnimals.ContainsKey(chunk)) return;
 
         foreach (Animal animal in chunkAnimals[chunk])
         {
             AnimalPool.Instance.ReturnAnimal(animal);
+            chunk.simulatedEntities.Remove(animal);
             currentAnimalCount--;
         }
 
         chunkAnimals.Remove(chunk);
     }
 
-    public void SetPlayer(GameObject playerObj)
+    public List<AnimalSaveData> GetAllAnimalSaveData()
     {
-        if (playerObj == null) return;
+        List<AnimalSaveData> dataList = new();
 
-        player = playerObj.transform;
+        foreach (KeyValuePair<VoxelChunk, List<Animal>> kvp in chunkAnimals)
+        {
+            foreach (Animal animal in kvp.Value)
+            {
+                if (animal == null) continue;
+
+                if (animal.TryGetComponent(out BreakableObject breakable))
+                {
+                    dataList.Add(new AnimalSaveData
+                    {
+                        prefabName = animal.name.Replace("(Clone)", ""), // or some ID
+                        position = animal.transform.position,
+                        currentHealth = breakable.GetHealth()
+                    });
+                }
+            }
+        }
+
+        return dataList;
+    }
+
+    public void SaveAllAnimals()
+    {
+        List<AnimalSaveData> data = GetAllAnimalSaveData();
+        SaveSystem.SaveAnimals(GameManager.Instance.currentWorldName, data);
+    }
+
+    public void LoadAnimals(List<AnimalSaveData> savedAnimals)
+    {
+        foreach (AnimalSaveData data in savedAnimals)
+        {
+            // Use pooling system
+            Animal animal = AnimalPool.Instance.GetAnimal(data.position);
+            animal.transform.parent = null;
+
+            if (animal.TryGetComponent(out BreakableObject breakable))
+            {
+                breakable.SetHealth(data.currentHealth);
+            }
+
+            Vector3Int voxelPos = voxelGrid.WorldToVoxelCoord(data.position);
+            int chunkX = Mathf.FloorToInt((float)voxelPos.x / voxelGrid.chunkSize);
+            int chunkZ = Mathf.FloorToInt((float)voxelPos.z / voxelGrid.chunkSize);
+
+            Vector2Int chunkKey = new(chunkX, chunkZ);
+
+            // Find chunk it belongs to
+            if (voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
+            {
+                if (!chunkAnimals.ContainsKey(chunk))
+                    chunkAnimals[chunk] = new List<Animal>();
+
+                chunkAnimals[chunk].Add(animal);
+                chunk.simulatedEntities.Add(animal);
+            }
+
+            currentAnimalCount++;
+        }
+    }
+
+    public void LoadAllAnimals()
+    {
+        List<AnimalSaveData> savedAnimals = SaveSystem.LoadAnimals(GameManager.Instance.currentWorldName);
+        if (savedAnimals != null)
+        {
+            LoadAnimals(savedAnimals);
+        }
+        else
+        {
+            foreach (VoxelChunk chunk in chunks)
+            {
+                StartCoroutine(SpawnAnimalsForChunk(chunk));
+            }
+        }
     }
 }

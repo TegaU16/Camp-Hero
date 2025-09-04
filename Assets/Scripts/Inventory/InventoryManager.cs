@@ -21,6 +21,7 @@ public class InventoryManager : MonoBehaviour
 
     private GameObject variableExtension;
     public List<GameObject> inventoryExtensions;
+    public GameObject deleteSlot;
 
     public GameObject inventoryItemPrefab;
     public GameObject playerObject;
@@ -37,6 +38,7 @@ public class InventoryManager : MonoBehaviour
     public GameObject storageMenuUI;
     public GameObject furnaceMenuUI;
     public GameObject campfireMenuUI;
+    public GameObject trialMenuUI;
 
     public GameObject darkBackground;
 
@@ -48,6 +50,7 @@ public class InventoryManager : MonoBehaviour
     public KeyCode exitExtensionKey = KeyCode.Escape;
 
     public bool JustClosedExtension { get; private set; }
+    public int LastRemainingCount { get; private set; }
 
     private void Awake()
     {
@@ -57,7 +60,7 @@ public class InventoryManager : MonoBehaviour
 
     private void Start()
     {
-        foreach (var item in startItems)
+        foreach (Item item in startItems)
         {
             AddItem(item);
         }
@@ -65,12 +68,15 @@ public class InventoryManager : MonoBehaviour
         ChangeSelectedSlot(0);
         player = playerObject.GetComponentInChildren<Player>();
 
+        itemEquip.EquipItem(GetSelectedItem(false));
         inventoryExtensions.Add(variableExtension);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.Instance.isPaused) return;
+
         HandleSlotSelection();
         HandleInventoryToggle();
         HandleInteraction();
@@ -81,6 +87,41 @@ public class InventoryManager : MonoBehaviour
     void LateUpdate()
     {
         JustClosedExtension = false;
+    }
+
+    public void AddSavedPlayerItems(List<ItemData> items)
+    {
+        foreach (ItemData itemData in items)
+        {
+            Item item = ItemRegistry.GetItemByName(itemData.itemName);
+            AddItem(item, itemData.count, itemData.position);
+        }
+    }
+
+    public List<ItemData> GetSavedPlayerItems()
+    {
+        List<ItemData> items = new();
+
+        for (int i = 0; i < inventoryUIHandler.inventorySlots.Count; i++)
+        {
+            InventorySlot currentSlot = inventoryUIHandler.inventorySlots[i];
+            if (currentSlot != null && currentSlot.transform.childCount > 0)
+            {
+                InventoryItem invItem = currentSlot.GetComponentInChildren<InventoryItem>();
+                Item item = invItem.item;
+
+                ItemData itemData = new()
+                {
+                    itemName = item.name,
+                    count = invItem.count,
+                    position = i
+                };
+
+                items.Add(itemData);
+            }
+        }
+
+        return items;
     }
 
     void ChangeSelectedSlot(int newValue)
@@ -136,49 +177,72 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    public int LastRemainingCount { get; private set; }
-
-    public bool AddItem(Item item, int count = 1)
+    public bool AddItem(Item item, int count = 1, int? targetSlotIndex = null)
     {
         int initialCount = count; // Store the initial count for later comparison
 
-        // First, try to add the items to existing stacks
-        for (int i = 0; i < inventoryUIHandler.inventorySlots.Length && count > 0; i++)
+        if (targetSlotIndex.HasValue) // Case 1: Add to a specific slot
         {
-            InventorySlot slot = inventoryUIHandler.inventorySlots[i];
-            InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+            int index = targetSlotIndex.Value;
 
-            if (itemInSlot != null &&
-                itemInSlot.item == item &&
-                itemInSlot.count < item.maxStack &&
-                itemInSlot.item.stackable == true)
+            if (index < 0 || index >= inventoryUIHandler.inventorySlots.Count)
             {
-                // Calculate how many items can be added to this stack
-                int availableSpace = item.maxStack - itemInSlot.count;
-                int itemsToAdd = Mathf.Min(count, availableSpace);
-
-                // Add items to the stack
-                itemInSlot.count += itemsToAdd;
-                count -= itemsToAdd;
-
-                itemInSlot.RefreshCount();
+                Debug.LogWarning("Invalid slot index!");
+                return false;
             }
-        }
 
-        // Then, spawn new stacks in empty slots if there are still items left
-        for (int i = 0; i < inventoryUIHandler.inventorySlots.Length && count > 0; i++)
-        {
-            InventorySlot slot = inventoryUIHandler.inventorySlots[i];
+            InventorySlot slot = inventoryUIHandler.inventorySlots[index];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-            if (itemInSlot == null)
+            if (itemInSlot != null)
             {
-                // Calculate how many items to place in this new stack
+                if (itemInSlot.item == item && item.stackable)
+                {
+                    int availableSpace = item.maxStack - itemInSlot.count;
+                    int itemsToAdd = Mathf.Min(count, availableSpace);
+                    itemInSlot.count += itemsToAdd;
+                    count -= itemsToAdd;
+                    itemInSlot.RefreshCount();
+                }
+                else
+                {
+                    Debug.LogWarning("Slot already contains a different item.");
+                    return false;
+                }
+            }
+            else
+            {
                 int itemsToPlace = Mathf.Min(count, item.maxStack);
-
-                // Spawn the item with the specified count
                 SpawnNewItem(item, slot, itemsToPlace);
                 count -= itemsToPlace;
+            }
+        }
+        else // Case 2: Use normal logic (first available slot, stack if possible)
+        {
+            for (int i = 0; i < inventoryUIHandler.inventorySlots.Count && count > 0; i++)
+            {
+                InventorySlot slot = inventoryUIHandler.inventorySlots[i];
+                InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+
+                if (itemInSlot != null)
+                {
+                    if (itemInSlot.item == item && itemInSlot.count < item.maxStack && itemInSlot.item.stackable)
+                    {
+                        int availableSpace = item.maxStack - itemInSlot.count;
+                        int itemsToAdd = Mathf.Min(count, availableSpace);
+
+                        itemInSlot.count += itemsToAdd;
+                        count -= itemsToAdd;
+
+                        itemInSlot.RefreshCount();
+                    }
+                }
+                else
+                {
+                    int itemsToPlace = Mathf.Min(count, item.maxStack);
+                    SpawnNewItem(item, slot, itemsToPlace);
+                    count -= itemsToPlace;
+                }
             }
         }
 
@@ -228,7 +292,7 @@ public class InventoryManager : MonoBehaviour
 
     public void DropAllItems()
     {
-        int numSlots = inventoryUIHandler.inventorySlots.Length;
+        int numSlots = inventoryUIHandler.inventorySlots.Count;
 
         for (int i = 0; i < numSlots; i++)
         {
@@ -250,13 +314,11 @@ public class InventoryManager : MonoBehaviour
     {
         Vector3 pos = playerObject.transform.position + playerObject.transform.forward * 2f;
 
-        Debug.Log(playerObject.transform.position.ToString());
-
         if (item != null && item.itemDrop != null)
         {
             GameObject instance = Instantiate(item.itemDrop, pos, item.itemDrop.transform.rotation);
             
-            if (instance.TryGetComponent<InteractableItem>(out var interactable))
+            if (instance.TryGetComponent(out InteractableItem interactable))
             {
                 interactable.itemCount = count;
             }
@@ -275,7 +337,7 @@ public class InventoryManager : MonoBehaviour
 
     public void ClearItems()
     {
-        int numSlots = inventoryUIHandler.inventorySlots.Length;
+        int numSlots = inventoryUIHandler.inventorySlots.Count;
 
         for (int i = 0; i < numSlots; i++)
         {
@@ -331,7 +393,7 @@ public class InventoryManager : MonoBehaviour
         return null;
     }
 
-    public InventoryItem GetInventoryItem()
+    public InventoryItem GetSelectedInventoryItem()
     {
         InventorySlot slot = inventoryUIHandler.inventorySlots[selectedSlot];
         InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
@@ -339,11 +401,72 @@ public class InventoryManager : MonoBehaviour
         return itemInSlot;
     }
 
+    public bool HasItem(Item item)
+    {
+        foreach (InventorySlot slot in inventoryUIHandler.inventorySlots)
+        {
+            InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+            if (itemInSlot != null && itemInSlot.item == item)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void ConsumeItem(Item item, int consumeCount = 1)
+    {
+        foreach (InventorySlot slot in inventoryUIHandler.inventorySlots)
+        {
+            InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+
+            if (itemInSlot != null && itemInSlot.item == item)
+            {
+                if (itemInSlot.count <= consumeCount)
+                {
+                    consumeCount -= itemInSlot.count;
+                    Destroy(itemInSlot.gameObject);
+                }
+                else
+                {
+                    itemInSlot.count -= consumeCount;
+                    itemInSlot.RefreshCount();
+                    break;
+                }
+            }
+
+            if (consumeCount <= 0) break;
+        }
+
+        itemEquip.EquipItem(GetSelectedItem(false));
+    }
+
     void HandleSlotSelection()
     {
-        if (int.TryParse(Input.inputString, out int number) && number is > 0 and <= numHotbarSlots)
+        if (IsExtensionOpen()) return;
+
+        // Handle number keys
+        for (int i = 1; i <= numHotbarSlots; i++)
         {
-            ChangeSelectedSlot(number - 1);
+            if (Input.GetKeyDown(KeyCode.Alpha1 + (i - 1)))
+            {
+                ChangeSelectedSlot(i - 1);
+                return;
+            }
+        }
+
+        // Handle scroll wheel
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll > 0f)
+        {
+            int nextSlot = (selectedSlot + 1) % numHotbarSlots;
+            ChangeSelectedSlot(nextSlot);
+        }
+        else if (scroll < 0f)
+        {
+            int prevSlot = (selectedSlot - 1 + numHotbarSlots) % numHotbarSlots;
+            ChangeSelectedSlot(prevSlot);
         }
     }
 
@@ -359,7 +482,7 @@ public class InventoryManager : MonoBehaviour
         {
             if (mainInventory != null) mainInventory.SetActive(true);
             if (craftingMenuUI != null) craftingMenuUI.SetActive(true);
-            if (darkBackground != null) darkBackground.SetActive(true);
+            OnInventoryOpen();
         }
     }
 
@@ -405,6 +528,13 @@ public class InventoryManager : MonoBehaviour
         return false;
     }
 
+    public void OnInventoryOpen()
+    {
+        if (deleteSlot != null) deleteSlot.SetActive(true);
+        if (darkBackground != null) darkBackground.SetActive(true);
+        GameManager.Instance.ToggleCameraFollow(false);
+    }
+
     void ResetExtensions()
     {
         if (darkBackground != null) darkBackground.SetActive(false);
@@ -429,7 +559,11 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
+        deleteSlot.SetActive(false);
         JustClosedExtension = true;
+        GameManager.Instance.ToggleCameraFollow(true);
+
+        ItemTooltipUI.Instance.HideTooltip();
     }
 
     void TryInteractWithObject()
@@ -440,7 +574,7 @@ public class InventoryManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, 5f, layerOne) || Physics.Raycast(ray, out hit, 5f, layerTwo))  // 5f is the interaction distance
         {
-            if (hit.collider.TryGetComponent<InteractableItem>(out var interactable))
+            if (hit.collider.TryGetComponent(out InteractableItem interactable))
             {
                 interactable.Interact();
             }
@@ -452,7 +586,7 @@ public class InventoryManager : MonoBehaviour
         int remaining = count;
 
         // First, check space in existing stacks
-        for (int i = 0; i < inventoryUIHandler.inventorySlots.Length && remaining > 0; i++)
+        for (int i = 0; i < inventoryUIHandler.inventorySlots.Count && remaining > 0; i++)
         {
             InventorySlot slot = inventoryUIHandler.inventorySlots[i];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
@@ -468,7 +602,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         // Then, check for empty slots
-        for (int i = 0; i < inventoryUIHandler.inventorySlots.Length && remaining > 0; i++)
+        for (int i = 0; i < inventoryUIHandler.inventorySlots.Count && remaining > 0; i++)
         {
             InventorySlot slot = inventoryUIHandler.inventorySlots[i];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();

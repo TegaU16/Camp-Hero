@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 290839573056755980, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
       propertyPath: m_Name
-      value: Mortar Build Variant
+      value: Mortar Drop
       objectReference: {fileID: 0}
     - target: {fileID: 290839573056755980, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
       propertyPath: m_Layer
@@ -68,6 +68,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6984149125991537595, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
+      propertyPath: firePoint
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8624124263323245659, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -107,7 +111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 10
+  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
@@ -136,10 +140,10 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5854904897886314844}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

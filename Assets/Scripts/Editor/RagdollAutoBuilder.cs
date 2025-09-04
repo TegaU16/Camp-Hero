@@ -33,13 +33,13 @@ public class RagdollAutoBuilder : EditorWindow
 
     void CreateRagdoll(GameObject root)
     {
-        var meshRenderers = root.GetComponentsInChildren<MeshRenderer>(true);
+        MeshRenderer[] meshRenderers = root.GetComponentsInChildren<MeshRenderer>(true);
         if (meshRenderers.Length == 0)
             meshRenderers = root.GetComponentsInChildren<MeshRenderer>(true);
 
         int count = 0;
 
-        foreach (var meshRenderer in meshRenderers)
+        foreach (MeshRenderer meshRenderer in meshRenderers)
         {
             Transform meshTransform = meshRenderer.transform;
             Transform bone = meshTransform.parent;
@@ -48,7 +48,7 @@ public class RagdollAutoBuilder : EditorWindow
 
             if (bone.GetComponent<Rigidbody>() == null)
             {
-                var rb = bone.gameObject.AddComponent<Rigidbody>();
+                Rigidbody rb = bone.gameObject.AddComponent<Rigidbody>();
                 rb.mass = mass;
             }
 
@@ -90,7 +90,7 @@ public class RagdollAutoBuilder : EditorWindow
         }
 
         // Add CharacterJoints
-        foreach (var rb in root.GetComponentsInChildren<Rigidbody>())
+        foreach (Rigidbody rb in root.GetComponentsInChildren<Rigidbody>())
         {
             if (rb.transform == root.transform) continue;
 

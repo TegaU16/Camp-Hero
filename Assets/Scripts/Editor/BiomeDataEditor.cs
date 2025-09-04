@@ -5,7 +5,6 @@ using UnityEditor;
 public class BiomeDataEditor : Editor
 {
     SerializedProperty biomeName;
-    SerializedProperty voxelTypes;
     SerializedProperty noiseSettings;
     SerializedProperty treePrefabs;
     SerializedProperty rockPrefabs;
@@ -17,7 +16,6 @@ public class BiomeDataEditor : Editor
         if (target == null) return; // Avoid SerializedObjectNotCreatableException
 
         biomeName = serializedObject.FindProperty("biomeName");
-        voxelTypes = serializedObject.FindProperty("voxelTypes");
         noiseSettings = serializedObject.FindProperty("noiseSettings");
         treePrefabs = serializedObject.FindProperty("treePrefabs");
         rockPrefabs = serializedObject.FindProperty("rockPrefabs");
@@ -33,7 +31,6 @@ public class BiomeDataEditor : Editor
         serializedObject.Update();
 
         EditorGUILayout.PropertyField(biomeName, new GUIContent("Biome Name"));
-        EditorGUILayout.PropertyField(voxelTypes, new GUIContent("Voxel Types"), true);
         EditorGUILayout.PropertyField(noiseSettings, new GUIContent("Noise Settings"), true);
         EditorGUILayout.PropertyField(treePrefabs, new GUIContent("Tree Prefabs"), true);
         EditorGUILayout.PropertyField(rockPrefabs, new GUIContent("Rock Prefabs"), true);
