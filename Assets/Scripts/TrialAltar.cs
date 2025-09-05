@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class TrialAltar : MonoBehaviour, IInteractable
@@ -280,6 +281,16 @@ public class TrialAltar : MonoBehaviour, IInteractable
         barrierRoot.SetActive(active);
     }
 
+    public void FailTrial()
+    {
+        if (barrierRoot != null)
+            barrierRoot.SetActive(false);
+
+        foreach (GameObject trialEnemy in TrialEnemyPool.Instance.activeEnemies.ToList())
+        {
+            TrialEnemyPool.Instance.ReturnEnemyToPool(trialEnemy);
+        }
+    }
 
     // Save / Load
     public void SaveAltarState()

@@ -5,10 +5,19 @@ using UnityEngine;
 
 public class KeyStructureSpawner : MonoBehaviour
 {
+    public static KeyStructureSpawner Instance;
+
     public VoxelGrid voxelGrid;
     public GameObject[] trialStructurePrefabs;
 
     private readonly List<Vector3> keyStructurePositions = new();
+
+    [HideInInspector] public HashSet<TrialAltar> activeTrialAltars = new();
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     public IEnumerator SpawnKeyStructures(float worldSize, Vector3 worldCenter, Action<float> onProgress = null)
     {
@@ -20,6 +29,8 @@ public class KeyStructureSpawner : MonoBehaviour
 
         float minDistanceFromCenter = worldSize * 0.2f;
         float maxDistanceFromCenter = worldSize * 0.45f;
+
+        activeTrialAltars.Clear();
 
         foreach (GameObject trialStructurePrefab in trialStructurePrefabs)
         {
@@ -55,6 +66,9 @@ public class KeyStructureSpawner : MonoBehaviour
 
                 GameObject placedStructure = Instantiate(trialStructurePrefab, groundPos, Quaternion.identity);
                 voxelGrid.MarkAreaOccupied(placedStructure, true, true);
+
+                if (placedStructure.TryGetComponent(out TrialAltar trialAltar))
+                    activeTrialAltars.Add(trialAltar);
 
                 int index = Array.IndexOf(trialStructurePrefabs, trialStructurePrefab);
                 onProgress?.Invoke((float)(index + 1) / trialStructurePrefabs.Length);

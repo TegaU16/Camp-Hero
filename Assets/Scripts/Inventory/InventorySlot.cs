@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using NUnit.Framework;
+using System.Collections.Generic;
 
 public enum SlotType
 {
@@ -19,6 +21,8 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public Sprite selectedImage, unselectedImage;
 
     public SlotType slotType;
+
+    private Coroutine followCoroutine;
 
     private void Awake()
     {
@@ -40,31 +44,52 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         image.sprite = unselectedImage;
     }
 
+    // --- Left click pick / place
     public void HandleLeftClick()
     {
+        if (InventoryItem.selectedItem != null)
+        {
+            OnSecondClick(this);
+            UpdateInventorySlot();
+            return;
+        }
+
         if (transform.childCount > 0)
         {
+            // record original slot on the item before we move it
             InventoryItem selectedItem = GetComponentInChildren<InventoryItem>();
+            if (selectedItem == null) return;
+
+            selectedItem.originalParentSlot = transform;
             InventoryItem.selectedItem = selectedItem;
+            selectedItem.isBeingDragged = true;
             selectedItem.transform.SetParent(transform.root);
             selectedItem.GetComponent<Image>().raycastTarget = false;
-            StartCoroutine(FollowCursor(InventoryItem.selectedItem));
-        }
-        else
-        {
-            OnSecondClick();
+
+            selectedItem.EnableDragLayering();
+            StartFollowCursor(selectedItem);
         }
 
         UpdateInventorySlot();
     }
 
+    // --- Right click split / pick
     public void HandleRightClick()
     {
         Debug.Log($"[HandleRightClick] Called on slot: {name}");
 
+        if (InventoryItem.selectedItem != null)
+        {
+            OnSecondClick(this);
+            UpdateInventorySlot();
+            return;
+        }
+
         if (transform.childCount > 0)
         {
             InventoryItem originalItem = GetComponentInChildren<InventoryItem>();
+            if (originalItem == null) return;
+
             Debug.Log($"[HandleRightClick] Found original item: {originalItem.name}, count: {originalItem.count}, parent: {originalItem.transform.parent.name}");
 
             if (originalItem.count > 1)
@@ -75,57 +100,59 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 originalItem.count -= splitCount;
                 originalItem.RefreshCount();
 
-                // Create new split item
+                // Instantiate the split item directly under the UI root to avoid a single-frame race
                 GameObject splitItemGo = Instantiate(InventoryManager.Instance.inventoryItemPrefab, transform);
                 splitItemGo.name = "SplitItem_" + originalItem.item.name;
 
                 InventoryItem splitItem = splitItemGo.GetComponent<InventoryItem>();
                 splitItem.SetItem(originalItem.item, splitCount);
 
-                splitItem.transform.SetParent(transform.root);
-                splitItem.transform.SetAsLastSibling();
+                // store the slot the split came from so RevertToOriginalSlot can work
+                splitItem.originalParentSlot = transform;
 
-                InventoryItem.selectedItem = originalItem;
-                originalItem.GetComponent<Image>().raycastTarget = false;
+                // mark as the currently selected (being dragged) item
+                InventoryItem.selectedItem = splitItem;
+                splitItem.isBeingDragged = true;
+                splitItem.GetComponent<Image>().raycastTarget = false;
 
-                StartCoroutine(FollowCursor(InventoryItem.selectedItem));
+                splitItem.EnableDragLayering();
+                StartFollowCursor(splitItem);
             }
             else
             {
                 InventoryItem.selectedItem = originalItem;
+                originalItem.originalParentSlot = transform;
+                originalItem.isBeingDragged = true;
                 originalItem.transform.SetParent(transform.root);
-                originalItem.transform.SetAsLastSibling();
                 originalItem.GetComponent<Image>().raycastTarget = false;
-                StartCoroutine(FollowCursor(InventoryItem.selectedItem));
+
+                InventoryItem.selectedItem.EnableDragLayering();
+                StartFollowCursor(InventoryItem.selectedItem);
             }
-        }
-        else
-        {
-            Debug.Log("[HandleRightClick] Slot empty, calling OnSecondClick.");
-            OnSecondClick();
         }
 
         UpdateInventorySlot();
     }
 
-    private void OnSecondClick()
+    private void OnSecondClick(InventorySlot targetSlot)
     {
         if (InventoryItem.selectedItem == null) return;
 
         InventoryItem.selectedItem.GetComponent<Image>().raycastTarget = true;
 
-        if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
+        if (InventoryManager.InventoryUI != null &&
+            !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
         {
-            if (IsItemAllowedInSlot(InventoryItem.selectedItem.item))
+            if (targetSlot != null && targetSlot.IsItemAllowedInSlot(InventoryItem.selectedItem.item))
             {
-                if (transform.childCount == 0)
+                if (targetSlot.transform.childCount == 0)
                 {
-                    InventoryItem.selectedItem.PlaceInSlot(transform);
+                    InventoryItem.selectedItem.PlaceInSlot(targetSlot.transform);
                 }
                 else
                 {
-                    InventoryItem existingItem = GetComponentInChildren<InventoryItem>();
-                    if (existingItem.item == InventoryItem.selectedItem.item)
+                    InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
+                    if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
                     {
                         StackItems(existingItem, InventoryItem.selectedItem);
                     }
@@ -134,14 +161,14 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                         InventoryItem.selectedItem.RevertToOriginalSlot();
                     }
                 }
-
-                StopAllCoroutines();
             }
             else
             {
                 InventoryItem.selectedItem.RevertToOriginalSlot();
-                StopAllCoroutines();
             }
+
+            InventoryItem.selectedItem.DisableDragLayering();
+            StopFollowCursor();
         }
         else
         {
@@ -151,14 +178,29 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         InventoryItem.selectedItem = null;
     }
 
+    // --- DRAG HANDLERS ---
     public void OnBeginDrag(PointerEventData eventData)
     {
+        // IMPORTANT: if an item is already being carried (selectedItem), don't start a new drag.
+        if (InventoryItem.selectedItem != null) return;
+
         if (transform.childCount > 0)
         {
             InventoryItem selectedItem = GetComponentInChildren<InventoryItem>();
+            if (selectedItem == null) return;
+
+            // if the child is already flagged as being dragged, ignore
+            if (selectedItem.isBeingDragged) return;
+
             InventoryItem.selectedItem = selectedItem;
+            selectedItem.originalParentSlot = transform;
+            selectedItem.isBeingDragged = true;
             selectedItem.transform.SetParent(transform.root);
             selectedItem.GetComponent<Image>().raycastTarget = false;
+
+            selectedItem.EnableDragLayering();
+            StartFollowCursor(selectedItem);
+
             UpdateInventorySlot();
         }
     }
@@ -175,7 +217,12 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         if (InventoryItem.selectedItem == null) return;
 
+        // clear dragged flag
+        InventoryItem.selectedItem.isBeingDragged = false;
         InventoryItem.selectedItem.GetComponent<Image>().raycastTarget = true;
+
+        InventoryItem.selectedItem.DisableDragLayering();
+        StopFollowCursor();
 
         // Use the centralized InventoryUI reference to check if the item is inside the inventory
         if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
@@ -232,7 +279,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         while (targetObject != null)
         {
-            if (targetObject.TryGetComponent<InventorySlot>(out var targetSlot)) return targetSlot;
+            if (targetObject.TryGetComponent(out InventorySlot targetSlot)) return targetSlot;
             targetObject = targetObject.transform.parent != null ? targetObject.transform.parent.gameObject : null;
         }
         return null;
@@ -273,7 +320,16 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             existingItem.RefreshCount();
             selectedItem.count = combinedCount - maxStack;
             selectedItem.RefreshCount();
-            selectedItem.RevertToOriginalSlot();
+
+            // Try to put leftover back to its original slot if possible, otherwise revert.
+            if (selectedItem.originalParentSlot != null && selectedItem.originalParentSlot.childCount == 0)
+            {
+                selectedItem.PlaceInSlot(selectedItem.originalParentSlot);
+            }
+            else
+            {
+                selectedItem.RevertToOriginalSlot();
+            }
         }
     }
 
@@ -292,8 +348,29 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     private void DropSelectedItem()
     {
+        if (InventoryItem.selectedItem == null) return;
+
         InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
         Destroy(InventoryItem.selectedItem.gameObject);
+
+        InventoryItem.selectedItem.DisableDragLayering();
+        StopFollowCursor();
+    }
+
+    // --- Cursor follow helpers (single coroutine)
+    private void StartFollowCursor(InventoryItem item)
+    {
+        StopFollowCursor();
+        followCoroutine = StartCoroutine(FollowCursor(item));
+    }
+
+    private void StopFollowCursor()
+    {
+        if (followCoroutine != null)
+        {
+            StopCoroutine(followCoroutine);
+            followCoroutine = null;
+        }
     }
 
     private IEnumerator FollowCursor(InventoryItem item)
@@ -318,5 +395,24 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             Destroy(child.gameObject);
         }
+    }
+
+    private InventorySlot GetSlotUnderMouse()
+    {
+        PointerEventData pointerData = new(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        List<RaycastResult> raycastResults = new();
+        EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+        foreach (RaycastResult result in raycastResults)
+        {
+            if (result.gameObject.TryGetComponent(out InventorySlot slot))
+                return slot;
+        }
+
+        return null;
     }
 }

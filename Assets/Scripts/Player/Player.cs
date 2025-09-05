@@ -1,3 +1,4 @@
+using System.Linq;
 using DG.Tweening;
 using UnityEngine;
 
@@ -204,6 +205,13 @@ public class Player : MonoBehaviour
         }
 
         InventoryManager.Instance.DropAllItems();
+
+        foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+        {
+            if (trialAltar != null && trialAltar.IsWaveInProgress())
+                trialAltar.FailTrial();
+        }
+
         Invoke(nameof(Despawn), 5f);
     }
 

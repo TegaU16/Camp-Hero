@@ -7,8 +7,7 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 {
     public static InventoryItem selectedItem;
 
-    [HideInInspector]
-    public Item item;
+    [HideInInspector] public Item item;
 
     public int count = 1;
     public TextMeshProUGUI countText;
@@ -16,10 +15,13 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private Transform originalParent;
     public float padding;
 
-    [HideInInspector] 
-    public Image image;
-
+    [HideInInspector] public Image image;
     public CanvasGroup canvasGroup;
+
+    [HideInInspector] public bool isBeingDragged;
+    [HideInInspector] public Transform originalParentSlot;
+
+    private Canvas dragCanvas;
 
     private void Awake()
     {
@@ -78,6 +80,9 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         StretchToFit(padding);
 
+        originalParentSlot = slotTransform;
+        isBeingDragged = false;
+
         // Re-enable raycast targeting once placed in the slot
         image.raycastTarget = true;
 
@@ -128,5 +133,30 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         rt.pivot = new Vector2(0.5f, 0.5f);
         rt.localScale = Vector3.one;
         rt.localPosition = Vector3.zero;
+    }
+
+    public void EnableDragLayering()
+    {
+        if (dragCanvas == null)
+            dragCanvas = gameObject.GetComponent<Canvas>();
+
+        if (dragCanvas == null)
+            dragCanvas = gameObject.AddComponent<Canvas>();
+
+        dragCanvas.overrideSorting = true;
+        dragCanvas.sortingOrder = 9999;
+
+        // Optional: add GraphicRaycaster if needed
+        if (GetComponent<GraphicRaycaster>() == null)
+            gameObject.AddComponent<GraphicRaycaster>();
+    }
+
+    public void DisableDragLayering()
+    {
+        if (dragCanvas != null)
+        {
+            dragCanvas.overrideSorting = false;
+            dragCanvas.sortingOrder = 0;
+        }
     }
 }

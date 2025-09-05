@@ -144,11 +144,12 @@ MonoBehaviour:
   - drop: {fileID: 11400000, guid: 1472ea67f171fe247b42cd04ced4da14, type: 2}
     minValue: 1
     maxValue: 5
-    dropChance: 0.35
+    dropChance: 0.15
   type: 0
   objectLevel: 0
   isOrganism: 0
   savedObjectIndex: -1
+  torsoBone: {fileID: 0}
 --- !u!114 &8044675007034855517
 MonoBehaviour:
   m_ObjectHideFlags: 0

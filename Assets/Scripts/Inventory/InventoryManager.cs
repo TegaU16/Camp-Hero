@@ -217,27 +217,33 @@ public class InventoryManager : MonoBehaviour
                 count -= itemsToPlace;
             }
         }
-        else // Case 2: Use normal logic (first available slot, stack if possible)
+        else // Case 2: Prioritize stacking, then fill empty slots
         {
+            // Pass 1: Try stacking
             for (int i = 0; i < inventoryUIHandler.inventorySlots.Count && count > 0; i++)
             {
                 InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                if (itemInSlot != null)
+                if (itemInSlot != null && itemInSlot.item == item && itemInSlot.count < item.maxStack && item.stackable)
                 {
-                    if (itemInSlot.item == item && itemInSlot.count < item.maxStack && itemInSlot.item.stackable)
-                    {
-                        int availableSpace = item.maxStack - itemInSlot.count;
-                        int itemsToAdd = Mathf.Min(count, availableSpace);
+                    int availableSpace = item.maxStack - itemInSlot.count;
+                    int itemsToAdd = Mathf.Min(count, availableSpace);
 
-                        itemInSlot.count += itemsToAdd;
-                        count -= itemsToAdd;
+                    itemInSlot.count += itemsToAdd;
+                    count -= itemsToAdd;
 
-                        itemInSlot.RefreshCount();
-                    }
+                    itemInSlot.RefreshCount();
                 }
-                else
+            }
+
+            // Pass 2: If any left, put in empty slots
+            for (int i = 0; i < inventoryUIHandler.inventorySlots.Count && count > 0; i++)
+            {
+                InventorySlot slot = inventoryUIHandler.inventorySlots[i];
+                InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+
+                if (itemInSlot == null)
                 {
                     int itemsToPlace = Mathf.Min(count, item.maxStack);
                     SpawnNewItem(item, slot, itemsToPlace);

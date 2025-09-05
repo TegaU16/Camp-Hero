@@ -9,6 +9,9 @@ public class TrialEnemyPool : MonoBehaviour
     public int poolSizePerType = 10;
 
     private readonly Dictionary<GameObject, List<GameObject>> pools = new();
+    private readonly Dictionary<GameObject, GameObject> enemyToPrefab = new();
+
+    [HideInInspector] public HashSet<GameObject> activeEnemies = new();
 
     private void Awake()
     {
@@ -25,6 +28,7 @@ public class TrialEnemyPool : MonoBehaviour
                 GameObject enemy = Instantiate(prefab);
                 enemy.SetActive(false);
                 pool.Add(enemy);
+                enemyToPrefab[enemy] = prefab;
             }
             pools[prefab] = pool;
         }
@@ -51,6 +55,8 @@ public class TrialEnemyPool : MonoBehaviour
                 {
                     marker.OnTrialSpawn(); // Optional hook
                 }
+
+                activeEnemies.Add(enemy);
                 return enemy;
             }
         }
@@ -66,10 +72,26 @@ public class TrialEnemyPool : MonoBehaviour
         newEnemy.SetActive(true);
 
         if (newEnemy.TryGetComponent(out TrialEnemyMarker newMarker))
-        {
             newMarker.OnTrialSpawn();
-        }
 
         return newEnemy;
+    }
+
+    public void ReturnEnemyToPool(GameObject enemy)
+    {
+        if (enemy == null) return;
+
+        if (!enemyToPrefab.ContainsKey(enemy))
+        {
+            Debug.LogWarning($"Enemy {enemy.name} does not belong to any pool.");
+            Destroy(enemy); // or just deactivate if you want
+            return;
+        }
+
+        if (enemy.TryGetComponent(out BreakableObject breakable))
+            breakable.ResetObject();
+
+        activeEnemies.Remove(enemy);
+        enemy.SetActive(false);
     }
 }

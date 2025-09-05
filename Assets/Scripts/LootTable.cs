@@ -19,7 +19,7 @@ public class LootTable : ScriptableObject
     {
         List<StoredItem> loot = new();
 
-        foreach (var entry in lootEntries)
+        foreach (LootEntry entry in lootEntries)
         {
             if (Random.value <= entry.probability)
             {

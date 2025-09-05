@@ -147,12 +147,6 @@ public class VoxelGrid : MonoBehaviour
         OnProgress?.Invoke((float)currentStep / totalSteps);
         yield return null;
 
-        // --- Natural objects ---
-        yield return StartCoroutine(SpawnNaturalObjects());
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-        yield return null;
-
         // --- Altars ---
         altarSpawner.worldCenter = worldCenter;
         yield return StartCoroutine(altarSpawner.SpawnAltarsRoutine(terrainWidth, (progress) =>
@@ -173,6 +167,12 @@ public class VoxelGrid : MonoBehaviour
         // --- World borders ---
         yield return null;
         CreateWorldBorders();
+        currentStep++;
+        OnProgress?.Invoke((float)currentStep / totalSteps);
+        yield return null;
+
+        // --- Natural objects ---
+        yield return StartCoroutine(SpawnNaturalObjects());
         currentStep++;
         OnProgress?.Invoke((float)currentStep / totalSteps);
         yield return null;
@@ -990,7 +990,6 @@ public class VoxelGrid : MonoBehaviour
         StartCoroutine(ManageChunksRoutine());
 
         // Key structures / natural objects / altars / campfire / borders / save
-        // You can conditionally skip these if already present in saved data
         yield return StartCoroutine(keyStructureSpawner.SpawnKeyStructures(terrainWidth, worldCenter,
             progress => OnProgress?.Invoke((currentStep + progress) / totalSteps)));
         currentStep++;

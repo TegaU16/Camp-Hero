@@ -42,7 +42,7 @@ public class InventoryUIHandler : MonoBehaviour
                 if (isLeft)
                     slot.HandleLeftClick();
                 else
-                    //slot.HandleRightClick();
+                    slot.HandleRightClick();
                 return;
             }
         }
