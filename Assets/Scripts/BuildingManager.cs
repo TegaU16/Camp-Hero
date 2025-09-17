@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -114,7 +115,6 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-
     void UpdateGhostPosition()
     {
         Vector2Int buildingSize = selectedItem.buildingSize;
@@ -223,9 +223,31 @@ public class BuildingManager : MonoBehaviour
 
             if (IsAreaFree(currentGhost, snappedPosition))
             {
+                int chunkX = Mathf.FloorToInt(finalPosition.x / voxelGrid.chunkSize);
+                int chunkZ = Mathf.FloorToInt(finalPosition.z / voxelGrid.chunkSize);
+
+                Vector2Int chunkKey = new(chunkX, chunkZ);
+
+                if (!voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk)) return;
+
+                if (!selectedItem.buildingGhost.TryGetComponent(out BreakableObject breakable)) return;
+
                 GameObject placedObject = Instantiate(selectedItem.buildingGhost, finalPosition, currentGhost.transform.rotation);
                 SetAllScriptsEnabled(placedObject, true);
 
+                BreakableObjectData breakableObjectData = new()
+                {
+                    currentHealth = breakable.GetHealth()
+                };
+                
+                chunk.objects.Add(placedObject);
+                chunk.savedObjectPositions.Add(finalPosition);
+                chunk.savedObjects.Add(new SpawnedObjectData(finalPosition, selectedItem.buildingGhost, breakableObjectSaveData: breakableObjectData));
+                chunk.isDirty = true;
+
+                breakable.owningChunk = chunk;
+                breakable.savedObjectIndex = chunk.savedObjects.Count - 1;
+                
                 StartCoroutine(BouncePlacedObject(placedObject.transform));
 
                 voxelGrid.MarkAreaOccupied(placedObject);

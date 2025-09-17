@@ -18,30 +18,18 @@ public enum SlotType
 public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public Image image;
-    public Sprite selectedImage, unselectedImage;
-
     public SlotType slotType;
-
     private Coroutine followCoroutine;
 
     private void Awake()
     {
-        Deselect();
+        if (TryGetComponent(out SelectableImage selectableImage))
+            selectableImage.Deselect();
     }
 
     private void Start()
     {
         image.raycastTarget = true;
-    }
-
-    public void Select()
-    {
-        image.sprite = selectedImage;
-    }
-
-    public void Deselect()
-    {
-        image.sprite = unselectedImage;
     }
 
     // --- Left click pick / place

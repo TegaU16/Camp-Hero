@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 3864167453675511965}
   - component: {fileID: -9085289018369716593}
   - component: {fileID: -3437053813929266187}
+  - component: {fileID: 1595123286522260374}
   m_Layer: 6
   m_Name: Blue Gem Altar
   m_TagString: Untagged
@@ -219,6 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2632613433edb4f84d87ecf7132931, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  altarID: 
   requiredKey: {fileID: 11400000, guid: 7de1840346da4004e8a6c0ab5a65f977, type: 2}
   bossPrefab: {fileID: 478956996202849501, guid: 02530430257cd8e4cb10f10fae3bc7a9, type: 3}
   bossSpawnPoint: {fileID: 3280665420917833297}
@@ -245,3 +247,16 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2624006556021887992, guid: 9de8e1ad239e97f44b1e24ae54bf64f4, type: 3}
+--- !u!114 &1595123286522260374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4423047693754187435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: blue_gem_altar

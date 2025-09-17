@@ -11,28 +11,6 @@ public class Voxel
     }
 }
 
-public class SpawnedObjectData
-{
-    public Vector3 position;
-    public string prefabName;
-    public string savedStateJson;
-
-    public SpawnedObjectData(Vector3 pos, GameObject obj)
-    {
-        position = pos;
-        prefabName = obj.name;
-
-        if (obj.TryGetComponent(out ISaveableObject saveable))
-        {
-            savedStateJson = saveable.SaveState();
-        }
-        else
-        {
-            savedStateJson = null;
-        }
-    }
-}
-
 public class VoxelChunk
 {
     public GameObject chunkObject;
@@ -56,6 +34,8 @@ public class VoxelChunk
     public bool hasNaturalObjects = false;
     public bool hasKeyStructure = false;
     public bool wasLoadedFromSave = false;
+    public bool isLoading = false;
+    public bool isDirty = false;
 
     public MeshRenderer[] cachedRenderers;
     public Collider[] cachedColliders;

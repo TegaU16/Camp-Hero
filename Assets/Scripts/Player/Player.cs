@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
 
     private float cachedSpeed;
     private float cachedSprintSpeed;
+    private float cachedTurnSmoothTime;
 
     [Header("Status")]
     public Health health;
@@ -59,6 +60,7 @@ public class Player : MonoBehaviour
 
         cachedSpeed = speed;
         cachedSprintSpeed = sprintSpeed;
+        cachedTurnSmoothTime = turnSmoothTime;
     }
 
     // Update is called once per frame
@@ -241,7 +243,10 @@ public class Player : MonoBehaviour
         currentStamina = Mathf.Clamp(currentStamina, 0, (int)staminaBar.maxStamina);
 
         health.SetHealth(currentHealth);
+        health.healthBar.Initialize(health.maxHealth, currentHealth);
+
         staminaBar.SetNewStamina(currentStamina);
+        staminaBar.Initialize(staminaBar.maxStamina, currentStamina);
 
         staminaBar.incrementRate = playerAttributes.StaminaRegenRate;
 
@@ -257,14 +262,16 @@ public class Player : MonoBehaviour
 
     public void FreezeMovement()
     {
-        speed = 0;
-        sprintSpeed = 0;
+        speed = cachedSpeed / 4f;
+        sprintSpeed = cachedSprintSpeed / 4f;
+        turnSmoothTime = cachedTurnSmoothTime / 2f;
     }
 
     public void ResetMovement()
     {
         speed = cachedSpeed;
         sprintSpeed = cachedSprintSpeed;
+        turnSmoothTime = cachedTurnSmoothTime;
     }
 
     public void SavePlayer()

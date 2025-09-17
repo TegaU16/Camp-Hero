@@ -11,11 +11,6 @@ public class GemAltar : MonoBehaviour, IInteractable
     private bool bossDefeated = false;
     private bool isActivated = false;
 
-    private void Start()
-    {
-        LoadAltarState();
-    }
-
     public void Interact()
     {
         if (isActivated || bossDefeated)
@@ -71,7 +66,7 @@ public class GemAltar : MonoBehaviour, IInteractable
         SaveSystem.SaveGemAltarState(GameManager.Instance.currentWorldName, altarID, data);
     }
 
-    private void LoadAltarState()
+    public void LoadAltarState()
     {
         GemAltarSaveData data = SaveSystem.LoadGemAltarState(GameManager.Instance.currentWorldName, altarID);
         if (data != null)

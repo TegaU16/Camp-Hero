@@ -58,6 +58,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float repathDistanceThreshold = 1f;
     private Vector3 lastTargetPosition;
     private float lastRepathTime = -999f;
+    private readonly float retaliateMemoryDuration = 5f;
+    private float lastAttackedTime = -999f;
 
     // -------------------- PATHFINDING --------------------
     [Header("Pathfinding")]
@@ -67,9 +69,7 @@ public class Enemy : MonoBehaviour
 
     // -------------------- SCORING --------------------
     [Header("Scoring Weights")]
-    public float distanceWeight = 1f;
-    public float damageMemoryWeight = -5f;
-    public float objectiveThreatWeight = -3f;
+    public EnemyPersonality personality;
 
     // -------------------- REFERENCES --------------------
     [Header("References")]
@@ -192,10 +192,6 @@ public class Enemy : MonoBehaviour
         // Finally move
         Vector3 displacement = moveSpeed * Time.fixedDeltaTime * move;
         characterController.Move(displacement);
-
-        // Speed animation param (based only on horizontal agent movement)
-        //float horizontalSpeed = new Vector3(displacement.x, 0f, displacement.z).magnitude / (moveSpeed * Time.fixedDeltaTime);
-        //animator.SetFloat("Speed", horizontalSpeed, 0.2f, Time.fixedDeltaTime);
     }
 
     private void HandleChasing(float distanceToTarget)
@@ -221,12 +217,18 @@ public class Enemy : MonoBehaviour
 
     private void HandleAttacking(float distanceToTarget)
     {
-        myTransform.LookAt(new Vector3(currentTarget.position.x, myTransform.position.y, currentTarget.position.z));
+        Vector3 dir = currentTarget.position - myTransform.position;
+        dir.y = 0;
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            myTransform.rotation = Quaternion.Slerp(myTransform.rotation, targetRot, Time.deltaTime * 10f);
+        }
 
         if (!isAttacking)
             attackTimer += Time.deltaTime;
 
-        if (attackTimer >= attackCooldown)
+        if (!isAttacking && attackTimer >= attackCooldown)
         {
             animator.SetTrigger("Attack");
             isAttacking = true;
@@ -389,6 +391,9 @@ public class Enemy : MonoBehaviour
     public void OnAttacked(Transform attacker)
     {
         recentAttacker = attacker;
+        lastAttackedTime = Time.time;
+
+        AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
     }
 
     void OnAnimatorMove()
@@ -408,6 +413,11 @@ public class Enemy : MonoBehaviour
         agent.StopPath();
         animator.SetFloat("Speed", 0f);
         currentState = State.Attacking;
+
+        if (!isAttacking)
+        {
+            attackTimer = attackCooldown;
+        }
     }
 
     void BeginRangedAttack()
@@ -416,6 +426,11 @@ public class Enemy : MonoBehaviour
         agent.StopPath();
         animator.SetFloat("Speed", 0f);
         currentState = State.RangedAttacking;
+
+        if (!isAttacking)
+        {
+            attackTimer = attackCooldown;
+        }
     }
 
     // Called by animation event
@@ -424,7 +439,10 @@ public class Enemy : MonoBehaviour
         if (currentRangedAttack == null || currentTarget == null)
             return;
 
-        currentRangedAttack.ExecuteAttack(myTransform, currentTarget, damage);
+        float damageWithMultiplier = DifficultyManager.Instance.GetDamageMultiplier() * damage;
+        int finalDamage = (int)damageWithMultiplier;
+
+        currentRangedAttack.ExecuteAttack(myTransform, currentTarget, finalDamage);
         currentRangedAttack = null;
     }
 
@@ -439,7 +457,7 @@ public class Enemy : MonoBehaviour
     {
         if (moveSpeed != 0) // cache only if actually moving
             cachedMoveSpeed = moveSpeed;
-        moveSpeed = 0;
+        moveSpeed = cachedMoveSpeed / 4f;
     }
 
     public void ResetMovement()
@@ -454,10 +472,13 @@ public class Enemy : MonoBehaviour
         float distance = Vector3.Distance(myTransform.position, currentTarget.position);
         if (distance > attackRange + 0.5f) return;
 
+        float damageWithMultiplier = DifficultyManager.Instance.GetDamageMultiplier() * damage;
+        int finalDamage = (int)damageWithMultiplier;
+
         if (currentTarget.TryGetComponent(out Health targetHealth))
         {
-            targetHealth.TakeDamage(damage);
-
+            targetHealth.TakeDamage(finalDamage);
+            
             if (currentTarget.TryGetComponent(out Rigidbody targetRb))
             {
                 Vector3 knockbackDir = (currentTarget.position - myTransform.position).normalized;
@@ -466,7 +487,10 @@ public class Enemy : MonoBehaviour
         }
         else if (currentTarget.GetComponentInParent<BreakableObject>() is BreakableObject targetBreakable)
         {
-            targetBreakable.TakeDamage(damage, false);
+            Vector3 hitPoint = targetBreakable.GetComponent<Collider>().ClosestPoint(transform.position);
+            Vector3 hitNormal = (hitPoint - transform.position).normalized;
+
+            targetBreakable.TakeDamage(finalDamage, false, hitPoint, hitNormal);
         }
     }
 
@@ -535,15 +559,17 @@ public class Enemy : MonoBehaviour
             return;
 
         Transform bestTarget = null;
-        float bestScore = float.MaxValue;
+        float bestScore = float.MinValue;
 
         foreach (Targetable t in potentialTargets)
         {
             if (t == null || !t.gameObject.activeInHierarchy) continue;
             if (blockedTargets.Contains(t.transform)) continue;
 
-            float score = GetScoreForTarget(t.transform);
-            if (score < bestScore)
+            TargetScore ts = CreateTargetScore(t.transform);
+            float score = personality.CalculateScore(ts);
+
+            if (score > bestScore)
             {
                 bestScore = score;
                 bestTarget = t.transform;
@@ -583,32 +609,45 @@ public class Enemy : MonoBehaviour
                 return index;
         }
 
-        return int.MaxValue;
+        return int.MinValue;
     }
 
-    private float GetScoreForTarget(Transform target)
+    private TargetScore CreateTargetScore(Transform target)
     {
-        if (target == null) return float.MaxValue;
+        if (target == null) return null;
 
         float distance = Vector3.Distance(myTransform.position, target.position);
 
         Targetable targetable = target.GetComponent<Targetable>();
         int priority = targetable != null ? GetTargetPriority(targetable.targetType) : int.MaxValue;
 
-        float damageScore = (target == recentAttacker) ? damageMemoryWeight : 0f;
-        float objectiveScore = EvaluateObjectiveThreat(targetable);
+        float retaliationBias = 0f;
+        if (target == recentAttacker && Time.time - lastAttackedTime <= retaliateMemoryDuration)
+        {
+            float freshness = 1f - ((Time.time - lastAttackedTime) / retaliateMemoryDuration);
+            retaliationBias = personality.lastDamageWeight * freshness;
+        }
 
-        return priority + (distance * distanceWeight) + damageScore + objectiveScore;
+        float objectiveScore = 0f;
+        if (targetable != null)
+            objectiveScore = GetObjectiveThreat(targetable, personality);
+
+        return new TargetScore(target, priority, distance, retaliationBias, objectiveScore);
     }
 
-    private float EvaluateObjectiveThreat(Targetable targetable)
+    private float GetObjectiveThreat(Targetable targetable, EnemyPersonality personality)
     {
-        if (targetable == null) return 0f;
+        float objWeight = personality.objectiveThreatWeight;
 
-        if (targetable.targetType == Targetable.TargetType.Campfire)
-            return -5f;
-
-        return 0f;
+        return targetable.targetType switch
+        {
+            Targetable.TargetType.Campfire => objWeight * 4,
+            Targetable.TargetType.Player => objWeight * 5,
+            Targetable.TargetType.Defense => objWeight * 6,
+            Targetable.TargetType.Wall => objWeight * 3,
+            Targetable.TargetType.Structure => objWeight * 2,
+            _ => objWeight,
+        };
     }
 
     public State GetCurrentState()

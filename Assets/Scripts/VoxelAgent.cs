@@ -15,8 +15,6 @@ public class VoxelAgent : MonoBehaviour
     // Movement
     private Vector3 velocity;
     [Header("Movement Settings")]
-    [SerializeField] private float maxSpeed = 3f;
-    [SerializeField] private float acceleration = 10f;
     [SerializeField] private float stoppingDistance = 0.1f;
     [SerializeField] private float rotationSpeed = 720f; // degrees per second
 
@@ -139,6 +137,9 @@ public class VoxelAgent : MonoBehaviour
         if (HasPath)
         {
             Vector3 next = GridToWorld(path[pathIndex]);
+
+            DesiredPosition = Vector3.Lerp(DesiredPosition, next, 0.2f);
+
             Vector2 flatCur = new(currentPos.x, currentPos.z);
             Vector2 flatNext = new(next.x, next.z);
 
@@ -151,14 +152,6 @@ public class VoxelAgent : MonoBehaviour
                     velocity = Vector3.zero;
                     isWalkingDirect = false;
                 }
-                else
-                {
-                    UpdateDesired();
-                }
-            }
-            else
-            {
-                DesiredPosition = next;
             }
         }
         else
@@ -181,12 +174,11 @@ public class VoxelAgent : MonoBehaviour
 
         if (toTarget.magnitude > stoppingDistance)
         {
-            Vector3 desiredVelocity = toTarget.normalized * maxSpeed;
-            velocity = Vector3.MoveTowards(velocity, desiredVelocity, acceleration * Time.deltaTime);
+            velocity = toTarget.normalized;
         }
         else
         {
-            velocity = Vector3.MoveTowards(velocity, Vector3.zero, acceleration * Time.deltaTime);
+            velocity = Vector3.zero;
         }
 
         float targetY = voxelGrid.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
@@ -198,31 +190,25 @@ public class VoxelAgent : MonoBehaviour
 
         if (faceDir.magnitude > 0.01f)
         {
-            Quaternion targetRot = Quaternion.LookRotation(faceDir.normalized);
+            Vector3 smoothedDir = Vector3.Lerp(transform.forward, toTarget.normalized, 0.2f);
+            Quaternion targetRot = Quaternion.LookRotation(smoothedDir);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
 
-        Vector3 displacement = transform.position - lastPosition;
-        float flatSpeed = new Vector2(displacement.x, displacement.z).magnitude / Time.deltaTime;
-
+        float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
         smoothedSpeed = Mathf.Lerp(smoothedSpeed, flatSpeed, 0.2f);
 
         lastPosition = transform.position;
 
         if (animator != null)
         {
-            animator.SetFloat(speedParam, smoothedSpeed / maxSpeed, 0.2f, Time.deltaTime);
+            animator.SetFloat(speedParam, smoothedSpeed / flatSpeed, 0.2f, Time.deltaTime);
         }
     }
 
     public bool WantsToMove()
     {
         return smoothedSpeed > 0.05f || isWalkingDirect;
-    }
-
-    public bool IsTrackingDirectly()
-    {
-        return isWalkingDirect && trackingTarget != null;
     }
 
     public void StopPath()
@@ -238,7 +224,7 @@ public class VoxelAgent : MonoBehaviour
 
     public float GetCurrentSpeedFraction()
     {
-        return velocity.magnitude / maxSpeed;
+        return velocity.magnitude;
     }
 
     private Vector3 GridToWorld(Vector3Int gridPos)
@@ -280,7 +266,7 @@ public class VoxelAgent : MonoBehaviour
         if (isWalkingDirect)
         {
             Vector3 targetWorld = GridToWorld(directTarget);
-            Vector3 direction = (targetWorld - transform.position);
+            Vector3 direction = targetWorld - transform.position;
             direction.y = 0;
 
             if (trackingTarget == null && direction.magnitude < 0.1f)
@@ -289,10 +275,10 @@ public class VoxelAgent : MonoBehaviour
                 return Vector3.zero;
             }
 
-            return direction.normalized * Mathf.Min(direction.magnitude, maxSpeed);
+            return direction.normalized;
         }
 
-        return new Vector3(velocity.x, 0f, velocity.z);
+        return velocity;
     }
 
     public float GetTargetY()
@@ -304,6 +290,4 @@ public class VoxelAgent : MonoBehaviour
     {
         voxelGrid = grid;
     }
-
-    public int GetPathCount() => path == null ? 0 : path.Count;
 }

@@ -68,7 +68,13 @@ PrefabInstance:
       addedObject: {fileID: 7804319105600574859}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 02fa255c358aa8c4185b49c116f07c4c, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1958598162736798742}
+      addedObject: {fileID: -7864395375875773869}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 02fa255c358aa8c4185b49c116f07c4c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6549252909315223501}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 02fa255c358aa8c4185b49c116f07c4c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4241556883927576744}
   m_SourcePrefab: {fileID: 100100000, guid: 02fa255c358aa8c4185b49c116f07c4c, type: 3}
 --- !u!1 &3664823562989333235 stripped
 GameObject:
@@ -108,19 +114,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4510a8317d21514faa6205b6b8e404b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!208 &1958598162736798742
-NavMeshObstacle:
+--- !u!114 &-7864395375875773869
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3664823562989333235}
   m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 0.527, y: 0.46100003, z: 0.29000002}
-  m_MoveThreshold: 0.1
-  m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0.46100003, z: 0}
-  m_TimeToStationary: 0.5
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetType: 2
+--- !u!114 &6549252909315223501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3664823562989333235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfec55e08befe0642b547dc4e31ccef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
+  baseHealth: 50
+  expDropped: 0
+  drops:
+  - drop: {fileID: 11400000, guid: 8a903b64023e9fa4782340b928cd5adb, type: 2}
+    minValue: 1
+    maxValue: 1
+    dropChance: 1
+  objectType: 0
+  entityType: 1
+  objectLevel: 0
+  savedObjectIndex: -1
+  torsoBone: {fileID: 0}
+--- !u!114 &-4241556883927576744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3664823562989333235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: workbench

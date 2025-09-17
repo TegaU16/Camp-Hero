@@ -21,7 +21,6 @@ public class KeyStructureSpawner : MonoBehaviour
 
     public IEnumerator SpawnKeyStructures(float worldSize, Vector3 worldCenter, Action<float> onProgress = null)
     {
-        System.Random rng = new(voxelGrid.seed);
         HashSet<Vector2Int> usedChunks = new();
 
         float chunkSize = voxelGrid.chunkSize * voxelGrid.voxelSize;
@@ -35,12 +34,13 @@ public class KeyStructureSpawner : MonoBehaviour
         foreach (GameObject trialStructurePrefab in trialStructurePrefabs)
         {
             bool placed = false;
-            int attempts = 0;
-            const int maxAttempts = 100; // Avoid infinite loops
+            const int maxAttempts = 100;
 
-            while (!placed && attempts < maxAttempts)
+            for (int attempt = 0; attempt < maxAttempts && !placed; attempt++)
             {
-                attempts++;
+                // Create a deterministic RNG for this prefab+attempt
+                int hashSeed = voxelGrid.seed ^ trialStructurePrefab.name.GetHashCode() ^ attempt;
+                System.Random rng = new(hashSeed);
 
                 int x = rng.Next(0, gridSize);
                 int z = rng.Next(0, gridSize);
@@ -55,7 +55,11 @@ public class KeyStructureSpawner : MonoBehaviour
                     z * chunkSize + chunkSize / 2f
                 );
 
-                float dist = Vector2.Distance(new Vector2(position.x, position.z), new Vector2(worldCenter.x, worldCenter.z));
+                float dist = Vector2.Distance(
+                    new Vector2(position.x, position.z),
+                    new Vector2(worldCenter.x, worldCenter.z)
+                );
+
                 if (dist < minDistanceFromCenter || dist > maxDistanceFromCenter)
                     continue;
 
@@ -67,7 +71,8 @@ public class KeyStructureSpawner : MonoBehaviour
                 GameObject placedStructure = Instantiate(trialStructurePrefab, groundPos, Quaternion.identity);
                 voxelGrid.MarkAreaOccupied(placedStructure, true, true);
 
-                if (placedStructure.TryGetComponent(out TrialAltar trialAltar))
+                TrialAltar trialAltar = placedStructure.GetComponentInChildren<TrialAltar>();
+                if (trialAltar != null)
                     activeTrialAltars.Add(trialAltar);
 
                 int index = Array.IndexOf(trialStructurePrefabs, trialStructurePrefab);
@@ -75,18 +80,24 @@ public class KeyStructureSpawner : MonoBehaviour
 
                 KeyStructureCenter centerMarker = placedStructure.GetComponentInChildren<KeyStructureCenter>(true);
                 if (centerMarker != null)
-                {
                     voxelGrid.MarkAreaOccupied(centerMarker.gameObject, true, false);
-                }
-                else
-                {
-                    Debug.LogWarning($"No KeyStructureCenter component found in {trialStructurePrefab.name}");
-                }
 
                 if (voxelGrid.chunkMap.TryGetValue(chunkCoord, out VoxelChunk chunk))
                 {
                     placedStructure.transform.parent = chunk.chunkObject.transform;
+                    Vector3 spawnPos = placedStructure.transform.position;
                     chunk.objects.Add(placedStructure);
+                    chunk.savedObjectPositions.Add(spawnPos);
+
+                    TrialAltarSaveData trialAltarData = new();
+                    if (placedStructure.TryGetComponent(out TrialAltar altar))
+                    {
+                        trialAltarData.currentWave = altar.currentWave;
+                        trialAltarData.trialCompleted = altar.trialCompleted;
+                        trialAltarData.keyAvailable = altar.keyAvailable;
+                    }
+
+                    chunk.savedObjects.Add(new SpawnedObjectData(spawnPos, trialStructurePrefab, trialAltarSaveData: trialAltarData));
                     chunk.hasKeyStructure = true;
                 }
 
@@ -94,9 +105,7 @@ public class KeyStructureSpawner : MonoBehaviour
             }
 
             if (!placed)
-            {
                 Debug.LogWarning($"Failed to place structure {trialStructurePrefab.name} after {maxAttempts} attempts.");
-            }
 
             yield return null;
         }

@@ -37,7 +37,11 @@ public class EnemyAttackHitbox : MonoBehaviour
 
         if (enemyScript == null) return;
 
-        if (other.GetComponent<Targetable>() != null)
+        Targetable target = other.GetComponentInParent<Targetable>();
+
+        if (alreadyHit.Contains(target)) return;
+
+        if (target != null)
             enemyScript.DealDamage();
     }
 

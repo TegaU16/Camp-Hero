@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemType: 2
   actionType: 3
-  stackable: 1
+  stackable: 0
   maxStack: 1
   icon: {fileID: 21300000, guid: 0c547d5d6766b19489a7d658141fa7aa, type: 3}
   itemName: Stone Axe
@@ -28,8 +28,8 @@ MonoBehaviour:
   attackSpeed: 0
   attackDelay: 0
   attackDamage:
-  - 5
   - 10
+  - 15
   critChance: 2
   critFactor: 2
   attackLayer:
@@ -41,6 +41,7 @@ MonoBehaviour:
   toolLevel: 1
   toolType: 0
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}

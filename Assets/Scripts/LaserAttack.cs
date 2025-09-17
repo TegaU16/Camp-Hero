@@ -69,7 +69,10 @@ public class LaserAttack : MonoBehaviour, IRangedAttackBehavior
                         }
                         else if (target.TryGetComponent(out BreakableObject breakable))
                         {
-                            breakable.TakeDamage(wholeDamage, false);
+                            Vector3 hitPoint = hit.collider.ClosestPoint(transform.position);
+                            Vector3 hitNormal = (hitPoint - transform.position).normalized;
+
+                            breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal);
                         }
 
                         damageBuffer -= wholeDamage;

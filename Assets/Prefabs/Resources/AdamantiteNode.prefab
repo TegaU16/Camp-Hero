@@ -69,6 +69,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a6e3f8a4b4e04fa45bd7190de7a9b0c0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2570420142199144261}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a6e3f8a4b4e04fa45bd7190de7a9b0c0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 654491718672611271}
   m_SourcePrefab: {fileID: 100100000, guid: a6e3f8a4b4e04fa45bd7190de7a9b0c0, type: 3}
 --- !u!1 &2051886898171562185 stripped
 GameObject:
@@ -88,17 +91,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
-  maxHealth: 1000
+  baseHealth: 750
   expDropped: 120
   drops:
   - drop: {fileID: 11400000, guid: a98e2dd9d5a011d42bae7299e3588194, type: 2}
     minValue: 5
     maxValue: 15
     dropChance: 1
-  type: 1
+  objectType: 1
+  entityType: 1
   objectLevel: 3
-  isOrganism: 0
   savedObjectIndex: -1
+  torsoBone: {fileID: 0}
 --- !u!65 &8443221512433186494
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -133,3 +137,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectType: 1
+--- !u!114 &654491718672611271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051886898171562185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: adamantite_node

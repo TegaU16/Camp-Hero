@@ -14,6 +14,9 @@ GameObject:
   - component: {fileID: -8179482325830803360}
   - component: {fileID: 6732521275165675599}
   - component: {fileID: 390982493042822516}
+  - component: {fileID: -8527577493012550894}
+  - component: {fileID: -6511918518732595213}
+  - component: {fileID: -8981577813166523767}
   m_Layer: 6
   m_Name: Furnace Build
   m_TagString: Untagged
@@ -152,3 +155,54 @@ MonoBehaviour:
   fuelSlot: {fileID: 0}
   smeltProgress: 0
   smeltDuration: 5
+--- !u!114 &-8527577493012550894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8673004242649606558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfec55e08befe0642b547dc4e31ccef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
+  baseHealth: 50
+  expDropped: 0
+  drops:
+  - drop: {fileID: 0}
+    minValue: 0
+    maxValue: 0
+    dropChance: 0
+  objectType: 0
+  entityType: 1
+  objectLevel: 0
+  savedObjectIndex: -1
+  torsoBone: {fileID: 0}
+--- !u!114 &-6511918518732595213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8673004242649606558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetType: 2
+--- !u!114 &-8981577813166523767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8673004242649606558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: furnace

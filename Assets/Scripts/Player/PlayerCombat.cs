@@ -133,7 +133,7 @@ public class PlayerCombat : MonoBehaviour
         }
         else
         {
-            float damageReduction = isCrit ? selectedItem.critFactor / (reductionFactor * 2) : 1 / (reductionFactor * 2);
+            float damageReduction = isCrit ? selectedItem.critFactor / reductionFactor : 1 / reductionFactor;
             return (int)(damage * damageReduction * damageMultiplier);
         }
     }
@@ -142,10 +142,10 @@ public class PlayerCombat : MonoBehaviour
     {
         if (selectedItem == null) return false;
 
-        if (selectedItem.toolType == ToolType.None || hitObject.type == BreakableObject.ObjectType.None)
+        if (selectedItem.toolType == ToolType.None || hitObject.objectType == BreakableObject.ObjectType.None)
             return true;
 
         return toolToObjectMap.TryGetValue(selectedItem.toolType, out HashSet<BreakableObject.ObjectType> breakableTypes)
-            && breakableTypes.Contains(hitObject.type);
+            && breakableTypes.Contains(hitObject.objectType);
     }
 }

@@ -915,20 +915,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
-  maxHealth: 300
+  baseHealth: 400
   expDropped: 100
   drops:
   - drop: {fileID: 11400000, guid: 8fcec0d8e898d2345be18f618e92b74d, type: 2}
     minValue: 1
     maxValue: 1
-    dropChance: 0.5
+    dropChance: 0.3
   - drop: {fileID: 11400000, guid: 462467a1bb022ba4c9a085bdf5f7fc93, type: 2}
     minValue: 4
     maxValue: 10
     dropChance: 1
-  type: 2
+  objectType: 2
+  entityType: 0
   objectLevel: 0
-  isOrganism: 1
   savedObjectIndex: -1
   torsoBone: {fileID: 4621650800722827677}
 --- !u!114 &5665800037854704043
@@ -999,12 +999,12 @@ MonoBehaviour:
   attackRange: 2
   rangedAttackRange: 10
   attackCooldown: 2
-  damage: 10
+  damage: 40
   knockbackForce: 5
   enemyIcon: {fileID: 21300000, guid: ad3f1f6b0dd710a46b5899a497046665, type: 3}
   breakableObject: {fileID: 260430940316343405}
   rangedAttackScripts: []
-  moveSpeed: 1
+  moveSpeed: 1.5
   gravity: -9.8
   preferredTargets: 0000000002000000010000000400000003000000
   targetStickTime: 3
@@ -1012,9 +1012,7 @@ MonoBehaviour:
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
-  distanceWeight: 1
-  damageMemoryWeight: -5
-  objectiveThreatWeight: -3
+  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
   agent: {fileID: 8515405239404360121}
   animator: {fileID: 4465363624190883282}
   ragdollController: {fileID: 5665800037854704043}
@@ -1031,9 +1029,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 3
-  acceleration: 10
-  stoppingDistance: 0.1
+  stoppingDistance: 0.2
   rotationSpeed: 720
   animator: {fileID: 4465363624190883282}
   speedParam: Speed

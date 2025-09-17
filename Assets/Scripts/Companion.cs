@@ -53,9 +53,9 @@ public class Companion : MonoBehaviour, IInteractable, ISimulatable
             BreakableObject closest = null;
             float closestDist = float.MaxValue;
 
-            foreach (var obj in targets)
+            foreach (BreakableObject obj in targets)
             {
-                if (obj.type != targetType) continue;
+                if (obj.objectType != targetType) continue;
 
                 float dist = Vector3.Distance(transform.position, obj.transform.position);
                 if (dist < closestDist)
@@ -88,7 +88,7 @@ public class Companion : MonoBehaviour, IInteractable, ISimulatable
             // Harvesting loop
             while (closest != null)
             {
-                closest.TakeDamage(5, false);
+                closest.TakeDamage(5, false, Vector3.zero, Vector3.zero);
                 yield return new WaitForSeconds(1f);
             }
 

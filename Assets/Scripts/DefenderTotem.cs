@@ -37,9 +37,12 @@ public class DefenderTotem : Defense
             Collider hit = hits[i];
             if (hit.TryGetComponent(out Enemy enemy))
             {
+                Vector3 hitPoint = hit.ClosestPoint(transform.position);
+                Vector3 hitNormal = (hitPoint - transform.position).normalized;
+
                 if (enemy.TryGetComponent(out BreakableObject breakable))
                 {
-                    breakable.TakeDamage(pulseDamage, false);
+                    breakable.TakeDamage(pulseDamage, false, hitPoint, hitNormal);
                 }
             }
         }

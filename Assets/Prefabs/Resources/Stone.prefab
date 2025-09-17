@@ -66,6 +66,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2930012258050019360}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5424604651220075132}
   m_SourcePrefab: {fileID: 100100000, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
 --- !u!1 &4680600429347278188 stripped
 GameObject:
@@ -111,3 +114,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.2007139, y: 0.13380931, z: 0.33452317}
   m_Center: {x: 0.0000000037252899, y: 0.06690464, z: 0}
+--- !u!114 &-5424604651220075132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4680600429347278188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: stone

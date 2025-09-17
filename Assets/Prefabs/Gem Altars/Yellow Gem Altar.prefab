@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 977363081738054544}
   - component: {fileID: -3014435725912934670}
   - component: {fileID: -7946694310368239230}
+  - component: {fileID: -3121213562932172458}
   m_Layer: 6
   m_Name: Yellow Gem Altar
   m_TagString: Untagged
@@ -102,6 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2632613433edb4f84d87ecf7132931, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  altarID: 
   requiredKey: {fileID: 11400000, guid: 0c87ef4067912594197c8e1ba1006787, type: 2}
   bossPrefab: {fileID: 0}
   bossSpawnPoint: {fileID: 268973610442140421}
@@ -128,6 +130,19 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4452948647885867891, guid: 9de8e1ad239e97f44b1e24ae54bf64f4, type: 3}
+--- !u!114 &-3121213562932172458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153972581328773051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabKey: yellow_gem_altar
 --- !u!1 &1215933713160350949
 GameObject:
   m_ObjectHideFlags: 0

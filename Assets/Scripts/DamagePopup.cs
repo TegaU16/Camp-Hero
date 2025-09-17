@@ -5,10 +5,9 @@ using System.Collections;
 public class DamagePopup : MonoBehaviour
 {
     public TextMeshProUGUI damageText;
-    public float floatUpDistance = 1f;
-    public float duration = 1f;
-    public float floatSpeed = 1f;
-    public float fadeDuration = 0.5f;
+    public float floatUpDistance = 1.5f;
+    public float duration = 0.7f;
+    public float fadeDuration = 0.4f;
 
     private Vector3 initialPosition;
     private Vector3 floatDirection;
@@ -17,8 +16,8 @@ public class DamagePopup : MonoBehaviour
     public void Setup(int damageAmount, bool crit)
     {
         damageText.text = damageAmount.ToString();
-
         damageText.color = crit ? Color.yellow : new Color32(53, 230, 213, 255);
+
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
@@ -26,9 +25,11 @@ public class DamagePopup : MonoBehaviour
         canvasGroup.alpha = 1f;
 
         initialPosition = transform.position;
-        float randomAngle = Random.Range(-30f, 30f); // Side arc direction
+
+        float randomAngle = Random.Range(-60f, 60f);
         Vector3 sideOffset = Quaternion.Euler(0, randomAngle, 0) * Vector3.right;
-        floatDirection = (Vector3.up + sideOffset).normalized;
+
+        floatDirection = (Vector3.up * 1.2f + sideOffset * 2f).normalized;
 
         StartCoroutine(Animate());
     }
@@ -39,7 +40,11 @@ public class DamagePopup : MonoBehaviour
         while (elapsed < duration)
         {
             float progress = elapsed / duration;
-            transform.position = initialPosition + floatUpDistance * progress * floatDirection;
+
+            // stronger curve: ease-out interpolation
+            float easedProgress = Mathf.Sin(progress * Mathf.PI * 0.5f);
+
+            transform.position = initialPosition + floatUpDistance * easedProgress * floatDirection;
 
             if (elapsed > duration - fadeDuration)
             {

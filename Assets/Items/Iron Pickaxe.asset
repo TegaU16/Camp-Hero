@@ -28,8 +28,8 @@ MonoBehaviour:
   attackSpeed: 0
   attackDelay: 0
   attackDamage:
-  - 10
   - 20
+  - 30
   critChance: 2
   critFactor: 2
   attackLayer:
@@ -41,6 +41,7 @@ MonoBehaviour:
   toolLevel: 2
   toolType: 1
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}

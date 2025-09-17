@@ -46,7 +46,7 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    void SpawnEnemy()
+    private void SpawnEnemy()
     {
         if (player == null || enemyPool == null) return;
 
@@ -93,13 +93,12 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    int CalculateMaxEnemies(int currentDay)
+    private int CalculateMaxEnemies(int currentDay)
     {
-        // For example, the maximum enemies increase by 5 for each day
         return Mathf.Min(currentDay * 5, 50); // Cap at 50 enemies max
     }
 
-    public List<EnemySaveData> GetAllEnemySaveData()
+    private List<EnemySaveData> GetAllEnemySaveData()
     {
         List<EnemySaveData> dataList = new();
         foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))

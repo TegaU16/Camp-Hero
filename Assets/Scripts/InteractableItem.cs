@@ -5,7 +5,9 @@ public class InteractableItem : MonoBehaviour, IInteractable
     public Item item;
     public bool isGold = false;
     [HideInInspector] public int itemCount;
+
     private bool isInteracted = false;
+    private bool canPickup = true;
 
     [Header("For Item Drops")]
     public float mergeDistance = 2f;
@@ -13,8 +15,11 @@ public class InteractableItem : MonoBehaviour, IInteractable
     public float mergeCheckInterval = 1f;
 
     private int pickableLayerMask;
-
+    
     private Rigidbody rb;
+
+    [HideInInspector] public VoxelChunk owningChunk;
+    [HideInInspector] public int savedObjectIndex;
 
     private void Start()
     {
@@ -42,6 +47,7 @@ public class InteractableItem : MonoBehaviour, IInteractable
     public void Interact()
     {
         if (isInteracted) return;
+        if (!canPickup) return;
 
         isInteracted = true;
         bool toDestroy = false;
@@ -62,14 +68,9 @@ public class InteractableItem : MonoBehaviour, IInteractable
         }
 
         InventoryManager.Instance.EquipSelectedItem();
-        if (toDestroy)
-        {
-            WorldInteractUI worldInteract = FindAnyObjectByType<WorldInteractUI>();
-            if (worldInteract != null)
-                Destroy(worldInteract);
 
-            Destroy(gameObject);
-        }
+        if (toDestroy)
+            DestroyInteractableItem(this);
     }
 
     public void MergeNearbyObjects()
@@ -95,7 +96,7 @@ public class InteractableItem : MonoBehaviour, IInteractable
 
             InteractableItem other = collider.gameObject.GetComponent<InteractableItem>();
 
-            if (other != null && !other.isGold && other.item == item)
+            if (other != null && !other.isGold && other.item.itemName == item.itemName)
             {
                 if (other.TryGetComponent(out Rigidbody _))
                 {
@@ -104,7 +105,7 @@ public class InteractableItem : MonoBehaviour, IInteractable
                     if (totalItemCount <= maxItemCount)
                     {
                         itemCount = totalItemCount;
-                        Destroy(other.gameObject);
+                        DestroyInteractableItem(other);
 
                         break;
                     }
@@ -112,6 +113,24 @@ public class InteractableItem : MonoBehaviour, IInteractable
             }
         }
     }
+
+    private void DestroyInteractableItem(InteractableItem interactable)
+    {
+        if (interactable.owningChunk != null && interactable.savedObjectIndex >= 0 && interactable.savedObjectIndex < interactable.owningChunk.savedObjects.Count)
+        {
+            interactable.owningChunk.savedObjects.RemoveAt(interactable.savedObjectIndex);
+            interactable.owningChunk.isDirty = true;
+        }
+        Destroy(interactable.gameObject);
+    }
+
+    public void EnablePickupAfterDelay(float delay)
+    {
+        canPickup = false;
+        Invoke(nameof(EnablePickup), delay);
+    }
+
+    private void EnablePickup() => canPickup = true;
 
     public string GetInteractText()
     {
@@ -121,5 +140,11 @@ public class InteractableItem : MonoBehaviour, IInteractable
     public Transform GetTransform()
     {
         return transform;
+    }
+
+    public void LoadInteractableItemData(InteractableItemData interactableItemData)
+    {
+        item = ItemRegistry.GetItemByName(interactableItemData.itemName);
+        itemCount = interactableItemData.count;
     }
 }

@@ -30,11 +30,11 @@ public class AttackHitbox : MonoBehaviour
 
         foreach (Collider hit in hits)
         {
-            ProcessHit(hit);
+            ProcessHit(hit, box);
         }
     }
 
-    private void ProcessHit(Collider other)
+    private void ProcessHit(Collider other, BoxCollider box)
     {
         if (GameManager.Instance.isPaused) return;
 
@@ -55,8 +55,13 @@ public class AttackHitbox : MonoBehaviour
             return;
         }
 
+        Vector3 boxCenter = transform.TransformPoint(box.center);
+
+        Vector3 hitPoint = other.ClosestPoint(boxCenter);
+        Vector3 hitNormal = (hitPoint - boxCenter).normalized;
+
         int damage = playerCombat.ItemDamage(breakable, selectedItem);
-        breakable.TakeDamage(damage, playerCombat.isCritical);
+        breakable.TakeDamage(damage, playerCombat.isCritical, hitPoint, hitNormal);
         alreadyHit.Add(breakable);
 
         Enemy enemy = breakable.GetComponentInParent<Enemy>();

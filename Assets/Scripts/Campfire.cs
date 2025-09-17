@@ -19,7 +19,7 @@ public class Campfire : MonoBehaviour, IInteractable
     public GameObject redGem;
     public GameObject yellowGem;
 
-    private readonly HashSet<GemColor> unlockedGems = new();
+    private readonly List<GemColor> unlockedGems = new();
     private Dictionary<GemColor, GameObject> gemObjects;
 
     private void Awake()
@@ -35,8 +35,9 @@ public class Campfire : MonoBehaviour, IInteractable
 
     public void UnlockGem(GemColor color)
     {
-        if (unlockedGems.Add(color))
+        if (!unlockedGems.Contains(color))
         {
+            unlockedGems.Add(color);
             UpdateGemVisibility();
         }
     }
@@ -60,6 +61,7 @@ public class Campfire : MonoBehaviour, IInteractable
     public void Interact()
     {
         InventoryManager.Instance.campfireMenuUI.SetActive(true);
+        GameManager.Instance.ToggleCameraFollow(false);
     }
 
     public string GetInteractText() => "Open Campfire Menu";

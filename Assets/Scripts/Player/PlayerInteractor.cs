@@ -6,80 +6,96 @@ public class PlayerInteractor : MonoBehaviour
     public KeyCode interactKey = KeyCode.E;
     public LayerMask interactableMask;
     public GameObject worldUIIndicatorPrefab;
+
     private GameObject currentUIInstance;
     private WorldInteractUI currentUI;
-
     private IInteractable currentInteractable;
 
     void Update()
     {
         if (GameManager.Instance.isPaused) return;
+        if (InventoryManager.Instance.IsExtensionOpen()) return;
 
-        if (!InventoryManager.Instance.IsExtensionOpen())
+        if (currentInteractable is Object unityObj && unityObj == null)
         {
-            Collider[] hits = new Collider[20];
-            int hitCount = Physics.OverlapSphereNonAlloc(transform.position, interactionRange, hits, interactableMask);
-            float closest = float.MaxValue;
-            IInteractable nearest = null;
+            ClearInteractable();
+            return;
+        }
 
-            if (hitCount == hits.Length)
+        IInteractable nearest = FindNearestInteractable(out float dist);
+
+        bool validNearest = nearest != null && dist <= interactionRange;
+
+        if (validNearest)
+        {
+            if (currentInteractable != nearest)
             {
-                // Resize the array if it's full
-                Collider[] expandedArray = new Collider[hitCount * 2];  // Double the size
-                hitCount = Physics.OverlapSphereNonAlloc(transform.position, interactionRange, expandedArray, interactableMask);
-                hits = expandedArray;  // Assign the expanded array
+                currentInteractable = nearest;
+
+                if (currentUIInstance == null)
+                {
+                    currentUIInstance = Instantiate(worldUIIndicatorPrefab);
+                    currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
+                }
+
+                currentUIInstance.SetActive(true);
+                currentUI.Setup(currentInteractable.GetInteractText(), currentInteractable.GetTransform());
             }
 
-            for (int i = 0; i < hitCount; i++)
+            if (Input.GetKeyDown(interactKey))
             {
-                Collider hit = hits[i];
-                IInteractable interactable = hit.gameObject.GetComponentInParent<IInteractable>();
-
-                if (interactable != null)
-                {
-                    float dist = Vector3.Distance(transform.position, interactable.GetTransform().position);
-
-                    if (dist < closest)
-                    {
-                        closest = dist;
-                        nearest = interactable;
-                    }
-                }
-            }
-
-            if (nearest != null)
-            {
-                if (currentInteractable != nearest)
-                {
-                    currentInteractable = nearest;
-
-                    if (currentUIInstance == null)
-                    {
-                        currentUIInstance = Instantiate(worldUIIndicatorPrefab);
-                        currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
-                    }
-
-                    currentUIInstance.SetActive(true);
-                    currentUI.Setup(currentInteractable.GetInteractText(), currentInteractable.GetTransform());
-                }
-
-                if (Input.GetKeyDown(interactKey))
-                {
-                    currentUIInstance.SetActive(false);
-                    currentInteractable.Interact();
-                    currentInteractable = null;
-                }
-            }
-            else
-            {
-                currentInteractable = null;
-
-                if (currentUIInstance != null)
-                {
-                    currentUIInstance.SetActive(false);
-                }
+                currentUIInstance.SetActive(false);
+                currentInteractable?.Interact();
+                ClearInteractable();
             }
         }
+        else
+        {
+            ClearInteractable();
+        }
+    }
+
+    private IInteractable FindNearestInteractable(out float closest)
+    {
+        Collider[] hits = new Collider[20];
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, interactionRange, hits, interactableMask);
+
+        if (hitCount == hits.Length)
+        {
+            Collider[] expanded = new Collider[hitCount * 2];
+            hitCount = Physics.OverlapSphereNonAlloc(transform.position, interactionRange, expanded, interactableMask);
+            hits = expanded;
+        }
+
+        closest = float.MaxValue;
+        IInteractable nearest = null;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider hit = hits[i];
+            if (hit == null) continue;
+
+            IInteractable interactable = hit.GetComponentInParent<IInteractable>();
+            if (interactable == null) continue;
+
+            if (interactable is Object unityObj && unityObj == null) continue;
+
+            float dist = Vector3.Distance(transform.position, interactable.GetTransform().position);
+            if (dist < closest)
+            {
+                closest = dist;
+                nearest = interactable;
+            }
+        }
+
+        return nearest;
+    }
+
+    private void ClearInteractable()
+    {
+        currentInteractable = null;
+        if (currentUIInstance != null)
+            currentUIInstance.SetActive(false);
     }
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
@@ -88,6 +104,9 @@ public class PlayerInteractor : MonoBehaviour
         {
             InteractableItem interactable = hit.gameObject.GetComponentInParent<InteractableItem>();
             interactable.Interact();
+
+            if (currentInteractable == interactable.GetComponent<IInteractable>())
+                ClearInteractable();
         }
     }
 }

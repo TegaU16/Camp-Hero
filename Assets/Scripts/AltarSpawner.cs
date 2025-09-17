@@ -6,6 +6,8 @@ public class AltarSpawner : MonoBehaviour
     public GameObject[] altarPrefabs; // Array of 4 altar prefabs
     public Vector3 worldCenter = Vector3.zero;
     public float offsetFromEdge = 20f;
+    public VoxelGrid voxelGrid;
+    [SerializeField] private LayerMask terrainMask;
 
     public IEnumerator SpawnAltarsRoutine(float worldSize, System.Action<float> onProgress = null)
     {
@@ -28,7 +30,21 @@ public class AltarSpawner : MonoBehaviour
         for (int i = 0; i < altarPositions.Length; i++)
         {
             Vector3 spawnPos = AdjustHeightToTerrain(altarPositions[i]);
-            Instantiate(altarPrefabs[i], spawnPos, Quaternion.identity);
+            GameObject gemAltar = Instantiate(altarPrefabs[i], spawnPos, Quaternion.identity);
+
+            int chunkX = Mathf.FloorToInt(spawnPos.x / voxelGrid.chunkSize);
+            int chunkZ = Mathf.FloorToInt(spawnPos.z / voxelGrid.chunkSize);
+
+            Vector2Int chunkKey = new(chunkX, chunkZ);
+
+            if (voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
+            {
+                chunk.objects.Add(gemAltar);
+                chunk.savedObjectPositions.Add(spawnPos);
+                chunk.savedObjects.Add(new SpawnedObjectData(spawnPos, altarPrefabs[i]));
+            }
+
+            voxelGrid.MarkAreaOccupied(gemAltar);
 
             // Report progress (0 to 1)
             onProgress?.Invoke((float)(i + 1) / altarPositions.Length);
@@ -41,7 +57,7 @@ public class AltarSpawner : MonoBehaviour
     Vector3 AdjustHeightToTerrain(Vector3 position)
     {
         Vector3 rayStart = position + Vector3.up * 200f;
-        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f))
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f, terrainMask))
         {
             return hit.point;
         }

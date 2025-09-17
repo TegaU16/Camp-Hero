@@ -1,4 +1,3 @@
-using Mono.Cecil;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "CompanionTasks/Harvest")]

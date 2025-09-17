@@ -1,38 +1,15 @@
 using UnityEngine;
-using System.Collections;
 
 public class HitEffectManager : MonoBehaviour
 {
-    public float shrinkFactor = 0.9f; // Percentage of original size to shrink to
-    public float duration = 0.2f;
+    public GameObject sparkPrefab;
 
-    // Call this method with the GameObject that was hit
-    public void ApplyHitEffect(GameObject hitObject)
+    public void SpawnSparks(Vector3 position, Vector3 normal)
     {
-        StartCoroutine(ShrinkAndExpand(hitObject));
-    }
+        float offset = 0.1f;
+        Vector3 spawnPoint = position + normal * offset;
+        GameObject spark = Instantiate(sparkPrefab, spawnPoint, Quaternion.LookRotation(normal));
 
-    private IEnumerator ShrinkAndExpand(GameObject obj)
-    {
-        Vector3 originalScale = obj.transform.localScale;
-        Vector3 targetScale = originalScale * shrinkFactor;
-
-        // Scale down
-        yield return ScaleOverTime(obj, originalScale, targetScale, duration);
-
-        // Scale back up
-        yield return ScaleOverTime(obj, targetScale, originalScale, duration);
-    }
-
-    private IEnumerator ScaleOverTime(GameObject obj, Vector3 from, Vector3 to, float time)
-    {
-        float elapsed = 0;
-        while (elapsed < time)
-        {
-            obj.transform.localScale = Vector3.Lerp(from, to, elapsed / time);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        obj.transform.localScale = to;
+        Destroy(spark, 1f);
     }
 }

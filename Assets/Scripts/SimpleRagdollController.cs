@@ -62,23 +62,40 @@ public class SimpleRagdollController : MonoBehaviour
     public void DisableRagdoll()
     {
         foreach (Rigidbody rb in allRigidbodies)
+        {
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            
             rb.isKinematic = true;
+        }
 
         foreach (Collider col in allColliders)
         {
             if (col.GetComponent<CharacterController>() == null && !ToIgnore(col))
-            {
                 col.enabled = false;
-            }
         }
 
-        if (TryGetComponent(out CharacterController cc)) cc.enabled = true;
+        if (TryGetComponent(out CharacterController cc))
+        {
+            cc.enabled = false;   // force reset
+            cc.enabled = true;    // toggle to clear internal physics
+        }
 
         if (animator != null)
+        {
             animator.enabled = true;
+            animator.Rebind();    // reset animator state
+            animator.Update(0f);
+        }
 
         if (agent != null)
+        {
+            agent.enabled = false; // force reset
             agent.enabled = true;
+        }
 
         IsSetup = false;
     }
@@ -88,9 +105,7 @@ public class SimpleRagdollController : MonoBehaviour
         foreach(Collider col in collidersToIgnore)
         {
             if (col == colIgnore)
-            {
                 return true;
-            }
         }
 
         return false;
@@ -99,8 +114,7 @@ public class SimpleRagdollController : MonoBehaviour
     IEnumerator FreezeAfterTime(float delay)
     {
         yield return new WaitForSeconds(delay);
-        foreach (Rigidbody
-            rb in allRigidbodies)
+        foreach (Rigidbody rb in allRigidbodies)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;

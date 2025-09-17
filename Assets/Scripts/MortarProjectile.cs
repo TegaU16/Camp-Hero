@@ -73,7 +73,10 @@ public class MortarProjectile : MonoBehaviour
 
             if (hit.TryGetComponent(out BreakableObject breakable))
             {
-                breakable.TakeDamage(damage, false);
+                Vector3 hitPoint = hit.GetComponent<CharacterController>().ClosestPoint(transform.position);
+                Vector3 hitNormal = (hitPoint - transform.position).normalized;
+
+                breakable.TakeDamage(damage, false, hitPoint, hitNormal);
             }
         }
 

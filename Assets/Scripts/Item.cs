@@ -21,7 +21,7 @@ public class Item : ScriptableObject
     [Header("Only Building")]
     public GameObject buildingGhost;
     public float height;
-    public Vector2Int buildingSize = new Vector2Int(1, 1);
+    public Vector2Int buildingSize = new(1, 1);
 
     [Header("For Melee")]
     public float attackDistance = 3f;

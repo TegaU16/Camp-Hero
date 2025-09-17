@@ -27,51 +27,54 @@ public class StructureManager : MonoBehaviour
     public void SpawnStructuresInChunk(VoxelChunk chunk)
     {
         Vector3 chunkPosition = chunk.chunkObject.transform.position;
-        
+
         Vector3 worldCenter = new((chunkSize * gridSize) * 0.5f * voxelSize, 0f, (chunkSize * gridSize) * 0.5f * voxelSize);
 
         for (int cx = 0; cx < chunkSize; cx++)
         {
             for (int cz = 0; cz < chunkSize; cz++)
             {
-                Vector3 basePosition = chunkPosition + new Vector3((cx + 0.5f) * voxelSize, 100f, (cz + 0.5f) * voxelSize);
+                int hash = cx * 73856093 ^ cz * 19349663 ^ (voxelGrid.seed * 83492791);
+                System.Random rng = new(hash);
 
-                if (Physics.Raycast(basePosition, Vector3.down, out RaycastHit hit, 200f, voxelGrid.groundLayer))
+                if (chunk.heightMap == null) continue;
+                float y = chunk.heightMap[cx, cz];
+
+                Vector3 basePosition = chunkPosition + new Vector3((cx + 0.5f) * voxelSize, y, (cz + 0.5f) * voxelSize);
+
+                float offsetX = (float)(rng.NextDouble() - 0.5) * voxelSize;
+                float offsetZ = (float)(rng.NextDouble() - 0.5) * voxelSize;
+                Vector3 structureSpawnPos = basePosition + new Vector3(offsetX, 0, offsetZ);
+
+                bool tooClose = false;
+                foreach (WorldStructure existingStructure in activeStructures)
                 {
-                    Vector3 groundPosition = hit.point;
-
-                    Vector3 offset = voxelGrid.CalculatePositionOffset(cx, cz, voxelGrid.seed);
-                    Vector3 structureSpawnPos = groundPosition + offset;
-
-                    bool tooClose = false;
-                    foreach (WorldStructure existingStructure in activeStructures)
+                    if ((Vector3.Distance(existingStructure.worldOrigin, structureSpawnPos) < minSpacing) ||
+                        (Vector3.Distance(worldCenter, structureSpawnPos) < minSpacing))
                     {
-                        if ((Vector3.Distance(existingStructure.worldOrigin, structureSpawnPos) < minSpacing) ||
-                            (Vector3.Distance(worldCenter, structureSpawnPos) < minSpacing))
-                        {
-                            tooClose = true;
-                            break;
-                        }
+                        tooClose = true;
+                        break;
                     }
-                    if (tooClose) continue;
-
-                    if (!IsValidPlacement(structureSpawnPos, chunkSize)) continue;
-
-                    StructureTemplate template = SelectDeterministicStructure(cx, cz, voxelGrid.seed);
-                    WorldStructure structure = GenerateStructure(template, structureSpawnPos, chunk);
-
-                    structure.worldOrigin = structureSpawnPos;
-                    activeStructures.Add(structure);
-
-                    foreach (GameObject obj in structure.structureObjects)
-                    {
-                        chunk.savedObjectPositions.Add(obj.transform.position);
-                        chunk.objects.Add(obj);
-                        chunk.savedObjects.Add(new SpawnedObjectData(obj.transform.position, obj));
-                    }
-
-                    return;
                 }
+                if (tooClose) continue;
+
+                StructureTemplate template = SelectDeterministicStructure(cx, cz, voxelGrid.seed);
+                if (template == null) continue;
+
+                if (!IsValidPlacement(structureSpawnPos, template, chunkSize)) continue;
+
+                WorldStructure structure = GenerateStructure(template, structureSpawnPos, chunk);
+                structure.worldOrigin = structureSpawnPos;
+                activeStructures.Add(structure);
+
+                foreach (GameObject obj in structure.structureObjects)
+                {
+                    chunk.savedObjectPositions.Add(obj.transform.position);
+                    chunk.objects.Add(obj);
+                    chunk.savedObjects.Add(new SpawnedObjectData(obj.transform.position, obj));
+                }
+
+                return;
             }
         }
     }
@@ -84,12 +87,17 @@ public class StructureManager : MonoBehaviour
             worldOrigin = origin
         };
 
+        int hash = origin.GetHashCode() ^ voxelGrid.seed;
+        int rotationIndex = Mathf.Abs(hash) % 4;
+        Quaternion rotation = Quaternion.Euler(0, rotationIndex * 90f, 0);
+
         for (int i = 0; i < template.prefabParts.Count; i++)
         {
             GameObject prefab = template.prefabParts[i];
             Vector3 offset = i < template.localOffsets.Count ? template.localOffsets[i] : Vector3.zero;
 
-            Vector3 partPosition = origin + offset;
+            Vector3 rotatedOffset = rotation * offset;
+            Vector3 partPosition = origin + rotatedOffset;
 
             Vector3 rayOrigin = partPosition + Vector3.up * 50f;
             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 100f, voxelGrid.groundLayer))
@@ -99,65 +107,69 @@ public class StructureManager : MonoBehaviour
 
             if (!buildingManager.IsAreaFree(prefab, partPosition)) continue;
 
-            GameObject part = Instantiate(prefab, partPosition, Quaternion.identity, chunk.chunkObject.transform);
+            GameObject part = Instantiate(prefab, partPosition, rotation, chunk.chunkObject.transform);
             structure.structureObjects.Add(part);
 
             voxelGrid.MarkAreaOccupied(part);
 
             foreach (StorageUnit storage in part.GetComponentsInChildren<StorageUnit>())
             {
-                LootTableReference lootRef = storage.GetComponent<LootTableReference>();
-                if (lootRef != null && lootRef.lootTable != null)
-                {
+                if (storage.TryGetComponent(out LootTableReference lootRef) && lootRef.lootTable != null)
                     storage.items = lootRef.lootTable.GetRandomLoot();
-                }
             }
         }
 
         return structure;
     }
 
-    bool IsValidPlacement(Vector3 position, int chunkSize, float radius = 5f, float tolerance = 0.5f)
+    bool IsValidPlacement(Vector3 origin, StructureTemplate template, float tolerance = 0.5f)
     {
-        int chunkX = Mathf.FloorToInt(position.x / chunkSize);
-        int chunkZ = Mathf.FloorToInt(position.z / chunkSize);
+        Bounds totalBounds = new(origin, Vector3.zero);
 
-        float[,] heightMap = GetHeightMapForChunk(chunkX, chunkZ);
-
-        if (heightMap == null)
+        for (int i = 0; i < template.prefabParts.Count; i++)
         {
-            return false;
+            GameObject prefab = template.prefabParts[i];
+            if (prefab == null) continue;
+
+            Renderer rend = prefab.GetComponentInChildren<Renderer>();
+            if (rend == null) continue;
+
+            Bounds prefabBounds = rend.bounds;
+            Vector3 offset = i < template.localOffsets.Count ? template.localOffsets[i] : Vector3.zero;
+
+            prefabBounds.center = origin + offset;
+
+            totalBounds.Encapsulate(prefabBounds);
         }
 
-        int centerX = Mathf.FloorToInt(position.x) - chunkX * chunkSize;
-        int centerZ = Mathf.FloorToInt(position.z) - chunkZ * chunkSize;
+        int minX = Mathf.FloorToInt(totalBounds.min.x / voxelSize);
+        int maxX = Mathf.FloorToInt(totalBounds.max.x / voxelSize);
+        int minZ = Mathf.FloorToInt(totalBounds.min.z / voxelSize);
+        int maxZ = Mathf.FloorToInt(totalBounds.max.z / voxelSize);
 
-        if (centerX < 0 || centerX >= chunkSize || centerZ < 0 || centerZ >= chunkSize)
+        List<float> sampledHeights = new();
+
+        for (int x = minX; x <= maxX; x++)
         {
-            return false;
-        }
-
-        float centerHeight = heightMap[centerX, centerZ];
-
-        for (int x = -(int)radius; x <= radius; x++)
-        {
-            for (int z = -(int)radius; z <= radius; z++)
+            for (int z = minZ; z <= maxZ; z++)
             {
-                if (x == 0 && z == 0) continue;
+                float[,] heightMap = GetHeightMapForChunk(x / chunkSize, z / chunkSize);
+                if (heightMap == null) return false;
 
-                int neighborX = centerX + x;
-                int neighborZ = centerZ + z;
+                int localX = x % chunkSize;
+                int localZ = z % chunkSize;
+                if (localX < 0 || localZ < 0 || localX >= chunkSize || localZ >= chunkSize) continue;
 
-                if (neighborX >= 0 && neighborX < chunkSize && neighborZ >= 0 && neighborZ < chunkSize)
-                {
-                    float neighborHeight = heightMap[neighborX, neighborZ];
-                    if (Mathf.Abs(centerHeight - neighborHeight) > tolerance)
-                    {
-                        return false;
-                    }
-                }
+                sampledHeights.Add(heightMap[localX, localZ]);
             }
         }
+
+        if (sampledHeights.Count == 0) return false;
+
+        float minH = Mathf.Min(sampledHeights.ToArray());
+        float maxH = Mathf.Max(sampledHeights.ToArray());
+
+        if (Mathf.Abs(maxH - minH) > tolerance) return false;
 
         return true;
     }
@@ -191,9 +203,7 @@ public class StructureManager : MonoBehaviour
             foreach (GameObject obj in structure.structureObjects)
             {
                 if (obj != null)
-                {
                     Destroy(obj);
-                }
             }
         }
 

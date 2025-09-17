@@ -1,6 +1,7 @@
-﻿using Unity.Cinemachine;
+﻿using System.Collections;
+using System.Linq;
+using Unity.Cinemachine;
 using UnityEngine;
-using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -60,6 +61,7 @@ public class GameManager : MonoBehaviour
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                InventoryManager.Instance.JustClosedExtension = false;
                 return;
             }
 
@@ -68,7 +70,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit() => SaveGame();
+    private void OnApplicationQuit() => SaveGame(true);
     private void OnApplicationPause(bool pause) { if (pause) SaveGame(); }
 
     // ----------------- WORLD -----------------
@@ -97,7 +99,9 @@ public class GameManager : MonoBehaviour
             {
                 worldName = currentWorldName,
                 seed = currentSeed,
-                lastPlayedDate = System.DateTime.Now.ToString()
+                createdDate = System.DateTime.Now.ToString(),
+                lastPlayedDate = System.DateTime.Now.ToString(),
+                difficulty = DifficultyManager.Instance.GetDifficulty()
             };
 
             SaveSystem.SaveWorldMeta(metadata);
@@ -182,7 +186,7 @@ public class GameManager : MonoBehaviour
             pendingPlayerData = data;
     }
 
-    public void OnUIBound()
+    private void OnUIBound()
     {
         if (pendingPlayerData != null && playerInstance.TryGetComponent(out Player player))
         {
@@ -191,7 +195,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public static void ApplyPlayerLoadedData(Player player, PlayerSaveData data)
+    private static void ApplyPlayerLoadedData(Player player, PlayerSaveData data)
     {
         PlayerStats stats = PlayerStatsManager.Instance.stats;
         stats.strength.Value = data.attributes.strength;
@@ -209,6 +213,7 @@ public class GameManager : MonoBehaviour
         player.transform.position = data.position;
 
         InventoryManager.Instance.AddSavedPlayerItems(data.inventory);
+        InventoryManager.Instance.EquipSelectedItem();
 
         PlayerStatsManager.Instance.stats.availablePoints = data.availablePoints;
         PlayerStatsManager.Instance.UpdateAvailablePoints();
@@ -218,6 +223,24 @@ public class GameManager : MonoBehaviour
         player.UpdateVitals();
     }
 
+    private void BindPlayerUI(Player player)
+    {
+        if (player != null)
+        {
+            player.BindUI(
+                UIManager.Instance.GetHealthBar("Player"),
+                UIManager.Instance.GetStaminaBar()
+            );
+
+            if (player.healthBar != null)
+                player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
+            if (player.staminaBar != null)
+                player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
+
+            player.UpdateVitals();
+        }
+    }
+
     public void RespawnPlayer(Player player)
     {
         StartCoroutine(RespawnPlayerCoroutine(player));
@@ -225,16 +248,13 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator RespawnPlayerCoroutine(Player player)
     {
-        // Destroy old player
-        if (player != null)
-            Destroy(player.gameObject);
+        if (player == null)
+        {
+            Debug.LogWarning("[Respawn] Player instance is null!");
+            yield break;
+        }
 
-        playerInstance = null;
-
-        // Wait a short time to ensure destruction is clean
-        yield return new WaitForSeconds(0.5f);
-
-        // Wait until the terrain is generated if it's not already
+        // Wait until the terrain is generated
         while (!voxelGrid.worldGenerated)
             yield return null;
 
@@ -248,9 +268,21 @@ public class GameManager : MonoBehaviour
         Vector3 respawnOffset = new(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
         Vector3 respawnPosition = campfirePosition + respawnOffset;
 
-        PlayerSaveData playerData = SaveSystem.LoadPlayer(currentWorldName);
+        if (player.TryGetComponent(out CharacterController controller))
+        {
+            controller.enabled = false;
+            player.transform.position = respawnPosition;
+            controller.enabled = true;
+        }
+        else
+        {
+            player.transform.position = respawnPosition;
+        }
 
-        SpawnPlayer(respawnPosition, playerData);
+        player.health.SetHealth(player.health.maxHealth);
+        player.staminaBar.SetNewStamina((int)player.staminaBar.maxStamina);
+
+        BindPlayerUI(player);
     }
 
     private void HookSystems(GameObject playerInstance)
@@ -271,10 +303,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // ----------------- CAMPFIRE -----------------
     public void SetCampfire(GameObject campfire) => campFireInstance = campfire;
 
+    private void BindCampfireUI(Campfire campfire)
+    {
+        if (campfire != null)
+            campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
+
+        if (campfire != null)
+        {
+            CampfireSaveData campfireData = SaveSystem.LoadCampfire(currentWorldName);
+            int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
+
+            if (campfire.health.healthBar != null)
+                campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
+
+            if (campfireData != null)
+                campfire.LoadFromSaveData(campfireData);
+            else
+                campfire.LoadDefault();
+        }
+    }
+
     // ----------------- SAVE / LOAD -----------------
-    public void SaveGame()
+    public void SaveGame(bool exit = false)
     {
         if (string.IsNullOrEmpty(currentWorldName)) return;
         if (playerInstance == null) return;
@@ -292,9 +345,6 @@ public class GameManager : MonoBehaviour
         foreach (GemAltar gemAltar in gemAltars)
             gemAltar.SaveAltarState();
 
-        enemySpawner.SaveAllEnemies();
-        animalSpawner.SaveAllAnimals();
-
         WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
         if (metadata != null)
         {
@@ -310,6 +360,18 @@ public class GameManager : MonoBehaviour
         Campfire campfire = FindFirstObjectByType<Campfire>();
         if (campfire != null)
             SaveSystem.SaveCampfire(currentWorldName, campfire.GetSaveData());
+
+        if (exit)
+        {
+            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+            {
+                if (trialAltar != null && trialAltar.IsWaveInProgress())
+                    trialAltar.FailTrial();
+            }
+        }
+
+        enemySpawner.SaveAllEnemies();
+        animalSpawner.SaveAllAnimals();
     }
 
     public void LoadGame()
@@ -322,8 +384,8 @@ public class GameManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(currentWorldName))
         {
-            Debug.LogError("[GameManager] CurrentWorldName is null or empty! Cannot load world.");
-            return;
+            currentWorldName = "New World";
+            currentSeed = "12345";
         }
 
         // Start full load routine
@@ -377,43 +439,13 @@ public class GameManager : MonoBehaviour
         Campfire campfire = campFireInstance.GetComponent<Campfire>();
 
         // --- Bind UI Bars ---
-        if (player != null)
-        {
-            player.BindUI(
-                UIManager.Instance.GetHealthBar("Player"),
-                UIManager.Instance.GetStaminaBar()
-            );
-        }
-
-        if (campfire != null)
-            campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
+        BindPlayerUI(player);
+        BindCampfireUI(campfire);
 
         // --- Load systems that depend on world/player ---
         CraftingManager.Instance.LoadCraftingProgress();
         FurnaceManager.Instance.LoadSmeltingProgress();
         dayNightCycle.LoadDayNight();
-
-        // --- Apply Saved or Default Data ---
-        if (campfire != null)
-        {
-            CampfireSaveData campfireData = SaveSystem.LoadCampfire(currentWorldName);
-            int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
-
-            if (campfire.health.healthBar != null)
-                campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
-
-            if (campfireData != null)
-                campfire.LoadFromSaveData(campfireData);
-            else
-                campfire.LoadDefault();
-        }
-
-        if (player.healthBar != null)
-            player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
-        if (player.staminaBar != null)
-            player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
-
-        player.UpdateVitals();
 
         OnUIBound();
     }
@@ -483,7 +515,7 @@ public class GameManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         Time.timeScale = 1f;
-        SaveGame();
+        SaveGame(true);
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
     }
 

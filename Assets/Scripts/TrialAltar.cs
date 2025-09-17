@@ -11,15 +11,16 @@ public class TrialAltar : MonoBehaviour, IInteractable
     public int[] enemiesPerWave = { 3, 5, 7 };
     public Item key;
 
-    private int currentWave = 0;
-    private bool trialCompleted = false;
+    [HideInInspector] public int currentWave = 0;
+    [HideInInspector] public bool trialCompleted = false;
+    [HideInInspector] public bool keyAvailable = false;
     private bool waveInProgress = false;
-    private bool keyAvailable = false;
+    private bool waveFail = false;
 
     [Header("Barrier Settings")]
     public bool useBarrier = true;
     public float barrierHalfSize = 15f;
-    public float barrierHeight = 4f;
+    public float barrierHeight = 10f;
     public float barrierThickness = 0.5f;
     public string barrierLayerName = "TrialBarrier";
     public bool oneWayAllowInsideToExitOnly = false;
@@ -51,6 +52,7 @@ public class TrialAltar : MonoBehaviour, IInteractable
         if (trialCompleted || waveInProgress)
             return;
 
+        waveFail = false;
         StartCoroutine(StartWaveRoutine());
     }
 
@@ -67,7 +69,8 @@ public class TrialAltar : MonoBehaviour, IInteractable
         yield return new WaitUntil(() => AreAllTrialEnemiesDead());
 
         waveInProgress = false;
-        currentWave++;
+
+        if (!waveFail) currentWave++;
 
         SaveAltarState();
         SetBarrierActive(false);
@@ -230,19 +233,19 @@ public class TrialAltar : MonoBehaviour, IInteractable
 
         // Create 4 walls (positive X, negative X, positive Z, negative Z)
         // Normal points inward (toward altar) so the OneWay script can know "which side is outside".
-        CreateWall("Wall+X", new Vector3(barrierHalfSize, barrierHeight * 0.5f, 0f),
+        CreateWall("Wall+X", new Vector3(barrierHalfSize, barrierHeight * 0.5f - 2f, 0f),
                    new Vector3(barrierThickness, barrierHeight, barrierHalfSize * 2f),
                    Vector3.left, barrierLayer);
 
-        CreateWall("Wall-X", new Vector3(-barrierHalfSize, barrierHeight * 0.5f, 0f),
+        CreateWall("Wall-X", new Vector3(-barrierHalfSize, barrierHeight * 0.5f - 2f, 0f),
                    new Vector3(barrierThickness, barrierHeight, barrierHalfSize * 2f),
                    Vector3.right, barrierLayer);
 
-        CreateWall("Wall+Z", new Vector3(0f, barrierHeight * 0.5f, barrierHalfSize),
+        CreateWall("Wall+Z", new Vector3(0f, barrierHeight * 0.5f - 2f, barrierHalfSize),
                    new Vector3(barrierHalfSize * 2f, barrierHeight, barrierThickness),
                    Vector3.back, barrierLayer);
 
-        CreateWall("Wall-Z", new Vector3(0f, barrierHeight * 0.5f, -barrierHalfSize),
+        CreateWall("Wall-Z", new Vector3(0f, barrierHeight * 0.5f - 2f, -barrierHalfSize),
                    new Vector3(barrierHalfSize * 2f, barrierHeight, barrierThickness),
                    Vector3.forward, barrierLayer);
     }
@@ -260,18 +263,65 @@ public class TrialAltar : MonoBehaviour, IInteractable
         col.isTrigger = false;
         col.size = size;
 
-        // Optional: a simple visible gizmo/mesh (you can swap to your own material/mesh)
-        // var mr = wall.AddComponent<MeshRenderer>();
-        // var mf = wall.AddComponent<MeshFilter>();
-        // mf.mesh = BuildSimpleBox(size); // omit for brevity
+        MeshFilter mf = wall.AddComponent<MeshFilter>();
+
+        if (Mathf.Approximately(size.z, barrierThickness))
+            mf.mesh = BuildQuadMesh(size.x, size.y, Vector3.forward);
+        else
+            mf.mesh = BuildQuadMesh(size.z, size.y, Vector3.right);
+
+        MeshRenderer mr = wall.AddComponent<MeshRenderer>();
+        mr.material = BarrierMaterial.Instance.Get();
 
         if (oneWayAllowInsideToExitOnly)
         {
             OneWayBarrier ow = wall.AddComponent<OneWayBarrier>();
-            ow.inwardNormal = inwardNormal;        // points toward altar center
-            ow.allowInsideToExitOnly = true;       // inside->outside allowed; outside->inside blocked
+            ow.inwardNormal = inwardNormal;
+            ow.allowInsideToExitOnly = true;
             ow.solidCollider = col;
         }
+    }
+
+    private Mesh BuildQuadMesh(float width, float height, Vector3 normal)
+    {
+        Mesh mesh = new();
+
+        Vector3 right, up;
+
+        if (normal == Vector3.forward || normal == Vector3.back)
+        {
+            right = Vector3.right;
+            up = Vector3.up;
+        }
+        else if (normal == Vector3.right || normal == Vector3.left)
+        {
+            right = Vector3.forward;
+            up = Vector3.up;
+        }
+        else
+        {
+            right = Vector3.right;
+            up = Vector3.up;
+        }
+
+        mesh.vertices = new Vector3[]
+        {
+        (-right * width/2) + (-up * height/2),
+        ( right * width/2) + (-up * height/2),
+        (-right * width/2) + ( up * height/2),
+        ( right * width/2) + ( up * height/2)
+        };
+
+        mesh.uv = new Vector2[]
+        {
+        new(0,0), new(1,0),
+        new(0,1), new(1,1)
+        };
+
+        mesh.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
+
+        mesh.RecalculateNormals();
+        return mesh;
     }
 
     private void SetBarrierActive(bool active)
@@ -290,6 +340,8 @@ public class TrialAltar : MonoBehaviour, IInteractable
         {
             TrialEnemyPool.Instance.ReturnEnemyToPool(trialEnemy);
         }
+
+        waveFail = true;
     }
 
     // Save / Load

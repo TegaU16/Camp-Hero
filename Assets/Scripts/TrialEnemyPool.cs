@@ -53,7 +53,7 @@ public class TrialEnemyPool : MonoBehaviour
                 enemy.SetActive(true);
                 if (enemy.TryGetComponent(out TrialEnemyMarker marker))
                 {
-                    marker.OnTrialSpawn(); // Optional hook
+                    marker.OnTrialSpawn();
                 }
 
                 activeEnemies.Add(enemy);
@@ -84,7 +84,7 @@ public class TrialEnemyPool : MonoBehaviour
         if (!enemyToPrefab.ContainsKey(enemy))
         {
             Debug.LogWarning($"Enemy {enemy.name} does not belong to any pool.");
-            Destroy(enemy); // or just deactivate if you want
+            enemy.SetActive(false);
             return;
         }
 

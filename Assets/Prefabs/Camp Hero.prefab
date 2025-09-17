@@ -993,7 +993,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 4.5
   sprintSpeed: 7
-  gravity: -9.8
+  gravity: -13.5
   jumpHeight: 1.4
   health: {fileID: 2100224601261238592}
   healthBar: {fileID: 0}

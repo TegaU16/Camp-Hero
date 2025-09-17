@@ -62,6 +62,18 @@ public class Projectile : MonoBehaviour
 
     void HitTarget()
     {
+        Vector3 hitPoint;
+        Vector3 hitNormal;
+
+        if (target.TryGetComponent(out Collider collider))
+            hitPoint = collider.ClosestPoint(transform.position);
+        else if (target.TryGetComponent(out CharacterController controller))
+            hitPoint = controller.ClosestPoint(transform.position);
+        else
+            return;
+
+        hitNormal = (hitPoint - transform.position).normalized;
+
         if (target.TryGetComponent(out Targetable targetable))
         {
             if (targetable.TryGetComponent(out Health targetHealth))
@@ -76,12 +88,12 @@ public class Projectile : MonoBehaviour
             }
             else if (target.TryGetComponent(out BreakableObject breakable))
             {
-                breakable.TakeDamage(damage, false);
+                breakable.TakeDamage(damage, false, hitPoint, hitNormal);
             }
         }
         else if (target.TryGetComponent(out BreakableObject breakable))
         {
-            breakable.TakeDamage(damage, false);
+            breakable.TakeDamage(damage, false, hitPoint, hitNormal);
         }
 
         Destroy(gameObject);

@@ -109,5 +109,13 @@ MonoBehaviour:
   enemyWavePrefabs: []
   spawnPoints: []
   enemiesPerWave: 030000000500000007000000
-  keyPrefab: {fileID: 0}
-  keyDropPoint: {fileID: 0}
+  key: {fileID: 11400000, guid: 0c87ef4067912594197c8e1ba1006787, type: 2}
+  currentWave: 0
+  trialCompleted: 0
+  keyAvailable: 0
+  useBarrier: 1
+  barrierHalfSize: 15
+  barrierHeight: 4
+  barrierThickness: 0.1
+  barrierLayerName: TrialBarrier
+  oneWayAllowInsideToExitOnly: 0

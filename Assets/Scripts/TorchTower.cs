@@ -27,6 +27,16 @@ public class TorchTower : Defense
         {
             if (!IsTargetAlive(target)) continue;
 
+            Vector3 hitPoint;
+            Vector3 hitNormal;
+
+            if (target.TryGetComponent(out CharacterController controller))
+                hitPoint = controller.ClosestPoint(transform.position);
+            else
+                continue;
+
+            hitNormal = (hitPoint - transform.position).normalized;
+
             // Assign or reuse a beam for this target
             if (!targetToBeam.ContainsKey(target))
             {
@@ -54,7 +64,7 @@ public class TorchTower : Defense
                     int wholeDamage = Mathf.FloorToInt(damageBuffer[target]);
                     if (wholeDamage > 0)
                     {
-                        breakable.TakeDamage(wholeDamage, false);
+                        breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal);
                         damageBuffer[target] -= wholeDamage;
                     }
                 }

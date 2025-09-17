@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class BreakableObject : MonoBehaviour
@@ -20,13 +21,14 @@ public class BreakableObject : MonoBehaviour
     }
 
     public GameObject damagePopupPrefab;
-    public int maxHealth;
+    private int maxHealth;
+    public int baseHealth;
     private int health;
     public int expDropped;
     public Drop[] drops;
-    public ObjectType type;
+    public ObjectType objectType;
+    public EntityType entityType;
     public int objectLevel;
-    public bool isOrganism = false;
 
     private bool isDestroyed = false;
 
@@ -35,16 +37,37 @@ public class BreakableObject : MonoBehaviour
 
     [SerializeField] private Transform torsoBone;
 
-    private void Start()
+    private void OnEnable()
     {
+        DifficultyManager.Instance.OnDifficultyChanged += HandleDifficultyChange;
         ResetObject();
     }
 
-    public void TakeDamage(int damage, bool crit)
+    private void OnDisable()
+    {
+        DifficultyManager.Instance.OnDifficultyChanged -= HandleDifficultyChange;
+    }
+
+    private void HandleDifficultyChange(Difficulty newDifficulty)
+    {
+        ApplyDifficultyScaling();
+    }
+
+    private void ApplyDifficultyScaling(bool reset = false)
+    {
+        float healthMultiplier = DifficultyManager.Instance.GetHealthMultiplier(entityType);
+
+        float healthPercent = maxHealth > 0 ? (float)health / maxHealth : 1f;
+
+        maxHealth = (int)(baseHealth * healthMultiplier);
+        health = reset ? maxHealth : (int)(maxHealth * healthPercent);
+    }
+
+    public void TakeDamage(int damage, bool crit, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (isDestroyed) return;
 
-        if (health > 0) ShowDamagePopup(damage, crit);
+        if (health > 0) ShowDamagePopup(damage, crit, hitPoint);
 
         health -= damage;
         health = Mathf.Max(health, 0);
@@ -70,19 +93,24 @@ public class BreakableObject : MonoBehaviour
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
             if (hitEffectManager != null)
             {
-                hitEffectManager.ApplyHitEffect(gameObject);
+                hitEffectManager.SpawnSparks(hitPoint, hitNormal);
             }
+
+            if (entityType == EntityType.Static)
+                StartCoroutine(BounceObject(transform));
         }
     }
 
-    private void ShowDamagePopup(int damage, bool crit)
+    private void ShowDamagePopup(int damage, bool crit, Vector3 hitPoint)
     {
         GameObject popupInstance = DamagePopupPool.Instance.GetPopup();
 
-        Vector3 spawnPosition = transform.position + new Vector3(0, 2f, 0);
+        Vector3 spawnPosition = hitPoint + Vector3.up * Random.Range(0.2f, 0.5f);
         popupInstance.transform.position = spawnPosition;
+
+        // Always face camera
         popupInstance.transform.LookAt(Camera.main.transform);
-        popupInstance.transform.Rotate(0, 180, 0); // Flip if needed
+        popupInstance.transform.Rotate(0, 180, 0);
 
         if (popupInstance.TryGetComponent(out DamagePopup popup))
         {
@@ -102,7 +130,6 @@ public class BreakableObject : MonoBehaviour
                 Vector3 pos = gameObject.transform.position + new Vector3(0f, 2f, 0f);
                 int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
 
-                // Clamp the value to ensure it's within the range even if something unexpected happens
                 dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
 
                 itemDrop.drop.SpawnObject(pos, dropAmount, torsoBone);
@@ -111,15 +138,12 @@ public class BreakableObject : MonoBehaviour
 
         LevelManager.Instance.AddExp(expDropped);
         
-        if (!isOrganism)
+        if (entityType == EntityType.Static)
         {
             if (owningChunk != null && savedObjectIndex >= 0 && savedObjectIndex < owningChunk.savedObjects.Count)
             {
-                SpawnedObjectData saved = owningChunk.savedObjects[savedObjectIndex];
-                if (saved.position == transform.position)
-                {
-                    owningChunk.savedObjects.RemoveAt(savedObjectIndex);
-                }
+                owningChunk.savedObjects.RemoveAt(savedObjectIndex);
+                owningChunk.isDirty = true;
             }
 
             GameManager.Instance.voxelGrid.MarkAreaOccupied(gameObject, false);
@@ -127,10 +151,38 @@ public class BreakableObject : MonoBehaviour
         }
     }
 
+    IEnumerator BounceObject(Transform objTransform)
+    {
+        Vector3 originalScale = objTransform.localScale;
+        Vector3 shrunkenScale = originalScale * 0.95f; // 95% size
+
+        float duration = 0.1f; // shrink duration
+        float elapsed = 0f;
+
+        // Shrink
+        while (elapsed < duration)
+        {
+            objTransform.localScale = Vector3.Lerp(originalScale, shrunkenScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        objTransform.localScale = shrunkenScale;
+
+        // Expand back
+        elapsed = 0f;
+        while (elapsed < duration)
+        {
+            objTransform.localScale = Vector3.Lerp(shrunkenScale, originalScale, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        objTransform.localScale = originalScale;
+    }
+
     public void ResetObject()
     {
         isDestroyed = false;
-        health = maxHealth;
+        ApplyDifficultyScaling(true);
     }
 
     public int GetHealth() => health;

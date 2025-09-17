@@ -49,7 +49,7 @@ public class InventoryManager : MonoBehaviour
     public KeyCode itemStackDropKey = KeyCode.LeftControl;
     public KeyCode exitExtensionKey = KeyCode.Escape;
 
-    public bool JustClosedExtension { get; private set; }
+    public bool JustClosedExtension { get; set; }
     public int LastRemainingCount { get; private set; }
 
     private void Awake()
@@ -128,10 +128,15 @@ public class InventoryManager : MonoBehaviour
     {
         if (selectedSlot >= 0)
         {
-            inventoryUIHandler.inventorySlots[selectedSlot].Deselect();
+            InventorySlot selected = inventoryUIHandler.inventorySlots[selectedSlot];
+            if (selected.TryGetComponent(out SelectableImage selectable))
+                selectable.Deselect();
         }
 
-        inventoryUIHandler.inventorySlots[newValue].Select();
+        InventorySlot newSlot = inventoryUIHandler.inventorySlots[newValue];
+        if (newSlot.TryGetComponent(out SelectableImage selectableImage))
+            selectableImage.Select();
+
         selectedSlot = newValue;
 
         EquipSelectedItem();
@@ -313,12 +318,12 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        GetSelectedItem(false);
+        EquipSelectedItem();
     }
 
     public void DropItem(Item item, int count)
     {
-        Vector3 pos = playerObject.transform.position + playerObject.transform.forward * 2f;
+        Vector3 pos = playerObject.transform.position + playerObject.transform.forward * 1f + Vector3.up * 2f;
 
         if (item != null && item.itemDrop != null)
         {
@@ -327,18 +332,11 @@ public class InventoryManager : MonoBehaviour
             if (instance.TryGetComponent(out InteractableItem interactable))
             {
                 interactable.itemCount = count;
+                interactable.EnablePickupAfterDelay(0.25f);
             }
         }
 
-        // Ensure the inventory slot is updated before re-equipping
-        if (GetSelectedItem(false) == null)  // Check if slot is empty
-        {
-            itemEquip.EquipItem(null);  // Unequip the item if the slot is empty
-        }
-        else
-        {
-            EquipSelectedItem();  // Equip the current item in the slot if it still exists
-        }
+        EquipSelectedItem();
     }
 
     public void ClearItems()

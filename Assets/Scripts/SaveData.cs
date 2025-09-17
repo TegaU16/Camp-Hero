@@ -50,6 +50,7 @@ public class WorldMetaData
     public string seed;
     public string createdDate;
     public string lastPlayedDate;
+    public Difficulty difficulty;
 }
 
 [System.Serializable]
@@ -62,6 +63,44 @@ public class ChunkSaveData
 
     public List<string> furnaceStates = new();
     public List<string> storageStates = new();
+}
+
+[System.Serializable]
+public class SpawnedObjectData
+{
+    public Vector3 position;
+    public string prefabName;
+    public string savedStateJson;
+
+    public InteractableItemData interactableData;
+    public TrialAltarSaveData trialData;
+    public BreakableObjectData breakableObjectData;
+
+    public SpawnedObjectData(Vector3 pos, GameObject obj, InteractableItemData interactableItemData = null, 
+        TrialAltarSaveData trialAltarSaveData = null, BreakableObjectData breakableObjectSaveData = null)
+    {
+        position = pos;
+        prefabName = PrefabRegistry.GetKeyForPrefab(obj);
+        interactableData = interactableItemData;
+        trialData = trialAltarSaveData;
+        breakableObjectData = breakableObjectSaveData;
+
+        if (obj.TryGetComponent(out ISaveableObject saveable))
+        {
+            savedStateJson = saveable.SaveState();
+        }
+        else
+        {
+            savedStateJson = null;
+        }
+    }
+}
+
+[System.Serializable]
+public class InteractableItemData
+{
+    public string itemName;
+    public int count;
 }
 
 [System.Serializable]
@@ -129,4 +168,10 @@ public class CampfireSaveData
 {
     public int currentHealth;
     public List<GemColor> unlockedGems;
+}
+
+[System.Serializable]
+public class BreakableObjectData
+{
+    public int currentHealth;
 }

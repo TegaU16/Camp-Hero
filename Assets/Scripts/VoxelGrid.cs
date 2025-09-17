@@ -81,8 +81,6 @@ public class VoxelGrid : MonoBehaviour
 
     public void SetWorld(int worldSeed, string name)
     {
-        Debug.Log($"[VoxelGrid] SetWorld seed={worldSeed}, name={name}");
-
         if (worldGenerated) return;
 
         animalSpawner.groundLayer = groundLayer;
@@ -91,22 +89,113 @@ public class VoxelGrid : MonoBehaviour
 
         string worldDir = Path.Combine(Application.persistentDataPath, "Worlds", worldName, "chunks");
 
-        if (Directory.Exists(worldDir) && Directory.GetFiles(worldDir, "*.chunk").Length > 0)
+        bool hasChunks = false;
+        if (Directory.Exists(worldDir))
         {
-            // Load saved chunks instead of regenerating
+            // Look for any known chunk file types
+            string[] chunkFiles = Directory.GetFiles(worldDir, "*.json");
+            if (chunkFiles.Length == 0)
+                chunkFiles = Directory.GetFiles(worldDir, "*.chunk");
+
+            hasChunks = chunkFiles.Length > 0;
+        }
+
+        if (hasChunks)
             StartCoroutine(LoadChunksRoutine(worldName));
-        }
         else
-        {
-            // First time: generate and save
             StartCoroutine(GenerateTerrain());
+    }
+
+    public IEnumerator LoadChunksRoutine(string worldName)
+    {
+        string chunksDir = Path.Combine(Application.persistentDataPath, "Worlds", worldName, "chunks");
+        if (!Directory.Exists(chunksDir))
+        {
+            Debug.LogWarning($"No chunk folder found for world '{worldName}'. Generating new world.");
+            yield return StartCoroutine(GenerateTerrain());
+            yield break;
         }
+
+        string[] files = Directory.GetFiles(chunksDir, "*.json");
+        if (files.Length == 0)
+        {
+            Debug.LogWarning($"No saved chunks found for world '{worldName}'. Generating new world.");
+            yield return StartCoroutine(GenerateTerrain());
+            yield break;
+        }
+
+        int extraSteps = 3;
+        int totalSteps = files.Length + extraSteps;
+        int currentStep = 0;
+
+        foreach (string file in files)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(file); // "chunk_x_z"
+            string[] parts = fileName.Split('_');
+            if (parts.Length != 3) continue;
+
+            if (!float.TryParse(parts[1], out float x)) continue;
+            if (!float.TryParse(parts[2], out float z)) continue;
+
+            Vector3 chunkPos = new(x, 0, z);
+
+            ChunkSaveData data = SaveSystem.LoadChunk(worldName, chunkPos);
+            if (data == null)
+            {
+                Debug.LogWarning($"Failed to load chunk at {chunkPos}. Skipping.");
+                continue;
+            }
+
+            // Rebuild chunk
+            GameObject chunkObj = new($"VoxelChunk {chunkPos.x},{chunkPos.z}");
+            chunkObj.transform.SetParent(voxelGridRoot, false);
+            chunkObj.transform.position = chunkPos;
+
+            VoxelChunk chunk = new(chunkObj, chunkSize)
+            {
+                chunkPosition = data.chunkPosition,
+                hasNaturalObjects = data.hasNaturalObjects,
+                hasKeyStructure = data.hasKeyStructure
+            };
+
+            GenerateChunkTerrain(chunk, chunk.chunkPosition);
+
+            LoadChunkObjects(chunk, data);
+
+            chunks.Add(chunk);
+            chunkMap[new Vector2Int(
+                (int)data.chunkPosition.x / chunkSize,
+                (int)data.chunkPosition.z / chunkSize)] = chunk;
+            animalSpawner.chunks.Add(chunk);
+
+            currentStep++;
+            OnProgress?.Invoke((float)currentStep / totalSteps);
+            yield return null; // let UI update
+        }
+
+        // campfire / borders / save
+        yield return null;
+        SpawnCampfireAtCenter();
+        currentStep++;
+        OnProgress?.Invoke((float)currentStep / totalSteps);
+        yield return null;
+
+        CreateWorldBorders();
+        currentStep++;
+        OnProgress?.Invoke((float)currentStep / totalSteps);
+
+        SaveAllChunks(worldName);
+        currentStep++;
+        OnProgress?.Invoke((float)currentStep / totalSteps);
+
+        worldGenerated = true;
+        OnProgress?.Invoke(1f);
     }
 
     public IEnumerator GenerateTerrain()
     {
-        int totalSteps = gridSize * gridSize // chunk generation
-                     + 6; // key structures, natural objects, altars, campfire, borders, saving
+        int extraSteps = 6;
+        int totalSteps = gridSize * gridSize + extraSteps;
         int currentStep = 0;
 
         for (int x = 0; x < gridSize; x++)
@@ -134,9 +223,6 @@ public class VoxelGrid : MonoBehaviour
                 yield return null;
             }
         }
-
-        // --- Chunk management routine ---
-        StartCoroutine(ManageChunksRoutine());
 
         // --- Key structures ---
         yield return StartCoroutine(keyStructureSpawner.SpawnKeyStructures(terrainWidth, worldCenter, (progress) =>
@@ -424,17 +510,24 @@ public class VoxelGrid : MonoBehaviour
         {
             for (int cz = 0; cz < chunkSize; cz++)
             {
-                Vector3 position = chunkPosition + new Vector3((cx + 0.5f) * voxelSize, maxHeight * voxelSize, (cz + 0.5f) * voxelSize);
-
-                if (Physics.Raycast(position, Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayer))
+                if (ShouldSpawnObject(cx, cz, seed, chunkPosition))
                 {
-                    if (Vector3.Distance(hit.point, worldCenter) < minDistanceFromCenter)
-                        continue;
+                    Vector3 basePosition = chunkPosition + new Vector3(
+                    (cx + 0.5f) * voxelSize,
+                    maxHeight * voxelSize,
+                    (cz + 0.5f) * voxelSize
+                );
 
-                    if (ShouldSpawnObject(cx, cz, seed, chunkPosition))
+                    Vector3 offset = CalculatePositionOffset(cx, cz, seed);
+                    Vector3 testPosition = basePosition + offset;
+
+                    // Single raycast for final ground snap
+                    if (Physics.Raycast(testPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayer))
                     {
-                        Vector3 offset = CalculatePositionOffset(cx, cz, seed);
-                        Vector3 spawnPosition = hit.point + offset;
+                        Vector3 spawnPosition = hit.point;
+
+                        if (Vector3.Distance(spawnPosition, worldCenter) < minDistanceFromCenter)
+                            continue;
 
                         bool tooClose = false;
                         foreach (Vector3 spawnedPosition in chunk.savedObjectPositions)
@@ -452,7 +545,13 @@ public class VoxelGrid : MonoBehaviour
                         GameObject prefab = SelectDeterministicObjectPrefab(cx, cz, seed, chunk);
                         if (prefab != null)
                         {
-                            chunk.savedObjects.Add(new SpawnedObjectData(spawnPosition, prefab));
+                            InteractableItemData interactableData = new();
+
+                            if (prefab.TryGetComponent(out InteractableItem interactable))
+                            {
+                                interactableData.itemName = interactable.item.name;
+                                interactableData.count = interactable.itemCount;
+                            }
 
                             GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
                             obj.transform.parent = chunk.chunkObject.transform;
@@ -460,11 +559,16 @@ public class VoxelGrid : MonoBehaviour
 
                             MarkAreaOccupied(obj);
 
+                            BreakableObjectData breakableObjectData = new();
+
                             if (obj.TryGetComponent(out BreakableObject breakable))
                             {
                                 breakable.owningChunk = chunk;
                                 breakable.savedObjectIndex = chunk.savedObjects.Count - 1;
+                                breakableObjectData.currentHealth = breakable.GetHealth();
                             }
+
+                            chunk.savedObjects.Add(new SpawnedObjectData(spawnPosition, prefab, interactableData, breakableObjectSaveData: breakableObjectData));
 
                             SpawnClusterAround(spawnPosition, chunk, obj);
                         }
@@ -477,46 +581,6 @@ public class VoxelGrid : MonoBehaviour
         {
             structureManager.SpawnStructuresInChunk(chunk);
             chunk.structureSpawned = true;
-        }
-    }
-
-    void DespawnObjectsInChunk(VoxelChunk chunk)
-    {
-        foreach (GameObject obj in chunk.objects)
-        {
-            Destroy(obj);
-        }
-        chunk.objects.Clear();
-    }
-
-    void RespawnObjectsInChunk(VoxelChunk chunk)
-    {
-        for (int i = 0; i < chunk.savedObjects.Count; i++)
-        {
-            SpawnedObjectData data = chunk.savedObjects[i];
-            GameObject prefab = PrefabRegistry.GetPrefabByName(data.prefabName);
-
-            if (prefab == null)
-            {
-                Debug.LogWarning($"Prefab not found: {data.prefabName}");
-                continue;
-            }
-
-            GameObject obj = Instantiate(prefab, data.position, Quaternion.identity);
-
-            if (!string.IsNullOrEmpty(data.savedStateJson) && obj.TryGetComponent(out ISaveableObject saveable))
-            {
-                saveable.LoadState(data.savedStateJson);
-            }
-
-            obj.transform.parent = chunk.chunkObject.transform;
-            chunk.objects.Add(obj);
-
-            if (obj.TryGetComponent(out BreakableObject breakable))
-            {
-                breakable.owningChunk = chunk;
-                breakable.savedObjectIndex = i;
-            }
         }
     }
 
@@ -554,13 +618,21 @@ public class VoxelGrid : MonoBehaviour
                     chunk.objects.Add(smallObj);
                     chunk.savedObjectPositions.Add(finalPosition);
 
-
-                    chunk.savedObjects.Add(new SpawnedObjectData(finalPosition, smallPrefab));
+                    MarkAreaOccupied(smallObj);
+                    
+                    InteractableItemData interactableData = new();
 
                     if (smallObj.TryGetComponent(out InteractableItem interactable))
                     {
                         interactable.itemCount = 1;
+                        interactableData.itemName = interactable.item.name;
+                        interactableData.count = interactable.itemCount;
+
+                        interactable.owningChunk = chunk;
+                        interactable.savedObjectIndex = chunk.savedObjects.Count - 1;
                     }
+
+                    chunk.savedObjects.Add(new SpawnedObjectData(finalPosition, smallPrefab, interactableData));
                 }
             }
         }
@@ -597,133 +669,55 @@ public class VoxelGrid : MonoBehaviour
         };
     }
 
-    IEnumerator ManageChunksRoutine()
+    void LoadChunkObjects(VoxelChunk chunk, ChunkSaveData savedData)
     {
-        while (true)
-        {
-            if (player == null)
-            {
-                yield return null;
-                continue;
-            }
+        chunk.objects.Clear();
+        chunk.savedObjectPositions.Clear();
 
-            playerPosition = player.transform.position;
-
-            int chunksProcessed = 0;
-            const int chunksPerFrame = 5; // Tweak as needed
-
-            foreach (VoxelChunk chunk in chunks)
-            {
-                ProcessChunk(chunk);
-
-                chunksProcessed++;
-                if (chunksProcessed >= chunksPerFrame)
-                {
-                    chunksProcessed = 0;
-                    yield return null; // Spread work over frames
-                }
-            }
-
-            yield return null; // Wait for next frame before starting again
-        }
-    }
-
-    void ProcessChunk(VoxelChunk chunk)
-    {
-        float chunkDistance = Vector3.Distance(playerPosition, chunk.chunkPosition);
-
-        // --- RENDERING & VISIBILITY ---
-        if (chunkDistance > viewDistance * chunkSize * voxelSize)
-        {
-            if (chunk.objectsSpawned)
-            {
-                SaveSystem.SaveChunk(worldName, chunk);
-                DespawnObjectsInChunk(chunk);
-                animalSpawner.DespawnAnimalsForChunk(chunk);
-                chunk.objectsSpawned = false;
-            }
-
-            SetChunkVisualsActive(chunk, false);
-        }
-        else
-        {
-            if (!chunk.objectsSpawned)
-            {
-                if (!chunk.wasLoadedFromSave)
-                {
-                    ChunkSaveData savedData = SaveSystem.LoadChunk(worldName, chunk.chunkPosition);
-                    if (savedData != null)
-                    {
-                        LoadChunkObjects(chunk, savedData);
-                        chunk.wasLoadedFromSave = true;
-                    }
-                    else
-                    {
-                        SpawnObjectsInChunk(chunk);
-                    }
-                }
-
-                StartCoroutine(animalSpawner.SpawnAnimalsForChunk(chunk));
-
-                if (chunk.objects.Count == 0 && chunk.savedObjects.Count > 0)
-                {
-                    RespawnObjectsInChunk(chunk);
-                }
-
-                chunk.objectsSpawned = true;
-            }
-
-            SetChunkVisualsActive(chunk, true);
-        }
-
-        // --- SIMULATION ---
-        if (chunkDistance <= simulationDistance * chunkSize * voxelSize)
-        {
-            EnableSimulationInChunk(chunk);
-        }
-        else
-        {
-            DisableSimulationInChunk(chunk);
-        }
-    }
-
-    void SetChunkVisualsActive(VoxelChunk chunk, bool active)
-    {
-        if (chunk.visualsEnabled == active)
+        if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0)
             return;
 
-        foreach (MeshRenderer renderer in chunk.cachedRenderers)
-            renderer.enabled = active;
+        chunk.savedObjects = new List<SpawnedObjectData>(savedData.spawnedObjects);
 
-        chunk.visualsEnabled = active;
-    }
+        foreach (SpawnedObjectData objData in chunk.savedObjects)
+        {
+            GameObject prefab = PrefabRegistry.GetPrefabByKey(objData.prefabName);
+            if (prefab == null) continue;
 
-    void EnableSimulationInChunk(VoxelChunk chunk)
-    {
-        if (chunk.simulationEnabled)
-            return;
+            Vector3 spawnPosition = objData.position;
+            GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
+            obj.transform.parent = chunk.chunkObject.transform;
 
-        foreach (ISimulatable sim in chunk.simulatedEntities)
-            sim?.OnSimulateStart();
+            if (!string.IsNullOrEmpty(objData.savedStateJson) && obj.TryGetComponent(out ISaveableObject saveable))
+            {
+                saveable.LoadState(objData.savedStateJson);
+            }
 
-        foreach (Collider col in chunk.cachedColliders)
-            col.enabled = true;
+            chunk.objects.Add(obj);
+            chunk.savedObjectPositions.Add(spawnPosition);
 
-        chunk.simulationEnabled = true;
-    }
+            if (obj.TryGetComponent(out BreakableObject breakable) && objData.breakableObjectData != null)
+            {
+                breakable.owningChunk = chunk;
+                breakable.savedObjectIndex = chunk.savedObjects.IndexOf(objData);
+                breakable.SetHealth(objData.breakableObjectData.currentHealth);
+            }
 
-    void DisableSimulationInChunk(VoxelChunk chunk)
-    {
-        if (!chunk.simulationEnabled)
-            return;
+            if (obj.TryGetComponent(out InteractableItem interactable) && objData.interactableData != null)
+            {
+                interactable.owningChunk = chunk;
+                interactable.savedObjectIndex = chunk.savedObjects.IndexOf(objData);
+                interactable.LoadInteractableItemData(objData.interactableData);
+            }
 
-        foreach (ISimulatable sim in chunk.simulatedEntities)
-            sim?.OnSimulateStop();
+            if (obj.TryGetComponent(out GemAltar gemAltar))
+            {
+                gemAltar.LoadAltarState();
+            }
+        }
 
-        foreach (Collider col in chunk.cachedColliders)
-            col.enabled = false;
-
-        chunk.simulationEnabled = false;
+        chunk.hasNaturalObjects = true;
+        chunk.structureSpawned = true;
     }
 
     bool ShouldSpawnObject(int x, int z, int seed, Vector3 chunkPosition)
@@ -759,13 +753,24 @@ public class VoxelGrid : MonoBehaviour
 
     public Vector3 CalculatePositionOffset(int x, int z, int seed)
     {
-        float frequency = 0.1f;
-        float amplitude = voxelSize * 0.2f;
+        float frequency = 0.35f;                     // Controls clustering
+        float amplitude = voxelSize * 4f;            // Push trees far from grid anchor
 
+        // Independent noise fields
         float noiseX = Mathf.PerlinNoise((x + seed) * frequency, (z + seed) * frequency);
-        float noiseZ = Mathf.PerlinNoise((z + seed) * frequency, (x + seed) * frequency);
+        float noiseZ = Mathf.PerlinNoise((x + seed + 1337) * frequency, (z + seed + 9999) * frequency);
 
-        return new Vector3(noiseX * amplitude, 0f, noiseZ * amplitude);
+        // Scale to amplitude
+        float offsetX = (noiseX - 0.5f) * amplitude; // Shift around origin
+        float offsetZ = (noiseZ - 0.5f) * amplitude;
+
+        // Deterministic jitter (tiny extra shake)
+        int hash = x * 73856093 ^ z * 19349663 ^ seed;
+        System.Random rng = new(hash);
+        float jitterX = (float)(rng.NextDouble() - 0.5) * voxelSize * 0.5f;
+        float jitterZ = (float)(rng.NextDouble() - 0.5) * voxelSize * 0.5f;
+
+        return new Vector3(offsetX + jitterX, 0f, offsetZ + jitterZ);
     }
 
     void CreateWorldBorders()
@@ -918,149 +923,6 @@ public class VoxelGrid : MonoBehaviour
     {
         float scale = biomeNoiseSettings.baseScale;
         return Mathf.PerlinNoise((x + seed) * scale, (z + seed) * scale) * 2f - 1f;
-    }
-
-    public IEnumerator LoadChunksRoutine(string worldName)
-    {
-        string chunksDir = Path.Combine(Application.persistentDataPath, "Worlds", worldName, "chunks");
-        if (!Directory.Exists(chunksDir))
-        {
-            Debug.LogWarning($"No chunk folder found for world '{worldName}'. Generating new world.");
-            yield return StartCoroutine(GenerateTerrain());
-            yield break;
-        }
-
-        string[] files = Directory.GetFiles(chunksDir, "*.json");
-        if (files.Length == 0)
-        {
-            Debug.LogWarning($"No saved chunks found for world '{worldName}'. Generating new world.");
-            yield return StartCoroutine(GenerateTerrain());
-            yield break;
-        }
-
-        int totalSteps = files.Length
-                       + 6; // same extra steps as GenerateTerrain
-        int currentStep = 0;
-
-        foreach (string file in files)
-        {
-            string fileName = Path.GetFileNameWithoutExtension(file); // "chunk_x_z"
-            string[] parts = fileName.Split('_');
-            if (parts.Length != 3) continue;
-
-            if (!float.TryParse(parts[1], out float x)) continue;
-            if (!float.TryParse(parts[2], out float z)) continue;
-
-            Vector3 chunkPos = new(x, 0, z);
-
-            ChunkSaveData data = SaveSystem.LoadChunk(worldName, chunkPos);
-            if (data == null)
-            {
-                Debug.LogWarning($"Failed to load chunk at {chunkPos}. Skipping.");
-                continue;
-            }
-
-            // Rebuild chunk
-            GameObject chunkObj = new($"VoxelChunk {chunkPos.x},{chunkPos.z}");
-            chunkObj.transform.SetParent(voxelGridRoot, false);
-            chunkObj.transform.position = chunkPos;
-
-            VoxelChunk chunk = new(chunkObj, chunkSize)
-            {
-                chunkPosition = data.chunkPosition,
-                savedObjects = new List<SpawnedObjectData>(data.spawnedObjects),
-                hasNaturalObjects = data.hasNaturalObjects,
-                hasKeyStructure = data.hasKeyStructure
-            };
-
-            GenerateChunkTerrain(chunk, chunk.chunkPosition);
-
-            chunks.Add(chunk);
-            chunkMap[new Vector2Int(
-                (int)data.chunkPosition.x / chunkSize,
-                (int)data.chunkPosition.z / chunkSize)] = chunk;
-            animalSpawner.chunks.Add(chunk);
-
-            currentStep++;
-            OnProgress?.Invoke((float)currentStep / totalSteps);
-            yield return null; // let UI update
-        }
-
-        // Start managing chunks
-        StartCoroutine(ManageChunksRoutine());
-
-        // Key structures / natural objects / altars / campfire / borders / save
-        yield return StartCoroutine(keyStructureSpawner.SpawnKeyStructures(terrainWidth, worldCenter,
-            progress => OnProgress?.Invoke((currentStep + progress) / totalSteps)));
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        yield return StartCoroutine(SpawnNaturalObjects());
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        altarSpawner.worldCenter = worldCenter;
-        yield return StartCoroutine(altarSpawner.SpawnAltarsRoutine(terrainWidth,
-            progress => OnProgress?.Invoke((currentStep + progress) / totalSteps)));
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        SpawnCampfireAtCenter();
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        CreateWorldBorders();
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        SaveAllChunks(worldName);
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-
-        worldGenerated = true;
-        OnProgress?.Invoke(1f);
-    }
-
-    void LoadChunkObjects(VoxelChunk chunk, ChunkSaveData savedData)
-    {
-        chunk.savedObjects.Clear();
-        chunk.objects.Clear();
-        chunk.savedObjectPositions.Clear();
-
-        if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0)
-        {
-            return;
-        }
-
-        foreach (SpawnedObjectData objData in savedData.spawnedObjects)
-        {
-            GameObject prefab = PrefabRegistry.GetPrefabByName(objData.prefabName);
-            if (prefab == null)
-            {
-                continue;
-            }
-
-            Vector3 spawnPosition = objData.position;
-            GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
-            obj.transform.parent = chunk.chunkObject.transform;
-
-            if (!string.IsNullOrEmpty(objData.savedStateJson) && obj.TryGetComponent(out ISaveableObject saveable))
-            {
-                saveable.LoadState(objData.savedStateJson);
-            }
-
-            chunk.objects.Add(obj);
-            chunk.savedObjectPositions.Add(spawnPosition);
-            chunk.savedObjects.Add(objData);
-
-            if (obj.TryGetComponent(out BreakableObject breakable))
-            {
-                breakable.owningChunk = chunk;
-                breakable.savedObjectIndex = chunk.savedObjects.Count - 1;
-            }
-
-            SpawnClusterAround(spawnPosition, chunk, obj);
-        }
     }
 
     public void ResetWorld()
