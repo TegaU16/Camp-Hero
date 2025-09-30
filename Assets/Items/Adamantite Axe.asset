@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Adamantite Axe
   m_EditorClassIdentifier: 
-  itemType: 2
-  actionType: 3
-  stackable: 1
-  maxStack: 20
+  itemTypes: 1
+  actionType: 0
+  maxStack: 1
   icon: {fileID: 21300000, guid: cba7b037bde270646bb11f60ffaa358d, type: 3}
   itemName: Adamantite Axe
   equippedPrefab: {fileID: 8419697881675228604, guid: 26e5f9e6899a029449ec581ac1bee47c, type: 3}
-  itemDrop: {fileID: 8677445720570095099, guid: 84f2482694373af42a52188818603b36, type: 3}
-  animatorController: {fileID: 0}
+  itemDrop: {fileID: 1594266282575450657, guid: 111b3314de704e14c81d3cad55e4b0ae, type: 3}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1.8
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 50
   - 70
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 4
   toolType: 0
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

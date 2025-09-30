@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7894290674160876129
+--- !u!1001 &4230225947768108776
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,87 +8,106 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
-      propertyPath: m_Name
-      value: Mithril Axe Drop
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
-      propertyPath: m_Layer
-      value: 6
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: -0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4333428458248877240, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_Name
+      value: Mithril Axe Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5064274238516727430}
-    - targetCorrespondingSourceObject: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+      addedObject: {fileID: 6000477994304464757}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1797911632884012594}
-    - targetCorrespondingSourceObject: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+      addedObject: {fileID: 8108094039286276218}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5652660803661101563}
-    - targetCorrespondingSourceObject: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
+      addedObject: {fileID: 5848676794221263164}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5059404927146142347}
-  m_SourcePrefab: {fileID: 100100000, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
---- !u!1 &6550091068237927523 stripped
+      addedObject: {fileID: -5098282262389990122}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8676963400277897108}
+  m_SourcePrefab: {fileID: 100100000, guid: 67abc049f5422b140abd41916554d409, type: 3}
+--- !u!1 &3924220530090478521 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
-  m_PrefabInstance: {fileID: 7894290674160876129}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 67abc049f5422b140abd41916554d409, type: 3}
+  m_PrefabInstance: {fileID: 4230225947768108776}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &5064274238516727430
+--- !u!54 &6000477994304464757
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6550091068237927523}
+  m_GameObject: {fileID: 3924220530090478521}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -109,13 +128,13 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &1797911632884012594
+--- !u!65 &8108094039286276218
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6550091068237927523}
+  m_GameObject: {fileID: 3924220530090478521}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -128,41 +147,53 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.11999999, y: 0.97999996, z: 0.52000004}
-  m_Center: {x: 0.00000006332992, y: 0.48999995, z: 0.11999992}
---- !u!114 &5652660803661101563
+  m_Size: {x: 0.120000005, y: 0.98, z: 0.5199999}
+  m_Center: {x: 0.00000006332993, y: 0.49, z: 0.11999998}
+--- !u!114 &5848676794221263164
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6550091068237927523}
+  m_GameObject: {fileID: 3924220530090478521}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 5963fa232c4375f42826047d5708fed3, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!114 &5059404927146142347
+  savedObjectIndex: 0
+--- !u!114 &-5098282262389990122
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6550091068237927523}
+  m_GameObject: {fileID: 3924220530090478521}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 0, g: 0.57156754, b: 1, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &-8676963400277897108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3924220530090478521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: axe_mithril_drop

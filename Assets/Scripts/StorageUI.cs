@@ -16,13 +16,12 @@ public class StorageUI : MonoBehaviour
         linkedStorage = storage;
 
         foreach (StoredItem storedItem in linkedStorage.items)
-        {
             storedItem.ResolveItemFromName();
-        }
 
         ClearSlots();
         gameObject.SetActive(true);
         InventoryManager.Instance.OnInventoryOpen();
+        InventoryManager.Instance.activeChest = linkedStorage;
         BuildSlots();
     }
 
@@ -66,10 +65,22 @@ public class StorageUI : MonoBehaviour
     private void ClearSlots()
     {
         foreach (GameObject slot in slotInstances)
-        {
             Destroy(slot);
-        }
+
         slotInstances.Clear();
+    }
+
+    public List<InventorySlot> GetInventorySlots()
+    {
+        List<InventorySlot> slots = new();
+
+        foreach (GameObject slot in slotInstances)
+        {
+            if (slot.TryGetComponent(out InventorySlot inventorySlot))
+                slots.Add(inventorySlot);
+        }
+
+        return slots;
     }
 
     private void SaveItemsToStorage()
@@ -104,7 +115,5 @@ public class StorageUI : MonoBehaviour
                 }
             }
         }
-
-        Debug.Log($"Saved {linkedStorage.items.Count} items to storage.");
     }
 }

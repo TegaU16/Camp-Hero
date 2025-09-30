@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2700358780911080449
+--- !u!1001 &700221824198499234
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,120 +8,90 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_Name
-      value: Green Gem Drop
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_Layer
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
-      objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.00000004371139
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalRotation.x
       value: 6.1232336e-17
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalRotation.y
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalRotation.z
       value: 6.1232336e-17
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7591190666855152246, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+      propertyPath: m_Name
+      value: Green Gem Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6996022155722550709}
-    - targetCorrespondingSourceObject: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+      addedObject: {fileID: 7506539996940644996}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5709956995904680973}
-    - targetCorrespondingSourceObject: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+      addedObject: {fileID: -8135245493142069327}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4615676805933074280}
-    - targetCorrespondingSourceObject: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+      addedObject: {fileID: 6826945259091551276}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4469774221935517672}
-  m_SourcePrefab: {fileID: 100100000, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
---- !u!1 &5146234609479382221 stripped
+      addedObject: {fileID: -4308089900169070268}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8361072107652218282}
+  m_SourcePrefab: {fileID: 100100000, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+--- !u!1 &393741555877209843 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-  m_PrefabInstance: {fileID: 2700358780911080449}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 818c9e55a8b22d84aaec81fdf121f9f6, type: 3}
+  m_PrefabInstance: {fileID: 700221824198499234}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &6996022155722550709
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5146234609479382221}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.16000001, y: 0.16000001, z: 0.16000003}
-  m_Center: {x: -8.564962e-25, y: 0.080000006, z: -0.000000007450581}
---- !u!54 &5709956995904680973
+--- !u!54 &7506539996940644996
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5146234609479382221}
+  m_GameObject: {fileID: 393741555877209843}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -142,39 +112,72 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &4615676805933074280
+--- !u!65 &-8135245493142069327
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393741555877209843}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16000001, y: 0.16000001, z: 0.16000003}
+  m_Center: {x: -8.564962e-25, y: 0.080000006, z: -0.000000007450581}
+--- !u!114 &6826945259091551276
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5146234609479382221}
+  m_GameObject: {fileID: 393741555877209843}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 458acfdbf6a9c524ca739664e58e4108, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!114 &4469774221935517672
+  savedObjectIndex: 0
+--- !u!114 &-4308089900169070268
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5146234609479382221}
+  m_GameObject: {fileID: 393741555877209843}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 0.56086814, g: 0.08388037, b: 0.87169814, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &8361072107652218282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393741555877209843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: gem_green_drop

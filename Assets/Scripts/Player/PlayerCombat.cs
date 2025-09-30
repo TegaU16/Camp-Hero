@@ -120,7 +120,9 @@ public class PlayerCombat : MonoBehaviour
         bool isTypeMatched = IsTypeMatched(hitObject, selectedItem);
         bool isToolLevelSufficient = selectedItem.toolLevel >= hitObject.objectLevel;
 
-        return CalculateDamage(damage, isCrit, isTypeMatched && isToolLevelSufficient, selectedItem);
+        int damageResult = CalculateDamage(damage, isCrit, isTypeMatched && isToolLevelSufficient, selectedItem);
+
+        return hitObject.PlacedByPlayer ? Mathf.Min(10, damageResult) : damageResult;
     }
 
     private int CalculateDamage(float damage, bool isCrit, bool isToolValid, Item selectedItem)

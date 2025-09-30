@@ -162,8 +162,19 @@ public class CraftingManager : MonoBehaviour
     public void LoadCraftingProgress()
     {
         unlockedRecipes.Clear();
-        unlockedRecipes.AddRange(
-            SaveSystem.LoadCrafting(GameManager.Instance.currentWorldName, craftingDatabase)
-        );
+
+        foreach (Transform child in craftingItemParent)
+            Destroy(child.gameObject);
+
+        List<CraftingRecipe> loadedRecipes = SaveSystem.LoadCrafting(GameManager.Instance.currentWorldName, craftingDatabase);
+        unlockedRecipes.AddRange(loadedRecipes);
+
+        foreach (CraftingRecipe recipe in unlockedRecipes)
+        {
+            GameObject itemGO = Instantiate(craftingItemPrefab, craftingItemParent);
+            CraftingItem uiItem = itemGO.GetComponent<CraftingItem>();
+            uiItem.recipe = recipe;
+            uiItem.itemImage.sprite = recipe.resultItem.icon;
+        }
     }
 }

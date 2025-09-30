@@ -32,20 +32,9 @@ public class AnimalPool : MonoBehaviour
         Animal animal = pool.Dequeue();
 
         animal.gameObject.SetActive(true);
-
-        // Disable animator before positioning:
         animal.animator.enabled = false;
-
-        // Set position and rotation first:
         animal.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
-
-        // Call Init, but do NOT enable animator inside Init anymore:
         animal.Init(spawnPos);
-
-        // Reset animator pose BEFORE enabling:
-        animal.ResetAnimatorPose();
-
-        // Now enable Animator:
         animal.animator.enabled = true;
 
         return animal;

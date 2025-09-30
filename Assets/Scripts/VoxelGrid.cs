@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class VoxelGrid : MonoBehaviour
 {
+    public static VoxelGrid Instance;
+
     [System.Flags]
     public enum VoxelState
     {
@@ -14,27 +16,21 @@ public class VoxelGrid : MonoBehaviour
         Buildable = 1 << 2,
     }
 
-    public Material voxelMaterial;
+    [SerializeField] private Material voxelMaterial;
     [SerializeField] private Transform voxelGridRoot;
-    public GameObject campFirePrefab;
+    [SerializeField] private GameObject campFirePrefab;
 
-    public float simulationDistance = 10f;
-    public float viewDistance = 2f; // For object spawning/visibility
-
-    public int objectSpawnFrequency = 5;
-    public float minSpacing = 2.0f;
+    [SerializeField] private float minSpacing = 2.0f;
 
     [HideInInspector] public int seed = 12345;
     private string worldName;
 
-    public GameObject borderWallPrefab;
+    [SerializeField] private GameObject borderWallPrefab;
 
     [HideInInspector]
     public bool worldGenerated = false;
 
     public LayerMask groundLayer;
-    private GameObject player;
-    private Vector3 playerPosition;
     private Vector3 worldCenter;
     private float terrainWidth;
 
@@ -58,25 +54,23 @@ public class VoxelGrid : MonoBehaviour
 
     [Header("Managers")]
     [SerializeField] private ColliderPool colliderPool;
-    public StructureManager structureManager;
-    public AnimalSpawner animalSpawner;
-    public AltarSpawner altarSpawner;
-    public DayNightCycle dayNightCycle;
-    public KeyStructureSpawner keyStructureSpawner;
+    [SerializeField] private StructureManager structureManager;
+    [SerializeField] private AnimalSpawner animalSpawner;
+    [SerializeField] private GemAltarSpawner gemAltarSpawner;
+    [SerializeField] private KeyStructureSpawner keyStructureSpawner;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     private void Start()
     {
         terrainWidth = chunkSize * gridSize;
         worldCenter = new(terrainWidth / 2f, 0f, terrainWidth / 2f);
-    }
-
-    public void SetPlayer(GameObject player)
-    {
-        if (player != null)
-        {
-            this.player = player;
-            playerPosition = player.transform.position;
-        }
     }
 
     public void SetWorld(int worldSeed, string name)
@@ -124,7 +118,7 @@ public class VoxelGrid : MonoBehaviour
             yield break;
         }
 
-        int extraSteps = 3;
+        int extraSteps = 2;
         int totalSteps = files.Length + extraSteps;
         int currentStep = 0;
 
@@ -174,11 +168,11 @@ public class VoxelGrid : MonoBehaviour
         }
 
         // campfire / borders / save
-        yield return null;
+        /*yield return null;
         SpawnCampfireAtCenter();
         currentStep++;
         OnProgress?.Invoke((float)currentStep / totalSteps);
-        yield return null;
+        yield return null;*/
 
         CreateWorldBorders();
         currentStep++;
@@ -234,8 +228,8 @@ public class VoxelGrid : MonoBehaviour
         yield return null;
 
         // --- Altars ---
-        altarSpawner.worldCenter = worldCenter;
-        yield return StartCoroutine(altarSpawner.SpawnAltarsRoutine(terrainWidth, (progress) =>
+        gemAltarSpawner.worldCenter = worldCenter;
+        yield return StartCoroutine(gemAltarSpawner.SpawnAltarsRoutine(terrainWidth, (progress) =>
         {
             OnProgress?.Invoke((currentStep + progress) / totalSteps);
         }));
@@ -289,6 +283,11 @@ public class VoxelGrid : MonoBehaviour
 
             Vector3 spawnPos = hit.point + new Vector3(0, heightOffset, 0);
             GameObject spawnedCampfire = Instantiate(campFirePrefab, spawnPos, Quaternion.identity);
+
+            GameManager.Instance.SetCampfire(spawnedCampfire);
+            if (spawnedCampfire.TryGetComponent(out Health health))
+                health.SetHealth(health.maxHealth);
+
             MarkAreaOccupied(spawnedCampfire);
 
             int x = (int)(spawnPos.x / chunkSize);
@@ -296,9 +295,13 @@ public class VoxelGrid : MonoBehaviour
             Vector2Int chunkKey = new(x, z);
 
             VoxelChunk chunk = chunkMap[chunkKey];
+            spawnedCampfire.transform.parent = chunk.chunkObject.transform;
             chunk.objects.Add(spawnedCampfire);
 
-            GameManager.Instance.SetCampfire(spawnedCampfire);
+            SpawnedObjectData data = new(spawnPos, spawnedCampfire, campFirePrefab);
+
+            chunk.savedObjects.Add(data);
+            chunk.savedObjectPositions.Add(spawnPos);
         }
     }
 
@@ -503,6 +506,17 @@ public class VoxelGrid : MonoBehaviour
 
     void SpawnObjectsInChunk(VoxelChunk chunk)
     {
+        if (!chunk.structureSpawned)
+        {
+            structureManager.SpawnStructuresInChunk(chunk);
+            chunk.structureSpawned = true;
+        }
+
+        // --- Safety init ---
+        chunk.savedObjects ??= new List<SpawnedObjectData>();
+        chunk.savedObjectPositions ??= new List<Vector3>();
+        chunk.objects ??= new List<GameObject>();
+
         Vector3 chunkPosition = chunk.chunkObject.transform.position;
         float minDistanceFromCenter = 10f;
 
@@ -513,13 +527,17 @@ public class VoxelGrid : MonoBehaviour
                 if (ShouldSpawnObject(cx, cz, seed, chunkPosition))
                 {
                     Vector3 basePosition = chunkPosition + new Vector3(
-                    (cx + 0.5f) * voxelSize,
-                    maxHeight * voxelSize,
-                    (cz + 0.5f) * voxelSize
-                );
+                        (cx + 0.5f) * voxelSize,
+                        maxHeight * voxelSize,
+                        (cz + 0.5f) * voxelSize
+                    );
 
                     Vector3 offset = CalculatePositionOffset(cx, cz, seed);
                     Vector3 testPosition = basePosition + offset;
+                    Vector3Int spawnPosSnapped = WorldToVoxelCoord(testPosition);
+                    testPosition = spawnPosSnapped + new Vector3(voxelSize / 2f, 0, voxelSize / 2f);
+
+                    if (IsOccupied(spawnPosSnapped)) continue;
 
                     // Single raycast for final ground snap
                     if (Physics.Raycast(testPosition, Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayer))
@@ -545,42 +563,36 @@ public class VoxelGrid : MonoBehaviour
                         GameObject prefab = SelectDeterministicObjectPrefab(cx, cz, seed, chunk);
                         if (prefab != null)
                         {
-                            InteractableItemData interactableData = new();
-
-                            if (prefab.TryGetComponent(out InteractableItem interactable))
-                            {
-                                interactableData.itemName = interactable.item.name;
-                                interactableData.count = interactable.itemCount;
-                            }
-
                             GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
                             obj.transform.parent = chunk.chunkObject.transform;
                             chunk.objects.Add(obj);
 
-                            MarkAreaOccupied(obj);
+                            SpawnedObjectData data = new(spawnPosition, obj, prefab);
 
-                            BreakableObjectData breakableObjectData = new();
+                            chunk.savedObjects.Add(data);
+                            chunk.savedObjectPositions.Add(spawnPosition);
+
+                            int savedIndex = chunk.savedObjects.Count - 1;
+
+                            MarkAreaOccupied(obj);
 
                             if (obj.TryGetComponent(out BreakableObject breakable))
                             {
                                 breakable.owningChunk = chunk;
-                                breakable.savedObjectIndex = chunk.savedObjects.Count - 1;
-                                breakableObjectData.currentHealth = breakable.GetHealth();
+                                breakable.savedObjectIndex = savedIndex;
                             }
 
-                            chunk.savedObjects.Add(new SpawnedObjectData(spawnPosition, prefab, interactableData, breakableObjectSaveData: breakableObjectData));
+                            if (obj.TryGetComponent(out InteractableItem interactable))
+                            {
+                                interactable.owningChunk = chunk;
+                                interactable.savedObjectIndex = savedIndex;
+                            }
 
                             SpawnClusterAround(spawnPosition, chunk, obj);
                         }
                     }
                 }
             }
-        }
-
-        if (!chunk.structureSpawned)
-        {
-            structureManager.SpawnStructuresInChunk(chunk);
-            chunk.structureSpawned = true;
         }
     }
 
@@ -593,6 +605,9 @@ public class VoxelGrid : MonoBehaviour
         {
             Vector2 randomOffset = Random.insideUnitCircle * clusterRadius;
             Vector3 candidatePosition = centerPosition + new Vector3(randomOffset.x, 5f, randomOffset.y);
+            Vector3Int candidatePosInt = WorldToVoxelCoord(candidatePosition);
+
+            if (IsOccupied(candidatePosInt)) continue;
 
             if (Physics.Raycast(candidatePosition, Vector3.down, out RaycastHit hit, 10f, groundLayer))
             {
@@ -616,23 +631,20 @@ public class VoxelGrid : MonoBehaviour
                     GameObject smallObj = Instantiate(smallPrefab, finalPosition, Quaternion.identity);
                     smallObj.transform.parent = chunk.chunkObject.transform;
                     chunk.objects.Add(smallObj);
+
+                    SpawnedObjectData data = new(finalPosition, smallObj, smallPrefab);
+                    chunk.savedObjects.Add(data);
                     chunk.savedObjectPositions.Add(finalPosition);
 
+                    int savedIndex = chunk.savedObjects.Count - 1;
                     MarkAreaOccupied(smallObj);
-                    
-                    InteractableItemData interactableData = new();
 
                     if (smallObj.TryGetComponent(out InteractableItem interactable))
                     {
                         interactable.itemCount = 1;
-                        interactableData.itemName = interactable.item.name;
-                        interactableData.count = interactable.itemCount;
-
                         interactable.owningChunk = chunk;
-                        interactable.savedObjectIndex = chunk.savedObjects.Count - 1;
+                        interactable.savedObjectIndex = savedIndex;
                     }
-
-                    chunk.savedObjects.Add(new SpawnedObjectData(finalPosition, smallPrefab, interactableData));
                 }
             }
         }
@@ -658,6 +670,37 @@ public class VoxelGrid : MonoBehaviour
         return null;
     }
 
+    public void RemoveObjectFromChunk(VoxelChunk chunk, int index)
+    {
+        if (chunk == null) return;
+        if (index < 0 || index >= chunk.savedObjects.Count) return;
+
+        if (index < chunk.objects.Count)
+        {
+            GameObject instance = chunk.objects[index];
+            if (instance != null) Destroy(instance);
+            chunk.objects.RemoveAt(index);
+        }
+
+        chunk.savedObjects.RemoveAt(index);
+        if (index < chunk.savedObjectPositions.Count)
+            chunk.savedObjectPositions.RemoveAt(index);
+
+        chunk.isDirty = true;
+
+        for (int i = 0; i < chunk.objects.Count; i++)
+        {
+            GameObject g = chunk.objects[i];
+            if (g == null) continue;
+
+            if (g.TryGetComponent(out BreakableObject br) && br.owningChunk == chunk)
+                br.savedObjectIndex = i;
+
+            if (g.TryGetComponent(out InteractableItem it) && it.owningChunk == chunk)
+                it.savedObjectIndex = i;
+        }
+    }
+
     Vector2[] GetStandardUVs()
     {
         return new Vector2[]
@@ -679,9 +722,11 @@ public class VoxelGrid : MonoBehaviour
 
         chunk.savedObjects = new List<SpawnedObjectData>(savedData.spawnedObjects);
 
-        foreach (SpawnedObjectData objData in chunk.savedObjects)
+        for (int i = 0; i < chunk.savedObjects.Count; i++)
         {
-            GameObject prefab = PrefabRegistry.GetPrefabByKey(objData.prefabName);
+            SpawnedObjectData objData = chunk.savedObjects[i];
+
+            GameObject prefab = PrefabRegistry.GetPrefabByKey(objData.prefabID);
             if (prefab == null) continue;
 
             Vector3 spawnPosition = objData.position;
@@ -696,23 +741,16 @@ public class VoxelGrid : MonoBehaviour
             chunk.objects.Add(obj);
             chunk.savedObjectPositions.Add(spawnPosition);
 
-            if (obj.TryGetComponent(out BreakableObject breakable) && objData.breakableObjectData != null)
+            if (obj.TryGetComponent(out BreakableObject breakable))
             {
                 breakable.owningChunk = chunk;
-                breakable.savedObjectIndex = chunk.savedObjects.IndexOf(objData);
-                breakable.SetHealth(objData.breakableObjectData.currentHealth);
+                breakable.savedObjectIndex = i;
             }
 
-            if (obj.TryGetComponent(out InteractableItem interactable) && objData.interactableData != null)
+            if (obj.TryGetComponent(out InteractableItem interactable))
             {
                 interactable.owningChunk = chunk;
-                interactable.savedObjectIndex = chunk.savedObjects.IndexOf(objData);
-                interactable.LoadInteractableItemData(objData.interactableData);
-            }
-
-            if (obj.TryGetComponent(out GemAltar gemAltar))
-            {
-                gemAltar.LoadAltarState();
+                interactable.savedObjectIndex = i;
             }
         }
 
@@ -753,22 +791,20 @@ public class VoxelGrid : MonoBehaviour
 
     public Vector3 CalculatePositionOffset(int x, int z, int seed)
     {
-        float frequency = 0.35f;                     // Controls clustering
-        float amplitude = voxelSize * 4f;            // Push trees far from grid anchor
+        float frequency = 0.35f;
+        float amplitude = voxelSize * 4f;
 
-        // Independent noise fields
+        // Smooth base offset (clusters)
         float noiseX = Mathf.PerlinNoise((x + seed) * frequency, (z + seed) * frequency);
         float noiseZ = Mathf.PerlinNoise((x + seed + 1337) * frequency, (z + seed + 9999) * frequency);
-
-        // Scale to amplitude
-        float offsetX = (noiseX - 0.5f) * amplitude; // Shift around origin
+        float offsetX = (noiseX - 0.5f) * amplitude;
         float offsetZ = (noiseZ - 0.5f) * amplitude;
 
-        // Deterministic jitter (tiny extra shake)
+        // Add chaotic hash jitter (kills streaks)
         int hash = x * 73856093 ^ z * 19349663 ^ seed;
         System.Random rng = new(hash);
-        float jitterX = (float)(rng.NextDouble() - 0.5) * voxelSize * 0.5f;
-        float jitterZ = (float)(rng.NextDouble() - 0.5) * voxelSize * 0.5f;
+        float jitterX = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
+        float jitterZ = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
 
         return new Vector3(offsetX + jitterX, 0f, offsetZ + jitterZ);
     }

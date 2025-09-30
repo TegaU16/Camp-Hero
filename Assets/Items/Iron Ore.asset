@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Iron Ore
   m_EditorClassIdentifier: 
-  itemType: 8
-  actionType: 3
-  stackable: 1
+  itemTypes: 16
+  actionType: 0
   maxStack: 20
   icon: {fileID: 21300000, guid: b3e9c8e3aa5d1434e8c1457ed458734f, type: 3}
   itemName: Iron Ore
-  equippedPrefab: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-  itemDrop: {fileID: 9220661571881093419, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
-  animatorController: {fileID: 0}
+  equippedPrefab: {fileID: 2561980641633626289, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+  itemDrop: {fileID: 2773703832446058973, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
-  toolType: 0
+  toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

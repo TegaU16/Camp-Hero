@@ -267,6 +267,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7648035320434340961}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5862247284621656375}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5242045304014402300}
@@ -816,7 +819,7 @@ MonoBehaviour:
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
-  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
+  personality: {fileID: 11400000, guid: 9c3dd35c6ad255f4ca6091c9c145ff2c, type: 2}
   agent: {fileID: 2614857085043307958}
   animator: {fileID: 627319165041851991}
   ragdollController: {fileID: 5838581026825397844}
@@ -940,6 +943,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 0.8, z: 0.7}
   m_Center: {x: 0, y: 0.4, z: 0.35}
+--- !u!114 &-5862247284621656375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6133712532379057815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: goblin
 --- !u!4 &6797202462913651757 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}

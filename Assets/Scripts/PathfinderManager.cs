@@ -7,9 +7,6 @@ public class PathfinderManager : MonoBehaviour
 {
     public static PathfinderManager Instance { get; private set; }
 
-    [Header("Voxel grid reference")]
-    public VoxelGrid voxelGrid;
-
     [SerializeField] private int maxRequestsPerFrame = 5;
 
     private readonly Queue<PathRequest> requestQueue = new();
@@ -26,7 +23,6 @@ public class PathfinderManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[PathfinderManager] Duplicate instance found, destroying.");
             Destroy(gameObject);
             return;
         }
@@ -37,7 +33,6 @@ public class PathfinderManager : MonoBehaviour
 
     private void StartWorker()
     {
-        Debug.Log("[PathfinderManager] Starting worker thread.");
         cts = new CancellationTokenSource();
 
         Task.Run(async () =>
@@ -55,18 +50,8 @@ public class PathfinderManager : MonoBehaviour
 
     public void RequestPath(VoxelAgent agent, Vector3Int targetGrid)
     {
-        if (agent == null)
-        {
-            Debug.LogError("[PathfinderManager] RequestPath called with null agent.");
-            return;
-        }
-
-        if (voxelGrid == null)
-        {
-            Debug.LogError("[PathfinderManager] voxelGrid is null in RequestPath.");
-            return;
-        }
-
+        if (agent == null) return;
+       
         PathRequest request = new()
         {
             Agent = agent,
@@ -85,8 +70,6 @@ public class PathfinderManager : MonoBehaviour
 
     private async Task ProcessQueueAsync(CancellationToken token)
     {
-        Debug.Log("[PathfinderManager] Worker thread is alive.");
-
         try
         {
             while (!token.IsCancellationRequested)
@@ -102,24 +85,14 @@ public class PathfinderManager : MonoBehaviour
                 if (request != null)
                 {
                     lock (queueLock)
-                    {
-                        if (latestRequests.TryGetValue(request.Agent, out PathRequest latest) &&
-                            latest.RequestId != request.RequestId)
-                        {
-                            continue;
-                        }
-                    }
+                        if (latestRequests.TryGetValue(request.Agent, out PathRequest latest) && latest.RequestId != request.RequestId) continue;
 
                     if (!IsWalkable(request.Target))
                         request.Target = FindNearestUnblocked(request.Target);
 
                     GridAStar astar = BuildLocalPathfinder();
 
-                    if (astar == null)
-                    {
-                        Debug.LogError("[PathfinderManager] GridAStar could not be created.");
-                        continue;
-                    }
+                    if (astar == null) continue;
 
                     List<Vector3Int> path = null;
                     try
@@ -127,22 +100,11 @@ public class PathfinderManager : MonoBehaviour
                         var sw = System.Diagnostics.Stopwatch.StartNew();
                         path = astar.FindPath(request.Start, request.Target);
                         sw.Stop();
-
-                        if (sw.ElapsedMilliseconds > 100)
-                        {
-                            Debug.LogWarning($"[PathfinderManager] Path took {sw.ElapsedMilliseconds}ms for {request.AgentName}");
-                        }
                     }
                     catch (System.Exception ex)
                     {
                         Debug.LogError($"[PathfinderManager] Exception in pathfinding: {ex}");
                         continue;
-                    }
-
-
-                    if (path == null || path.Count == 0)
-                    {
-                        Debug.LogWarning($"[PathfinderManager] No valid path found from {request.Start} to {request.Target} for {request.AgentName}");
                     }
 
                     lock (queueLock)
@@ -182,19 +144,8 @@ public class PathfinderManager : MonoBehaviour
             {
                 PathResult result = resultQueue.Dequeue();
 
-                if (!latestRequests.ContainsKey(result.Agent))
-                {
-                    Debug.LogWarning($"[PathfinderManager] No matching latestRequest for agent {result.Agent.name}. Possible mismatch or stale result.");
-                }
-
                 if (latestRequests.TryGetValue(result.Agent, out PathRequest latest) &&
-                    latest.RequestId != result.RequestId)
-                {
-                    Debug.LogWarning($"[PathfinderManager] Ignored outdated path result for {result.Agent.name} (RequestId {result.RequestId} ≠ Latest {latest.RequestId})");
-                }
-
-                if (latestRequests.TryGetValue(result.Agent, out PathRequest latest2) &&
-                    latest2.RequestId == result.RequestId)
+                    latest.RequestId == result.RequestId)
                 {
                     latestRequests.Remove(result.Agent);
                     result.Agent.OnPathResult(result.Path);
@@ -205,10 +156,7 @@ public class PathfinderManager : MonoBehaviour
             }
 
             if (latestRequests.Count > 0 && Time.time - lastResultTime > 5f)
-            {
-                Debug.LogWarning($"[PathfinderManager] {latestRequests.Count} requests pending for over 5 seconds.");
                 lastResultTime = Time.time;
-            }
         }
     }
 
@@ -221,22 +169,16 @@ public class PathfinderManager : MonoBehaviour
     // --- Helpers and structs ---
     public GridAStar BuildLocalPathfinder()
     {
-        if (voxelGrid == null)
-        {
-            Debug.LogError("[PathfinderManager] voxelGrid is null when building pathfinder!");
-            return null; // Prevent thread crash
-        }
-
         GridAStar astar = new(
-            (x, _, z) => voxelGrid.GetHeightAt(x, z),
-            pos => !voxelGrid.IsWalkable(pos),
+            (x, _, z) => VoxelGrid.Instance.GetHeightAt(x, z),
+            pos => !VoxelGrid.Instance.IsWalkable(pos),
             maxStepHeight: 1
         );
 
         return astar;
     }
 
-    public bool IsWalkable(Vector3Int pos) => voxelGrid.IsWalkable(pos);
+    public bool IsWalkable(Vector3Int pos) => VoxelGrid.Instance.IsWalkable(pos);
 
     public Vector3Int FindNearestUnblocked(Vector3Int center)
     {

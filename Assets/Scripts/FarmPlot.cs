@@ -1,14 +1,15 @@
 using UnityEngine;
 
-public class FarmPlot : MonoBehaviour, IInteractable
+public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Transform plantSpawnPoint;
     private GameObject currentPlantInstance;
 
-    private PlantData plantedData;
-    private float growthTimer;
-    private int currentStage = -1;
-    private bool isPlanted;
+    [HideInInspector] public PlantData plantedData;
+    [HideInInspector] public float growthTimer;
+    [HideInInspector] public int currentStage = -1;
+    [HideInInspector] public bool isPlanted;
+
     private Item selectedItem;
 
     public void Plant()
@@ -39,11 +40,6 @@ public class FarmPlot : MonoBehaviour, IInteractable
         {
             currentStage = newStage;
             UpdateVisual();
-        }
-
-        if (growthTimer >= plantedData.totalGrowthTime)
-        {
-            
         }
     }
 
@@ -97,5 +93,43 @@ public class FarmPlot : MonoBehaviour, IInteractable
     public Transform GetTransform()
     {
         return transform;
+    }
+
+    public string SaveState()
+    {
+        FarmPlotData data = new()
+        {
+            plantName = plantedData != null ? plantedData.plant.itemName : null,
+            growthTimer = growthTimer,
+            currentStage = currentStage,
+            isPlanted = isPlanted
+        };
+
+        return JsonUtility.ToJson(data);
+    }
+
+    public void LoadState(string json)
+    {
+        FarmPlotData data = JsonUtility.FromJson<FarmPlotData>(json);
+
+        if (string.IsNullOrEmpty(data.plantName))
+        {
+            // No plant = reset
+            plantedData = null;
+            isPlanted = false;
+            growthTimer = 0f;
+            currentStage = -1;
+            if (currentPlantInstance != null)
+                Destroy(currentPlantInstance);
+        }
+        else
+        {
+            plantedData = PlantRegistry.GetPlantByKey(data.plantName);
+            growthTimer = data.growthTimer;
+            currentStage = data.currentStage;
+            isPlanted = data.isPlanted;
+
+            UpdateVisual();
+        }
     }
 }

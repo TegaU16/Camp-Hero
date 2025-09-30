@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting.Antlr3.Runtime;
 
 [System.Serializable]
 public class StoredItem
@@ -29,12 +28,12 @@ public class StoredItem
 
 public class StorageUnit : MonoBehaviour, IInteractable, ISaveableObject
 {
-    public string chestName = "Storage Chest";
+    [SerializeField] private string chestName = "Storage Chest";
     public int maxSlots = 16;
     [HideInInspector] public bool isOpen = false;
 
-    [HideInInspector]
-    public List<StoredItem> items = new();
+    [HideInInspector] public List<StoredItem> items = new();
+    [HideInInspector] public List<InventorySlot> inventorySlots = new();
 
     public void Interact()
     {
@@ -44,12 +43,14 @@ public class StorageUnit : MonoBehaviour, IInteractable, ISaveableObject
         {
             ui.Open(this);
             isOpen = true;
+            inventorySlots = ui.GetInventorySlots();
             InventoryManager.Instance.mainInventory.SetActive(true);
         }
         else
         {
             ui.Close();
             isOpen = false;
+            inventorySlots = null;
             InventoryManager.Instance.mainInventory.SetActive(false);
         }
     }

@@ -3,14 +3,11 @@ using UnityEngine;
 
 public class VoxelAgent : MonoBehaviour
 {
-    private VoxelGrid voxelGrid;
     private List<Vector3Int> path;
     private int pathIndex;
 
     public Vector3 DesiredPosition { get; private set; }
     public bool HasPath => path != null && pathIndex < path.Count;
-
-    private Vector3 lastKnownTargetPos;
 
     // Movement
     private Vector3 velocity;
@@ -34,13 +31,8 @@ public class VoxelAgent : MonoBehaviour
     private readonly float directTrackingCheckInterval = 0.5f;
     private float nextTrackingCheckTime = 0f;
 
-    private Vector3 lastPosition;
-    private float smoothedSpeed;
-
     public void Init(Vector3 startWorldPos)
     {
-        voxelGrid = FindFirstObjectByType<VoxelGrid>();
-
         path = null;
         pathIndex = 0;
         DesiredPosition = startWorldPos;
@@ -51,7 +43,6 @@ public class VoxelAgent : MonoBehaviour
 
     public void RequestPath(Vector3Int targetGrid)
     {
-        lastKnownTargetPos = GridToWorld(targetGrid);
         PathfinderManager.Instance.RequestPath(this, targetGrid);
     }
 
@@ -79,17 +70,14 @@ public class VoxelAgent : MonoBehaviour
 
         Vector3 pos = from;
 
-        if (voxelGrid == null)
-            voxelGrid = FindFirstObjectByType<VoxelGrid>();
-
         for (int i = 0; i <= steps; i++)
         {
             int x = Mathf.RoundToInt(pos.x);
             int z = Mathf.RoundToInt(pos.z);
-            float height = voxelGrid.GetHeightAt(x, z);
+            float height = VoxelGrid.Instance.GetHeightAt(x, z);
             Vector3Int checkPos = new(x, Mathf.RoundToInt(height), z);
 
-            if (!voxelGrid.IsWalkable(checkPos))
+            if (!VoxelGrid.Instance.IsWalkable(checkPos))
             {
                 return false;
             }
@@ -181,7 +169,7 @@ public class VoxelAgent : MonoBehaviour
             velocity = Vector3.zero;
         }
 
-        float targetY = voxelGrid.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
+        float targetY = VoxelGrid.Instance.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
         currentY = Mathf.Lerp(currentY, targetY, yLerpSpeed * Time.deltaTime);
 
         Vector3 faceDir = isWalkingDirect ? (GridToWorld(directTarget) - transform.position) : velocity;
@@ -196,19 +184,17 @@ public class VoxelAgent : MonoBehaviour
         }
 
         float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
-        smoothedSpeed = Mathf.Lerp(smoothedSpeed, flatSpeed, 0.2f);
-
-        lastPosition = transform.position;
 
         if (animator != null)
         {
-            animator.SetFloat(speedParam, smoothedSpeed / flatSpeed, 0.2f, Time.deltaTime);
+            animator.SetFloat(speedParam, flatSpeed > 0.05f ? 1f : 0f, 0.2f, Time.deltaTime);
         }
     }
 
     public bool WantsToMove()
     {
-        return smoothedSpeed > 0.05f || isWalkingDirect;
+        float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
+        return flatSpeed > 0.05f || isWalkingDirect;
     }
 
     public void StopPath()
@@ -229,7 +215,7 @@ public class VoxelAgent : MonoBehaviour
 
     private Vector3 GridToWorld(Vector3Int gridPos)
     {
-        float y = voxelGrid.GetHeightAt(gridPos.x, gridPos.z);
+        float y = VoxelGrid.Instance.GetHeightAt(gridPos.x, gridPos.z);
         return new Vector3(gridPos.x, y + 1f, gridPos.z);
     }
 
@@ -284,10 +270,5 @@ public class VoxelAgent : MonoBehaviour
     public float GetTargetY()
     {
         return currentY;
-    }
-
-    public void SetVoxelGrid(VoxelGrid grid)
-    {
-        voxelGrid = grid;
     }
 }

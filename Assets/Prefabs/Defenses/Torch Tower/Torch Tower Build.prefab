@@ -185,8 +185,12 @@ MonoBehaviour:
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
   baseHealth: 300
   expDropped: 0
-  drops: []
-  objectType: 0
+  drops:
+  - drop: {fileID: 11400000, guid: ea7f5c24b2cca4d40bdea251d6c5cacb, type: 2}
+    minValue: 1
+    maxValue: 1
+    dropChance: 1
+  objectType: 1
   entityType: 1
   objectLevel: 0
   savedObjectIndex: -1

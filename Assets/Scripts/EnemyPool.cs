@@ -3,27 +3,37 @@ using UnityEngine;
 
 public class EnemyPool : MonoBehaviour
 {
+    public static EnemyPool Instance;
+
     public List<EnemyTier> enemyTiers;
     public int poolSizePerTier = 10;
 
-    private readonly Dictionary<GameObject, List<GameObject>> pools = new();
+    private readonly Dictionary<GameObject, Queue<Enemy>> pools = new();
+
+    public Vector3 poolGraveyardPosition = new(0, -1000, 0);
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
         foreach (EnemyTier tier in enemyTiers)
         {
-            List<GameObject> pool = new();
+            Queue<Enemy> pool = new();
             for (int i = 0; i < poolSizePerTier; i++)
             {
-                GameObject enemy = Instantiate(tier.prefab);
-                enemy.SetActive(false);
-                pool.Add(enemy);
+                GameObject enemyPrefab = Instantiate(tier.prefab);
+                Enemy enemy = enemyPrefab.GetComponent<Enemy>();
+                enemyPrefab.SetActive(false);
+                pool.Enqueue(enemy);
             }
             pools[tier.prefab] = pool;
         }
     }
 
-    public GameObject GetEnemy(GameObject prefab, Vector3 spawnPosition)
+    public Enemy GetEnemy(GameObject prefab, Vector3 spawnPosition)
     {
         if (!pools.ContainsKey(prefab))
         {
@@ -31,48 +41,47 @@ public class EnemyPool : MonoBehaviour
             return null;
         }
 
-        foreach (GameObject enemy in pools[prefab])
+        Queue<Enemy> currentEnemyPool = pools[prefab];
+        Enemy enemy = currentEnemyPool.Dequeue();
+
+        enemy.gameObject.SetActive(true);
+        enemy.animator.enabled = false;
+        enemy.transform.SetPositionAndRotation(spawnPosition, Quaternion.identity);
+        enemy.Init(spawnPosition);
+        enemy.animator.enabled = true;
+
+        return enemy;
+    }
+
+    public void ReturnEnemy(Enemy enemy)
+    {
+        enemy.CancelInvoke();
+        enemy.StopAllCoroutines();
+
+        if (enemy.TryGetComponent(out Animator animator))
         {
-            if (!enemy.activeInHierarchy)
-            {
-                enemy.SetActive(true);
-                enemy.transform.position = spawnPosition;
-                if (enemy.TryGetComponent(out Enemy script))
-                {
-                    script.ResetEnemy(spawnPosition);
-                }
-                return enemy;
-            }
+            animator.enabled = true;
+            animator.SetFloat("Speed", 0f);
         }
 
-        // Optional: Expand pool
-        GameObject newEnemy = Instantiate(prefab);
-        newEnemy.SetActive(false);
-        pools[prefab].Add(newEnemy);
-        newEnemy.SetActive(true);
-
-        if (newEnemy.TryGetComponent(out Enemy newScript))
+        if (enemy.TryGetComponent(out SimpleRagdollController ragdollController))
         {
-            newScript.ResetEnemy(spawnPosition);
+            ragdollController.DisableRagdoll();
         }
 
-        return newEnemy;
+        enemy.transform.position = poolGraveyardPosition;
+        enemy.gameObject.SetActive(false);
+
+        PrefabID id = enemy.GetComponent<PrefabID>();
+        GameObject enemyPrefab = PrefabRegistry.GetPrefabByKey(id.prefabKey);
+
+        Queue<Enemy> pool = pools[enemyPrefab];
+        pool.Enqueue(enemy);
     }
 
     public List<EnemyTier> GetAvailableTiers(int currentDay)
     {
         return enemyTiers.FindAll(tier => currentDay >= tier.unlockDay);
-    }
-
-    public GameObject GetPrefabByName(string prefabName)
-    {
-        foreach (EnemyTier tier in enemyTiers)
-        {
-            if (tier.prefab.name == prefabName)
-                return tier.prefab;
-        }
-
-        return null;
     }
 }
 

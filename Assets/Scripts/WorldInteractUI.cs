@@ -16,23 +16,28 @@ public class WorldInteractUI : MonoBehaviour
 
         Renderer rend = target.GetComponentInChildren<Renderer>();
         if (rend != null)
-        {
             heightOffset = rend.bounds.extents.y + 1f;
-        }
         else
-        {
             heightOffset = 1.34f; // fallback
-        }
+
+        // Immediately refresh the position this frame
+        RefreshImmediately();
     }
 
-    void Update()
+    public void RefreshImmediately()
+    {
+        if (target == null || cam == null) return;
+
+        transform.position = target.position + Vector3.up * heightOffset;
+        transform.forward = cam.transform.forward;
+    }
+
+    private void Update()
     {
         if (GameManager.Instance.isPaused) return;
         if (target == null) return;
 
-        transform.position = target.position + Vector3.up * heightOffset;
-
-        // Always face the camera
-        transform.forward = cam.transform.forward;
+        // still update each frame in case player/camera moves
+        RefreshImmediately();
     }
 }

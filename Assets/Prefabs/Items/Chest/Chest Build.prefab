@@ -132,7 +132,7 @@ MonoBehaviour:
   baseHealth: 50
   expDropped: 0
   drops:
-  - drop: {fileID: 11400000, guid: a45bdd7c3403e824896c6c06a68ed207, type: 2}
+  - drop: {fileID: 11400000, guid: 8f2015b98240581469104bd36e38a188, type: 2}
     minValue: 1
     maxValue: 1
     dropChance: 1

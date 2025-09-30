@@ -34,16 +34,17 @@ public class EnemyAttackHitbox : MonoBehaviour
     void ProcessHit(Collider other)
     {
         if (GameManager.Instance.isPaused) return;
-
         if (enemyScript == null) return;
 
         Targetable target = other.GetComponentInParent<Targetable>();
+        if (target == null) return;
 
         if (alreadyHit.Contains(target)) return;
 
-        if (target != null)
-            enemyScript.DealDamage();
+        alreadyHit.Add(target);
+        enemyScript.DealDamage();
     }
+
 
     public void ClearHits()
     {

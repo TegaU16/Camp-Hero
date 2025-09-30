@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class InteractableItem : MonoBehaviour, IInteractable
+public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Item item;
-    public bool isGold = false;
     [HideInInspector] public int itemCount;
 
     private bool isInteracted = false;
@@ -12,10 +11,8 @@ public class InteractableItem : MonoBehaviour, IInteractable
     [Header("For Item Drops")]
     public float mergeDistance = 2f;
     public int maxItemCount = 100;
-    public float mergeCheckInterval = 1f;
 
     private int pickableLayerMask;
-    
     private Rigidbody rb;
 
     [HideInInspector] public VoxelChunk owningChunk;
@@ -33,39 +30,40 @@ public class InteractableItem : MonoBehaviour, IInteractable
         }
     }
 
-    private void OnEnable()
-    {
-        InteractableItemManager.Instance.Register(this);
-    }
+    private void OnEnable() => InteractableItemManager.Instance.Register(this);
+    private void OnDisable() { if (InteractableItemManager.HasInstance) InteractableItemManager.Instance.Unregister(this); }
 
-    private void OnDisable()
+    private void FixedUpdate()
     {
-        if (InteractableItemManager.HasInstance)
-            InteractableItemManager.Instance.Unregister(this);
+        if (transform.position.y < -0.1f)
+        {
+            if (Physics.Raycast(transform.position + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
+            {
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+
+                transform.position = hit.point + Vector3.up * 0.25f;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 
     public void Interact()
     {
-        if (isInteracted) return;
-        if (!canPickup) return;
-
+        if (isInteracted || !canPickup) return;
         isInteracted = true;
+
         bool toDestroy = false;
 
-        if (!isGold)
-        {
-            bool added = InventoryManager.Instance.AddItem(item, itemCount);
-            if (added)
-                toDestroy = true;
-            else
-                itemCount = InventoryManager.Instance.LastRemainingCount;
-        }
-        else
-        {
-            bool added = InventoryManager.Instance.AddGold(itemCount);
-            if (added)
-                toDestroy = true;
-        }
+        bool added = InventoryManager.Instance.AddItem(item, itemCount);
+        if (added) toDestroy = true;
+        else itemCount = InventoryManager.Instance.LastRemainingCount;
 
         InventoryManager.Instance.EquipSelectedItem();
 
@@ -78,7 +76,6 @@ public class InteractableItem : MonoBehaviour, IInteractable
         if (rb == null) return;
 
         Collider[] nearbyColliders = new Collider[20];
-
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, mergeDistance, nearbyColliders, pickableLayerMask);
 
         if (hitCount == nearbyColliders.Length)
@@ -91,36 +88,35 @@ public class InteractableItem : MonoBehaviour, IInteractable
         for (int i = 0; i < hitCount; i++)
         {
             Collider collider = nearbyColliders[i];
-
             if (collider.gameObject == gameObject) continue;
 
-            InteractableItem other = collider.gameObject.GetComponent<InteractableItem>();
+            InteractableItem other = collider.GetComponent<InteractableItem>();
+            if (other == null || other.item.itemName != item.itemName) continue;
 
-            if (other != null && !other.isGold && other.item.itemName == item.itemName)
+            int totalItemCount = itemCount + other.itemCount;
+
+            if (totalItemCount <= maxItemCount)
             {
-                if (other.TryGetComponent(out Rigidbody _))
-                {
-                    int totalItemCount = itemCount + other.itemCount;
-
-                    if (totalItemCount <= maxItemCount)
-                    {
-                        itemCount = totalItemCount;
-                        DestroyInteractableItem(other);
-
-                        break;
-                    }
-                }
+                itemCount = totalItemCount;
+                DestroyInteractableItem(other);
+                break;
             }
         }
     }
 
     private void DestroyInteractableItem(InteractableItem interactable)
     {
+        // Notify interactor if needed
+        PlayerInteractor interactor = FindAnyObjectByType<PlayerInteractor>();
+        if (interactor != null && interactor.CurrentInteractable == interactable.GetComponent<IInteractable>())
+            interactor.ClearInteractable();
+
         if (interactable.owningChunk != null && interactable.savedObjectIndex >= 0 && interactable.savedObjectIndex < interactable.owningChunk.savedObjects.Count)
         {
-            interactable.owningChunk.savedObjects.RemoveAt(interactable.savedObjectIndex);
+            VoxelGrid.Instance.RemoveObjectFromChunk(interactable.owningChunk, interactable.savedObjectIndex);
             interactable.owningChunk.isDirty = true;
         }
+
         Destroy(interactable.gameObject);
     }
 
@@ -133,18 +129,26 @@ public class InteractableItem : MonoBehaviour, IInteractable
     private void EnablePickup() => canPickup = true;
 
     public string GetInteractText()
+        => $"Press E to pick up {itemCount}x {item.itemName}";
+
+    public Transform GetTransform() => transform;
+
+    public string SaveState()
     {
-        return isGold ? $"Press E to pick up {itemCount} gold" : $"Press E to pick up {itemCount}x {item.itemName}";
+        return JsonUtility.ToJson(new InteractableItemData
+        {
+            itemName = item != null ? item.itemName : "",
+            count = itemCount
+        });
     }
 
-    public Transform GetTransform()
+    public void LoadState(string json)
     {
-        return transform;
-    }
-
-    public void LoadInteractableItemData(InteractableItemData interactableItemData)
-    {
-        item = ItemRegistry.GetItemByName(interactableItemData.itemName);
-        itemCount = interactableItemData.count;
+        InteractableItemData data = JsonUtility.FromJson<InteractableItemData>(json);
+        if (data != null)
+        {
+            item = ItemRegistry.GetItemByName(data.itemName);
+            itemCount = data.count;
+        }
     }
 }

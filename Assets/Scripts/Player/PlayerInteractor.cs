@@ -11,23 +11,30 @@ public class PlayerInteractor : MonoBehaviour
     private WorldInteractUI currentUI;
     private IInteractable currentInteractable;
 
+    public IInteractable CurrentInteractable => currentInteractable;
+
     void Update()
     {
         if (GameManager.Instance.isPaused) return;
         if (InventoryManager.Instance.IsExtensionOpen()) return;
 
-        if (currentInteractable is Object unityObj && unityObj == null)
-        {
-            ClearInteractable();
-            return;
-        }
-
         IInteractable nearest = FindNearestInteractable(out float dist);
-
         bool validNearest = nearest != null && dist <= interactionRange;
 
-        if (validNearest)
+        if (currentInteractable != null && (!validNearest || !IsAlive(currentInteractable)))
         {
+            ClearInteractable();
+        }
+
+        if (validNearest && IsAlive(nearest))
+        {
+            Object unityObj = nearest as Object;
+            if (unityObj == null || !nearest.GetTransform().gameObject.activeInHierarchy)
+            {
+                ClearInteractable();
+                return;
+            }
+
             if (currentInteractable != nearest)
             {
                 currentInteractable = nearest;
@@ -44,7 +51,6 @@ public class PlayerInteractor : MonoBehaviour
 
             if (Input.GetKeyDown(interactKey))
             {
-                currentUIInstance.SetActive(false);
                 currentInteractable?.Interact();
                 ClearInteractable();
             }
@@ -77,8 +83,7 @@ public class PlayerInteractor : MonoBehaviour
 
             IInteractable interactable = hit.GetComponentInParent<IInteractable>();
             if (interactable == null) continue;
-
-            if (interactable is Object unityObj && unityObj == null) continue;
+            if (!IsAlive(interactable)) continue;
 
             float dist = Vector3.Distance(transform.position, interactable.GetTransform().position);
             if (dist < closest)
@@ -91,7 +96,12 @@ public class PlayerInteractor : MonoBehaviour
         return nearest;
     }
 
-    private void ClearInteractable()
+    private bool IsAlive(IInteractable interactable)
+    {
+        return !(interactable is Object unityObj && unityObj == null);
+    }
+
+    public void ClearInteractable()
     {
         currentInteractable = null;
         if (currentUIInstance != null)
@@ -103,7 +113,7 @@ public class PlayerInteractor : MonoBehaviour
         if (hit.gameObject.CompareTag("Pickable"))
         {
             InteractableItem interactable = hit.gameObject.GetComponentInParent<InteractableItem>();
-            interactable.Interact();
+            if (interactable != null) interactable.Interact();
 
             if (currentInteractable == interactable.GetComponent<IInteractable>())
                 ClearInteractable();

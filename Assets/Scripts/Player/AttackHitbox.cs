@@ -57,7 +57,7 @@ public class AttackHitbox : MonoBehaviour
 
         Vector3 boxCenter = transform.TransformPoint(box.center);
 
-        Vector3 hitPoint = other.ClosestPoint(boxCenter);
+        Vector3 hitPoint = other.bounds.ClosestPoint(boxCenter);
         Vector3 hitNormal = (hitPoint - boxCenter).normalized;
 
         int damage = playerCombat.ItemDamage(breakable, selectedItem);

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class TrialAltar : MonoBehaviour, IInteractable
+public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
 {
-    public string altarID;  // Unique ID for saving/loading (can auto-generate)
     public GameObject[] enemyWavePrefabs;
     public Transform[] spawnPoints;
     public int[] enemiesPerWave = { 3, 5, 7 };
@@ -29,7 +28,6 @@ public class TrialAltar : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        LoadAltarState();
         SetBarrierActive(false);
     }
 
@@ -72,7 +70,6 @@ public class TrialAltar : MonoBehaviour, IInteractable
 
         if (!waveFail) currentWave++;
 
-        SaveAltarState();
         SetBarrierActive(false);
 
         if (currentWave >= enemyWavePrefabs.Length)
@@ -84,22 +81,13 @@ public class TrialAltar : MonoBehaviour, IInteractable
     private IEnumerator SpawnWave(GameObject enemyPrefab, int count, float delayBetweenSpawns = 1.5f)
     {
         if (enemyPrefab == null)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': enemyPrefab is null for wave {currentWave}!");
             yield break;
-        }
 
         if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': No spawn points assigned!");
             yield break;
-        }
 
         if (TrialEnemyPool.Instance == null)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': TrialEnemyPool.Instance is null!");
             yield break;
-        }
 
         List<Transform> shuffledSpawns = new(spawnPoints);
         for (int i = 0; i < shuffledSpawns.Count; i++)
@@ -141,8 +129,6 @@ public class TrialAltar : MonoBehaviour, IInteractable
         keyAvailable = true;
         SetBarrierActive(false);
         Debug.Log("Trial completed! Key is ready for collection.");
-
-        SaveAltarState();
     }
 
     private void CollectKey()
@@ -158,8 +144,6 @@ public class TrialAltar : MonoBehaviour, IInteractable
 
         keyAvailable = false;
         Debug.Log("Key collected!");
-
-        SaveAltarState();
     }
 
     public string GetInteractText()
@@ -188,29 +172,17 @@ public class TrialAltar : MonoBehaviour, IInteractable
             waveIndex = currentWave;
 
         if (enemyWavePrefabs == null || enemyWavePrefabs.Length == 0)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': No enemy prefabs assigned!");
             return null;
-        }
 
         if (waveIndex < 0 || waveIndex >= enemyWavePrefabs.Length)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': Invalid wave index {waveIndex}!");
             return null;
-        }
 
         GameObject prefab = enemyWavePrefabs[waveIndex];
         if (prefab == null)
-        {
-            Debug.LogError($"TrialAltar '{altarID}': Enemy prefab for wave {waveIndex} is null!");
             return null;
-        }
 
         if (!prefab.TryGetComponent(out Enemy enemy))
-        {
-            Debug.LogError($"TrialAltar '{altarID}': Enemy prefab for wave {waveIndex} has no Enemy component!");
             return null;
-        }
 
         return enemy;
     }
@@ -219,7 +191,7 @@ public class TrialAltar : MonoBehaviour, IInteractable
     {
         if (!useBarrier || barrierRoot != null) return;
 
-        barrierRoot = new GameObject($"TrialBarrier_{altarID}");
+        barrierRoot = new GameObject($"TrialBarrier");
         barrierRoot.transform.SetParent(transform, worldPositionStays: false);
         barrierRoot.transform.localPosition = Vector3.zero;
 
@@ -338,14 +310,14 @@ public class TrialAltar : MonoBehaviour, IInteractable
 
         foreach (GameObject trialEnemy in TrialEnemyPool.Instance.activeEnemies.ToList())
         {
-            TrialEnemyPool.Instance.ReturnEnemyToPool(trialEnemy);
+            TrialEnemyPool.Instance.ReturnTrialEnemy(trialEnemy);
         }
 
         waveFail = true;
     }
 
     // Save / Load
-    public void SaveAltarState()
+    public string SaveState()
     {
         TrialAltarSaveData data = new()
         {
@@ -354,12 +326,12 @@ public class TrialAltar : MonoBehaviour, IInteractable
             keyAvailable = keyAvailable
         };
 
-        SaveSystem.SaveTrialAltarState(GameManager.Instance.currentWorldName, altarID, data);
+        return JsonUtility.ToJson(data);
     }
 
-    private void LoadAltarState()
+    public void LoadState(string json)
     {
-        TrialAltarSaveData data = SaveSystem.LoadTrialAltarState(GameManager.Instance.currentWorldName, altarID);
+        TrialAltarSaveData data = JsonUtility.FromJson<TrialAltarSaveData>(json);
         if (data != null)
         {
             currentWave = data.currentWave;

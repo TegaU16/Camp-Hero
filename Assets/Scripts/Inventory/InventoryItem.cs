@@ -36,9 +36,7 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         // Disable raycast on countText to prevent it from interfering with slot detection
         if (countText != null)
-        {
             countText.raycastTarget = false;
-        }
     }
 
     public void SetItem(Item newItem, int itemCount = 1)
@@ -88,6 +86,8 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         // Update the original parent to the new slot
         originalParent = transform.parent;
+
+        ItemTooltipUI.Instance.HideTooltip();
     }
 
     public void RevertToOriginalSlot()
@@ -110,10 +110,8 @@ public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (item != null)
-        {
+        if (item != null && selectedItem == null)
             ItemTooltipUI.Instance.ShowTooltip(item.itemName, GetComponent<RectTransform>());
-        }
     }
 
     public void OnPointerExit(PointerEventData eventData)

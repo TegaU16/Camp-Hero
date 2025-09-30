@@ -9,15 +9,13 @@ public class FurnaceManager : MonoBehaviour
 
     [Header("General UI")]
     public Transform furnaceItemParent;
-    public GameObject requirementPrefabParent;
     public GameObject furnaceItemPrefab;
     public FurnaceUI furnaceUI;
-    public GameObject inventoryMenu;
+    public GameObject recipeSection;
+    public GameObject nullItemSelectText;
 
     [Header("Process Section")]
     public Image progressFill;
-    public InventorySlot inputSlot;
-    public InventorySlot outputSlot;
 
     [Header("Info Section")]
     public Image resultImage;
@@ -40,16 +38,17 @@ public class FurnaceManager : MonoBehaviour
     void Start()
     {
         progressFill.fillAmount = 0;
+
+        recipeSection.SetActive(false);
+        nullItemSelectText.SetActive(true);
     }
 
     public void TryUnlockRecipes(List<Item> discoveredItems)
     {
-        foreach (var recipe in smeltingDatabase.allRecipes)
+        foreach (SmeltingRecipe recipe in smeltingDatabase.allRecipes)
         {
             if (!unlockedRecipes.Contains(recipe) && recipe.ShouldUnlock(discoveredItems))
-            {
                 UnlockRecipe(recipe);
-            }
         }
     }
 
@@ -65,9 +64,11 @@ public class FurnaceManager : MonoBehaviour
         uiItem.itemImage.sprite = recipe.resultItem.icon;
     }
 
-    public void SetSelectedFurnaceItem(FurnaceItem furnaceItem)
+    public void SetSelectedFurnaceItem(FurnaceItem furnaceItem = null, bool onOpened = false)
     {
-        if (furnaceItem.recipe.requiredItem != null)
+        bool itemSelected = furnaceItem != null;
+
+        if (itemSelected)
         {
             resultImage.sprite = furnaceItem.recipe.resultItem.icon;
             requiredImage.sprite = furnaceItem.recipe.requiredItem.icon;
@@ -75,16 +76,21 @@ public class FurnaceManager : MonoBehaviour
             resultName.text = furnaceItem.recipe.resultItem.name;
             requiredName.text = furnaceItem.recipe.requiredItem.name;
         }
+        
+        recipeSection.SetActive(itemSelected);
+        nullItemSelectText.SetActive(!itemSelected);
+
+        if (!onOpened)
+        {
+            FurnaceUnit furnaceUnit = furnaceUI.linkedFurnace;
+            if (furnaceUnit != null)
+                furnaceUnit.selectedItem = furnaceItem;
+        }
     }
 
     public void Open(FurnaceUnit unit)
     {
         furnaceUI.Open(unit);
-    }
-
-    public void Close()
-    {
-        furnaceUI.Close();
     }
 
     public void SaveSmeltingProgress()
@@ -95,8 +101,18 @@ public class FurnaceManager : MonoBehaviour
     public void LoadSmeltingProgress()
     {
         unlockedRecipes.Clear();
-        unlockedRecipes.AddRange(
-            SaveSystem.LoadSmelting(GameManager.Instance.currentWorldName, smeltingDatabase)
-        );
+        foreach (Transform child in furnaceItemParent)
+            Destroy(child.gameObject);
+
+        List<SmeltingRecipe> loadedRecipes = SaveSystem.LoadSmelting(GameManager.Instance.currentWorldName, smeltingDatabase);
+        unlockedRecipes.AddRange(loadedRecipes);
+
+        foreach (SmeltingRecipe recipe in unlockedRecipes)
+        {
+            GameObject itemGO = Instantiate(furnaceItemPrefab, furnaceItemParent);
+            FurnaceItem uiItem = itemGO.GetComponent<FurnaceItem>();
+            uiItem.recipe = recipe;
+            uiItem.itemImage.sprite = recipe.resultItem.icon;
+        }
     }
 }

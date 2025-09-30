@@ -2,8 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using NUnit.Framework;
-using System.Collections.Generic;
 
 public enum SlotType
 {
@@ -35,6 +33,13 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     // --- Left click pick / place
     public void HandleLeftClick()
     {
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            QuickTransfer();
+            UpdateInventorySlot();
+            return;
+        }
+
         if (InventoryItem.selectedItem != null)
         {
             OnSecondClick(this);
@@ -44,14 +49,13 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         if (transform.childCount > 0)
         {
-            // record original slot on the item before we move it
             InventoryItem selectedItem = GetComponentInChildren<InventoryItem>();
             if (selectedItem == null) return;
 
             selectedItem.originalParentSlot = transform;
             InventoryItem.selectedItem = selectedItem;
             selectedItem.isBeingDragged = true;
-            selectedItem.transform.SetParent(transform.root);
+            selectedItem.transform.SetParent(transform.root, true); // keep position
             selectedItem.GetComponent<Image>().raycastTarget = false;
 
             selectedItem.EnableDragLayering();
@@ -64,8 +68,6 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     // --- Right click split / pick
     public void HandleRightClick()
     {
-        Debug.Log($"[HandleRightClick] Called on slot: {name}");
-
         if (InventoryItem.selectedItem != null)
         {
             OnSecondClick(this);
@@ -77,8 +79,6 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             InventoryItem originalItem = GetComponentInChildren<InventoryItem>();
             if (originalItem == null) return;
-
-            Debug.Log($"[HandleRightClick] Found original item: {originalItem.name}, count: {originalItem.count}, parent: {originalItem.transform.parent.name}");
 
             if (originalItem.count > 1)
             {
@@ -104,7 +104,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 splitItem.GetComponent<Image>().raycastTarget = false;
 
                 splitItem.EnableDragLayering();
-                StartFollowCursor(splitItem);
+                StartFollowCursor(InventoryItem.selectedItem);
             }
             else
             {
@@ -141,13 +141,9 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 {
                     InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
                     if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
-                    {
                         StackItems(existingItem, InventoryItem.selectedItem);
-                    }
                     else
-                    {
                         InventoryItem.selectedItem.RevertToOriginalSlot();
-                    }
                 }
             }
             else
@@ -196,9 +192,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public void OnDrag(PointerEventData eventData)
     {
         if (InventoryItem.selectedItem != null)
-        {
             InventoryItem.selectedItem.transform.position = eventData.position;
-        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -214,14 +208,9 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         // Use the centralized InventoryUI reference to check if the item is inside the inventory
         if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
-        {
             HandleItemDrop(eventData);
-        }
         else
-        {
-            // Drop the item if it's not inside inventory UI
             DropSelectedItem();
-        }
 
         InventoryItem.selectedItem = null;
         UpdateInventorySlot();
@@ -248,13 +237,9 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             {
                 InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
                 if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
-                {
                     StackItems(existingItem, InventoryItem.selectedItem);
-                }
                 else
-                {
                     InventoryItem.selectedItem.RevertToOriginalSlot();
-                }
             }
         }
         else
@@ -270,6 +255,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             if (targetObject.TryGetComponent(out InventorySlot targetSlot)) return targetSlot;
             targetObject = targetObject.transform.parent != null ? targetObject.transform.parent.gameObject : null;
         }
+
         return null;
     }
 
@@ -282,13 +268,9 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
         if (selectedItem == null)
-        {
             InventoryManager.Instance.itemEquip.EquipItem(null);
-        }
         else
-        {
             InventoryManager.Instance.EquipSelectedItem();
-        }
     }
 
     private void StackItems(InventoryItem existingItem, InventoryItem selectedItem)
@@ -306,30 +288,129 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             existingItem.count = maxStack;
             existingItem.RefreshCount();
-            selectedItem.count = combinedCount - maxStack;
-            selectedItem.RefreshCount();
 
-            // Try to put leftover back to its original slot if possible, otherwise revert.
-            if (selectedItem.originalParentSlot != null && selectedItem.originalParentSlot.childCount == 0)
+            int overflow = combinedCount - maxStack;
+
+            // Try to auto-place overflow in other slots
+            overflow = PlaceOverflowInSlots(selectedItem.item, overflow);
+
+            if (overflow > 0)
             {
-                selectedItem.PlaceInSlot(selectedItem.originalParentSlot);
+                // Revert only if no free slot found
+                selectedItem.count = overflow;
+                selectedItem.RefreshCount();
+                selectedItem.RevertToOriginalSlot();
             }
             else
             {
-                selectedItem.RevertToOriginalSlot();
+                Destroy(selectedItem.gameObject);
             }
         }
+    }
+
+    private void QuickTransfer()
+    {
+        InventoryItem inventoryItem = GetComponentInChildren<InventoryItem>();
+        if (inventoryItem == null) return;
+
+        int remaining = inventoryItem.count;
+
+        // Try to stack into existing slots first
+        foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
+        {
+            if (slot == this) continue;
+            if (slot.transform.childCount > 0)
+            {
+                InventoryItem existing = slot.GetComponentInChildren<InventoryItem>();
+                if (existing.item == inventoryItem.item && existing.count < inventoryItem.item.maxStack)
+                {
+                    int space = inventoryItem.item.maxStack - existing.count;
+                    int toMove = Mathf.Min(space, remaining);
+
+                    existing.count += toMove;
+                    existing.RefreshCount();
+                    remaining -= toMove;
+
+                    if (remaining <= 0) break;
+                }
+            }
+        }
+
+        // If leftover, try empty slots
+        if (remaining > 0)
+        {
+            foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
+            {
+                if (slot == this) continue;
+                if (slot.transform.childCount == 0)
+                {
+                    int toPlace = Mathf.Min(remaining, inventoryItem.item.maxStack);
+
+                    InventoryManager.Instance.SpawnNewItem(inventoryItem.item, slot, toPlace);
+
+                    remaining -= toPlace;
+                    if (remaining <= 0) break;
+                }
+            }
+        }
+
+        // Update or remove original slot
+        if (remaining > 0)
+        {
+            inventoryItem.count = remaining;
+            inventoryItem.RefreshCount();
+        }
+        else
+        {
+            Destroy(inventoryItem.gameObject);
+            ItemTooltipUI.Instance.HideTooltip();
+        }
+    }
+
+    private int PlaceOverflowInSlots(Item item, int overflow)
+    {
+        // First, try to stack into other existing items
+        foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
+        {
+            if (slot.transform.childCount > 0)
+            {
+                InventoryItem existing = slot.GetComponentInChildren<InventoryItem>();
+                if (existing.item == item && existing.count < item.maxStack)
+                {
+                    int space = item.maxStack - existing.count;
+                    int toMove = Mathf.Min(space, overflow);
+
+                    existing.count += toMove;
+                    existing.RefreshCount();
+                    overflow -= toMove;
+                    if (overflow <= 0) return 0;
+                }
+            }
+        }
+
+        // Then, put into empty slots
+        foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
+        {
+            if (slot.transform.childCount == 0)
+            {
+                int toPlace = Mathf.Min(overflow, item.maxStack);
+
+                InventoryManager.Instance.SpawnNewItem(item, slot, toPlace);
+
+                overflow -= toPlace;
+                if (overflow <= 0) return 0;
+            }
+        }
+
+        return overflow; // leftover if no slots
     }
 
     public bool IsItemAllowedInSlot(Item item)
     {
         return slotType switch
         {
-            SlotType.Armor => item.itemType == ItemType.Armor,
-            SlotType.Weapon => item.itemType == ItemType.Weapon,
-            SlotType.Crafting => item.itemType == ItemType.Crafting,
-            SlotType.Fuel => item.itemType == ItemType.Fuel,
-            SlotType.Smelting => item.itemType == ItemType.Smelting,
+            SlotType.Fuel => (item.itemTypes & ItemType.Fuel) != 0,
+            SlotType.Smelting => (item.itemTypes & ItemType.Smelting) != 0,
             _ => true,
         };
     }
@@ -340,7 +421,7 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
         Destroy(InventoryItem.selectedItem.gameObject);
-
+        ItemTooltipUI.Instance.HideTooltip();
         InventoryItem.selectedItem.DisableDragLayering();
         StopFollowCursor();
     }
@@ -366,13 +447,9 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         while (item == InventoryItem.selectedItem && item != null)
         {
             if (item != null)
-            {
                 item.transform.position = Input.mousePosition;
-            }
             else
-            {
                 yield break;
-            }
             yield return null;
         }
     }
@@ -380,27 +457,6 @@ public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public void ClearSlot()
     {
         foreach (Transform child in transform)
-        {
             Destroy(child.gameObject);
-        }
-    }
-
-    private InventorySlot GetSlotUnderMouse()
-    {
-        PointerEventData pointerData = new(EventSystem.current)
-        {
-            position = Input.mousePosition
-        };
-
-        List<RaycastResult> raycastResults = new();
-        EventSystem.current.RaycastAll(pointerData, raycastResults);
-
-        foreach (RaycastResult result in raycastResults)
-        {
-            if (result.gameObject.TryGetComponent(out InventorySlot slot))
-                return slot;
-        }
-
-        return null;
     }
 }

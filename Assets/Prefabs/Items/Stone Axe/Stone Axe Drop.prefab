@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &1258915939319737784
+--- !u!1001 &4817099939973516914
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,87 +8,106 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
-      propertyPath: m_Name
-      value: Stone Axe Drop
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
-      propertyPath: m_Layer
-      value: 6
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: -0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6669876634582506145, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_Name
+      value: Stone Axe Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7800234466223511044}
-    - targetCorrespondingSourceObject: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+      addedObject: {fileID: 2659428388027709144}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1909480885350568315}
-    - targetCorrespondingSourceObject: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+      addedObject: {fileID: 5505075707754905909}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 570660418249498799}
-    - targetCorrespondingSourceObject: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
+      addedObject: {fileID: -7503661041617721047}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1841351686256996889}
-  m_SourcePrefab: {fileID: 100100000, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
---- !u!1 &5090027147712359843 stripped
+      addedObject: {fileID: -6789506028703594135}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -405461514786605220}
+  m_SourcePrefab: {fileID: 100100000, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+--- !u!1 &5627440211037287203 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6330928413503094811, guid: 59de146429bf55840a6c286c8b53f85b, type: 3}
-  m_PrefabInstance: {fileID: 1258915939319737784}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d3203c82d9eb51843ba2589f95520d3a, type: 3}
+  m_PrefabInstance: {fileID: 4817099939973516914}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &7800234466223511044
+--- !u!54 &2659428388027709144
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5090027147712359843}
+  m_GameObject: {fileID: 5627440211037287203}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -109,13 +128,13 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &1909480885350568315
+--- !u!65 &5505075707754905909
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5090027147712359843}
+  m_GameObject: {fileID: 5627440211037287203}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -128,41 +147,53 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.11999999, y: 0.97999996, z: 0.52000004}
-  m_Center: {x: 0.00000006332992, y: 0.48999995, z: 0.11999992}
---- !u!114 &570660418249498799
+  m_Size: {x: 0.120000005, y: 0.98, z: 0.5199999}
+  m_Center: {x: 0.00000006332993, y: 0.49, z: 0.11999998}
+--- !u!114 &-7503661041617721047
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5090027147712359843}
+  m_GameObject: {fileID: 5627440211037287203}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 0}
-  isGold: 0
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
+  item: {fileID: 11400000, guid: 395e7513434bc0544bf7f2d37284a38d, type: 2}
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!114 &1841351686256996889
+  savedObjectIndex: 0
+--- !u!114 &-6789506028703594135
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5090027147712359843}
+  m_GameObject: {fileID: 5627440211037287203}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &-405461514786605220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5627440211037287203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: axe_stone_drop

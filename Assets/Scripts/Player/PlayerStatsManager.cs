@@ -4,8 +4,8 @@ using UnityEngine;
 public class PlayerStatsManager : MonoBehaviour
 {
     public static PlayerStatsManager Instance;
-    public TextMeshProUGUI availablePointsText;
-    public TMP_InputField pointsToAddField;
+    [SerializeField] private TextMeshProUGUI availablePointsText;
+    [SerializeField] private TMP_InputField pointsToAddField;
     public PlayerStats stats = new();
     private Player player;
 

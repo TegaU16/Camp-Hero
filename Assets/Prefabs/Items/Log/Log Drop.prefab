@@ -92,6 +92,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e81c336b664afc489df06890f18d19e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8366989421775825321}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e81c336b664afc489df06890f18d19e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6903374666322359355}
   m_SourcePrefab: {fileID: 100100000, guid: 9e81c336b664afc489df06890f18d19e, type: 3}
 --- !u!1 &1300611963905405125 stripped
 GameObject:
@@ -177,8 +180,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
+  savedObjectIndex: 0
+--- !u!114 &6903374666322359355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1300611963905405125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: wood_drop

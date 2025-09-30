@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GemAltar : MonoBehaviour, IInteractable
+public class GemAltar : MonoBehaviour, IInteractable, ISaveableObject
 {
     public string altarID;
     public Item requiredKey;
@@ -55,7 +55,7 @@ public class GemAltar : MonoBehaviour, IInteractable
         return transform;
     }
 
-    public void SaveAltarState()
+    public string SaveState()
     {
         GemAltarSaveData data = new()
         {
@@ -63,16 +63,21 @@ public class GemAltar : MonoBehaviour, IInteractable
             isActivated = isActivated
         };
 
-        SaveSystem.SaveGemAltarState(GameManager.Instance.currentWorldName, altarID, data);
+        return JsonUtility.ToJson(data);
     }
 
-    public void LoadAltarState()
+    public void LoadState(string json)
     {
-        GemAltarSaveData data = SaveSystem.LoadGemAltarState(GameManager.Instance.currentWorldName, altarID);
+        GemAltarSaveData data = JsonUtility.FromJson<GemAltarSaveData>(json);
         if (data != null)
         {
             bossDefeated = data.bossDefeated;
             isActivated = data.isActivated;
+        }
+        else
+        {
+            bossDefeated = false;
+            isActivated = false;
         }
     }
 }

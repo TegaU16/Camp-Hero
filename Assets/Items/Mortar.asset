@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Mortar
   m_EditorClassIdentifier: 
-  itemType: 3
-  actionType: 5
-  stackable: 1
-  maxStack: 1
+  itemTypes: 2
+  actionType: 1
+  maxStack: 5
   icon: {fileID: 21300000, guid: 491feebfe1dbf62459391caa8d81296b, type: 3}
   itemName: Mortar
-  equippedPrefab: {fileID: 6881135206178680239, guid: 886aebf8910d87b47a24a0eaea3c5b28, type: 3}
-  itemDrop: {fileID: 5854904897886314844, guid: dfef35f7880936d40b7a45dd450a4fb7, type: 3}
-  animatorController: {fileID: 0}
+  equippedPrefab: {fileID: 1221377613340557025, guid: 886aebf8910d87b47a24a0eaea3c5b28, type: 3}
+  itemDrop: {fileID: 5921956913580067714, guid: dfef35f7880936d40b7a45dd450a4fb7, type: 3}
   buildingGhost: {fileID: 290839573056755980, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
   toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

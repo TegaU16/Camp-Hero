@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2322757446936790740
+--- !u!1001 &5585777712159245241
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,77 +8,90 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
-      propertyPath: m_Name
-      value: Stone Drop
-      objectReference: {fileID: 0}
-    - target: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
-      objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalRotation.y
       value: -0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5458087759811532758, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_Name
+      value: Stone Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1468656387879508654}
-    - targetCorrespondingSourceObject: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+      addedObject: {fileID: 7454993302475448404}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1860498431084978059}
-  m_SourcePrefab: {fileID: 100100000, guid: 090364826fda93a46891003f9b856ab0, type: 3}
---- !u!1 &6974038280828783544 stripped
+      addedObject: {fileID: -7759618000516881886}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4632075040169534613}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3868301829928847196}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2042219868660954256}
+  m_SourcePrefab: {fileID: 100100000, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+--- !u!1 &4703379712838663912 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
-  m_PrefabInstance: {fileID: 2322757446936790740}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+  m_PrefabInstance: {fileID: 5585777712159245241}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &1468656387879508654
+--- !u!54 &7454993302475448404
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6974038280828783544}
+  m_GameObject: {fileID: 4703379712838663912}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -99,21 +112,72 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1860498431084978059
+--- !u!65 &-7759618000516881886
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4703379712838663912}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.2007139, y: 0.13380931, z: 0.33452317}
+  m_Center: {x: 0.0000000037252899, y: 0.06690464, z: 0}
+--- !u!114 &4632075040169534613
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6974038280828783544}
+  m_GameObject: {fileID: 4703379712838663912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
+  item: {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
+  itemCount: 0
+  mergeDistance: 2
+  maxItemCount: 100
+  savedObjectIndex: 0
+--- !u!114 &3868301829928847196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4703379712838663912}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &-2042219868660954256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4703379712838663912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: stone_drop

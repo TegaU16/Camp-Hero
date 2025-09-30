@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Wall
   m_EditorClassIdentifier: 
-  itemType: 3
-  actionType: 5
-  stackable: 1
+  itemTypes: 10
+  actionType: 1
   maxStack: 20
   icon: {fileID: 21300000, guid: b14363e9be4cfa545b40904e6ee380b9, type: 3}
   itemName: Wall
-  equippedPrefab: {fileID: 5103994963222153089, guid: 3bbbbe702c4d32e45b29f4cd520ee9aa, type: 3}
-  itemDrop: {fileID: 4107460987337876902, guid: aa7f46bb64c048a46a851429ba9d539c, type: 3}
-  animatorController: {fileID: 0}
+  equippedPrefab: {fileID: 6403017217164839949, guid: 3bbbbe702c4d32e45b29f4cd520ee9aa, type: 3}
+  itemDrop: {fileID: 4617146028558147462, guid: aa7f46bb64c048a46a851429ba9d539c, type: 3}
   buildingGhost: {fileID: 4886152691077762485, guid: 0329728fdf78c7640b5b6b08ac4a319b, type: 3}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 3
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
   toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 10
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

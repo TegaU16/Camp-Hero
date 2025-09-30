@@ -4,11 +4,10 @@ using UnityEngine;
 public class Item : ScriptableObject
 {
     [Header("Only Gameplay")]
-    public ItemType itemType;
+    public ItemType itemTypes;
     public ActionType actionType;
 
     [Header("Only UI")]
-    public bool stackable = true;
     public int maxStack = 1;
     public Sprite icon;
     public string itemName;
@@ -16,25 +15,16 @@ public class Item : ScriptableObject
     [Header("Both")]
     public GameObject equippedPrefab;
     public GameObject itemDrop;
-    public AnimatorOverrideController animatorController;
 
     [Header("Only Building")]
     public GameObject buildingGhost;
-    public float height;
     public Vector2Int buildingSize = new(1, 1);
 
     [Header("For Melee")]
     public float attackDistance = 3f;
-    public float attackSpeed;
-    public float attackDelay;
     public float[] attackDamage = new float[2];
     public float critChance = 2f;
     public float critFactor = 2f;
-    public LayerMask attackLayer;
-
-    public GameObject hitEffect;
-    public AudioClip swingSound;
-    public AudioClip hitSound;
 
     [Header("Tool")]
     public int toolLevel;
@@ -53,36 +43,23 @@ public class Item : ScriptableObject
     public float smeltRate = 0.01f;
     public Item output;
     public int outputCount = 1;
-
-    [HideInInspector]
-    public bool attacking = false;
-    [HideInInspector]
-    public bool readyToAttack = true;
 }
 
+[System.Flags]
 public enum ItemType
 {
-    Potion,
-    Weapon,
-    Tool,
-    Building,
-    Armor,
-    Food,
-    Crafting,
-    Fuel,
-    Smelting,
-    General
+    None = 0,
+    General = 1 << 0,
+    Building = 1 << 1,
+    Food = 1 << 2,
+    Fuel = 1 << 3,
+    Smelting = 1 << 4
 }
 
 public enum ActionType
 {
-    Throw,
-    Drink,
-    Eat,
-    Hit,
-    Shoot,
-    Place,
-    None
+    None,
+    Action
 }
 
 public enum ToolType

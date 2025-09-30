@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class WallSegment : MonoBehaviour
 {
-    public GameObject leftPole;
-    public GameObject rightPole;
-    public GameObject connectorToRight;
+    [SerializeField] private GameObject leftPole;
+    [SerializeField] private GameObject rightPole;
+    [SerializeField] private GameObject connectorToRight;
 
     public void SetPoleVisibility(bool left, bool right)
     {

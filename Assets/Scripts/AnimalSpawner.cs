@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class AnimalSpawner : MonoBehaviour
 {
     [HideInInspector] public List<VoxelChunk> chunks = new();
-    public VoxelGrid voxelGrid;
 
     public int clusterCount = 3;
     public int animalsPerCluster = 5;
@@ -33,7 +32,7 @@ public class AnimalSpawner : MonoBehaviour
             yield break;
 
         Vector3 chunkOrigin = chunk.chunkObject.transform.position;
-        float chunkSize = voxelGrid.chunkSize;
+        float chunkSize = VoxelGrid.Instance.chunkSize;
 
         for (int i = 0; i < clusterCount; i++)
         {
@@ -95,20 +94,6 @@ public class AnimalSpawner : MonoBehaviour
         }
     }
 
-    public void DespawnAnimalsForChunk(VoxelChunk chunk)
-    {
-        if (!chunkAnimals.ContainsKey(chunk)) return;
-
-        foreach (Animal animal in chunkAnimals[chunk])
-        {
-            AnimalPool.Instance.ReturnAnimal(animal);
-            chunk.simulatedEntities.Remove(animal);
-            currentAnimalCount--;
-        }
-
-        chunkAnimals.Remove(chunk);
-    }
-
     public List<AnimalSaveData> GetAllAnimalSaveData()
     {
         List<AnimalSaveData> dataList = new();
@@ -153,14 +138,14 @@ public class AnimalSpawner : MonoBehaviour
                 breakable.SetHealth(data.currentHealth);
             }
 
-            Vector3Int voxelPos = voxelGrid.WorldToVoxelCoord(data.position);
-            int chunkX = Mathf.FloorToInt((float)voxelPos.x / voxelGrid.chunkSize);
-            int chunkZ = Mathf.FloorToInt((float)voxelPos.z / voxelGrid.chunkSize);
+            Vector3Int voxelPos = VoxelGrid.Instance.WorldToVoxelCoord(data.position);
+            int chunkX = Mathf.FloorToInt((float)voxelPos.x / VoxelGrid.Instance.chunkSize);
+            int chunkZ = Mathf.FloorToInt((float)voxelPos.z / VoxelGrid.Instance.chunkSize);
 
             Vector2Int chunkKey = new(chunkX, chunkZ);
 
             // Find chunk it belongs to
-            if (voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
+            if (VoxelGrid.Instance.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
             {
                 if (!chunkAnimals.ContainsKey(chunk))
                     chunkAnimals[chunk] = new List<Animal>();

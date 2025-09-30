@@ -51,44 +51,6 @@ public class VoxelChunk
         cachedRenderers = chunkObject.GetComponentsInChildren<MeshRenderer>();
         cachedColliders = chunkObject.GetComponentsInChildren<Collider>();
     }
-
-    public void SaveChunkFurnaces(ChunkSaveData data)
-    {
-        data.furnaceStates.Clear();
-        FurnaceUnit[] furnaces = chunkObject.GetComponentsInChildren<FurnaceUnit>();
-        foreach (FurnaceUnit furnace in furnaces)
-        {
-            data.furnaceStates.Add(furnace.SaveState());
-        }
-    }
-
-    public void LoadChunkFurnaces(ChunkSaveData data)
-    {
-        FurnaceUnit[] furnaces = chunkObject.GetComponentsInChildren<FurnaceUnit>();
-        for (int i = 0; i < furnaces.Length && i < data.furnaceStates.Count; i++)
-        {
-            furnaces[i].LoadState(data.furnaceStates[i]);
-        }
-    }
-
-    public void SaveChunkStorages(ChunkSaveData data)
-    {
-        data.storageStates.Clear();
-        StorageUnit[] storages = chunkObject.GetComponentsInChildren<StorageUnit>();
-        foreach (StorageUnit storage in storages)
-        {
-            data.storageStates.Add(storage.SaveState());
-        }
-    }
-
-    public void LoadChunkStorages(ChunkSaveData data)
-    {
-        StorageUnit[] storages = chunkObject.GetComponentsInChildren<StorageUnit>();
-        for (int i = 0; i < storages.Length && i < data.storageStates.Count; i++)
-        {
-            storages[i].LoadState(data.storageStates[i]);
-        }
-    }
 }
 
 [System.Serializable]

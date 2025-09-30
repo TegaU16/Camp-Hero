@@ -8,7 +8,7 @@ public class InteractableItemManager : MonoBehaviour
 
     private readonly List<InteractableItem> items = new();
     private float mergeTimer = 0f;
-    public float mergeInterval = 1f;  // Check every second
+    public float mergeInterval = 1f;  // Merge every second
 
     void Awake()
     {
@@ -22,7 +22,8 @@ public class InteractableItemManager : MonoBehaviour
 
     public void Register(InteractableItem item)
     {
-        items.Add(item);
+        if (!items.Contains(item))
+            items.Add(item);
     }
 
     public void Unregister(InteractableItem item)
@@ -45,18 +46,29 @@ public class InteractableItemManager : MonoBehaviour
 
     private void CleanupList()
     {
+        // Remove destroyed items safely
         items.RemoveAll(item => item == null);
     }
 
     private void MergeAllItems()
     {
-        for (int i = 0; i < items.Count; i++)
+        // Create a temporary copy to avoid modifying list during iteration
+        List<InteractableItem> snapshot = new(items);
+
+        foreach (InteractableItem item in snapshot)
         {
-            InteractableItem item = items[i];
-            if (item != null)
-            {
-                item.MergeNearbyObjects();
-            }
+            if (item == null) continue;
+            if (!item.gameObject.activeInHierarchy) continue; // Skip inactive items
+            item.MergeNearbyObjects();
         }
+    }
+
+    /// <summary>
+    /// Optional utility: Force-update an item when player dies or drops items
+    /// </summary>
+    public void ForceMergeAll()
+    {
+        CleanupList();
+        MergeAllItems();
     }
 }

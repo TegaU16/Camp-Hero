@@ -257,6 +257,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d6837581395c83c45a98358306a1947b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4991431898567843458}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d6837581395c83c45a98358306a1947b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5916683621025783673}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: d6837581395c83c45a98358306a1947b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8096817463172436612}
@@ -1532,6 +1535,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnPrefab: {fileID: 0}
+--- !u!114 &-5916683621025783673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5482173699686684518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: gem_guardian_green
 --- !u!1 &5670709533211676040 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1037963683107284927, guid: d6837581395c83c45a98358306a1947b, type: 3}

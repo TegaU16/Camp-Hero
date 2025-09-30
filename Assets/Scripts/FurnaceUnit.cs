@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -20,16 +21,21 @@ public class FurnaceSlot
     }
 }
 
-public class FurnaceUnit : MonoBehaviour, ISaveableObject
+public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
 {
     public FuelComponent fuel = new();
     public FurnaceSlot inputData = new();
     public FurnaceSlot outputData = new();
     public FurnaceSlot fuelData = new();
 
+    [HideInInspector] public List<FurnaceSlot> furnaceSlots;
+
     [HideInInspector] public InventorySlot inputSlot;
     [HideInInspector] public InventorySlot outputSlot;
     [HideInInspector] public InventorySlot fuelSlot;
+    [HideInInspector] public List<InventorySlot> inventorySlots;
+
+    [HideInInspector] public FurnaceItem selectedItem;
 
     [HideInInspector] public float smeltProgress;
 
@@ -39,6 +45,14 @@ public class FurnaceUnit : MonoBehaviour, ISaveableObject
     private void Start()
     {
         smeltRate = 1.0f / smeltDuration;
+
+        furnaceSlots.Add(inputData);
+        furnaceSlots.Add(outputData);
+        furnaceSlots.Add(fuelData);
+
+        inventorySlots.Add(inputSlot);
+        inventorySlots.Add(outputSlot);
+        inventorySlots.Add(fuelSlot);
     }
 
     private void Update()
@@ -145,6 +159,16 @@ public class FurnaceUnit : MonoBehaviour, ISaveableObject
             data.count = 0;
         }
     }
+
+    public void Interact()
+    {
+        FurnaceManager.Instance.Open(this);
+        InventoryManager.Instance.mainInventory.SetActive(true);
+    }
+
+    public string GetInteractText() => "Use Furnace";
+
+    public Transform GetTransform() => transform;
 
     public string SaveState()
     {

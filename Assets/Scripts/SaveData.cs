@@ -69,23 +69,16 @@ public class ChunkSaveData
 public class SpawnedObjectData
 {
     public Vector3 position;
-    public string prefabName;
+    public string prefabID;
     public string savedStateJson;
 
-    public InteractableItemData interactableData;
-    public TrialAltarSaveData trialData;
-    public BreakableObjectData breakableObjectData;
-
-    public SpawnedObjectData(Vector3 pos, GameObject obj, InteractableItemData interactableItemData = null, 
-        TrialAltarSaveData trialAltarSaveData = null, BreakableObjectData breakableObjectSaveData = null)
+    public SpawnedObjectData(Vector3 pos, GameObject instanceObj, GameObject prefabObj)
     {
         position = pos;
-        prefabName = PrefabRegistry.GetKeyForPrefab(obj);
-        interactableData = interactableItemData;
-        trialData = trialAltarSaveData;
-        breakableObjectData = breakableObjectSaveData;
 
-        if (obj.TryGetComponent(out ISaveableObject saveable))
+        prefabID = prefabObj.GetComponent<PrefabID>().prefabKey;
+
+        if (instanceObj != null && instanceObj.TryGetComponent(out ISaveableObject saveable))
         {
             savedStateJson = saveable.SaveState();
         }
@@ -94,6 +87,8 @@ public class SpawnedObjectData
             savedStateJson = null;
         }
     }
+
+    public SpawnedObjectData() { }
 }
 
 [System.Serializable]
@@ -174,4 +169,22 @@ public class CampfireSaveData
 public class BreakableObjectData
 {
     public int currentHealth;
+}
+
+[System.Serializable]
+public class FarmPlotData
+{
+    public string plantName;
+    public float growthTimer;
+    public int currentStage;
+    public bool isPlanted;
+}
+
+[System.Serializable]
+public class FurnaceSaveData
+{
+    public string inputJson;
+    public string outputJson;
+    public string fuelDataJson;
+    public float currentFuel;
 }

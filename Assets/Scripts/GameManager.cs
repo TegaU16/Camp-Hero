@@ -24,7 +24,6 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public bool isPaused = false;
 
     [Header("Managers")]
-    public VoxelGrid voxelGrid;
     public InventoryManager inventoryManager;
     public DayNightCycle dayNightCycle;
     public EnemySpawner enemySpawner;
@@ -109,9 +108,9 @@ public class GameManager : MonoBehaviour
 
         int seed = ConsistentHash(currentSeed);
         Random.InitState(seed);
-        voxelGrid.SetWorld(seed, currentWorldName);
+        VoxelGrid.Instance.SetWorld(seed, currentWorldName);
 
-        while (!voxelGrid.worldGenerated) yield return null;
+        while (!VoxelGrid.Instance.worldGenerated) yield return null;
     }
 
     private IEnumerator SpawnEntitiesPhase(System.Action<float> onProgress)
@@ -124,7 +123,7 @@ public class GameManager : MonoBehaviour
         if (playerData != null)
             SpawnPlayer(playerData.position, playerData);
         else
-            SpawnPlayer(voxelGrid.GetDefaultSpawnPosition());
+            SpawnPlayer(VoxelGrid.Instance.GetDefaultSpawnPosition());
 
         progress = 0.5f;
         onProgress?.Invoke(progress);
@@ -139,17 +138,12 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator LoadSystemsPhase(System.Action<float> onProgress)
     {
-        int totalChunks = voxelGrid.chunks.Count;
+        int totalChunks = VoxelGrid.Instance.chunks.Count;
         int processed = 0;
 
-        foreach (VoxelChunk chunk in voxelGrid.chunks)
+        foreach (VoxelChunk chunk in VoxelGrid.Instance.chunks)
         {
             ChunkSaveData data = SaveSystem.LoadChunk(currentWorldName, chunk.chunkPosition);
-            if (data != null)
-            {
-                chunk.LoadChunkFurnaces(data);
-                chunk.LoadChunkStorages(data);
-            }
 
             processed++;
             onProgress?.Invoke((float)processed / totalChunks);
@@ -255,7 +249,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Wait until the terrain is generated
-        while (!voxelGrid.worldGenerated)
+        while (!VoxelGrid.Instance.worldGenerated)
             yield return null;
 
         if (campFireInstance == null)
@@ -287,7 +281,6 @@ public class GameManager : MonoBehaviour
 
     private void HookSystems(GameObject playerInstance)
     {
-        voxelGrid.SetPlayer(playerInstance);
         inventoryManager.SetPlayer(playerInstance);
         dayNightCycle.SetPlayer(playerInstance);
         enemySpawner.SetPlayer(playerInstance);
@@ -304,25 +297,18 @@ public class GameManager : MonoBehaviour
     }
 
     // ----------------- CAMPFIRE -----------------
-    public void SetCampfire(GameObject campfire) => campFireInstance = campfire;
-
-    private void BindCampfireUI(Campfire campfire)
+    public void SetCampfire(GameObject campfireObj, CampfireSaveData campfireData = null)
     {
-        if (campfire != null)
+        campFireInstance = campfireObj;
+        
+        if (campFireInstance.TryGetComponent(out Campfire campfire))
+        {
             campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
 
-        if (campfire != null)
-        {
-            CampfireSaveData campfireData = SaveSystem.LoadCampfire(currentWorldName);
             int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
 
             if (campfire.health.healthBar != null)
                 campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
-
-            if (campfireData != null)
-                campfire.LoadFromSaveData(campfireData);
-            else
-                campfire.LoadDefault();
         }
     }
 
@@ -335,15 +321,7 @@ public class GameManager : MonoBehaviour
         if (playerInstance.TryGetComponent(out Player player))
             player.SavePlayer();
 
-        voxelGrid.SaveAllChunks(currentWorldName);
-
-        TrialAltar[] trialAltars = FindObjectsByType<TrialAltar>(FindObjectsSortMode.None);
-        foreach (TrialAltar trialAltar in trialAltars)
-            trialAltar.SaveAltarState();
-
-        GemAltar[] gemAltars = FindObjectsByType<GemAltar>(FindObjectsSortMode.None);
-        foreach (GemAltar gemAltar in gemAltars)
-            gemAltar.SaveAltarState();
+        VoxelGrid.Instance.SaveAllChunks(currentWorldName);
 
         WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
         if (metadata != null)
@@ -356,10 +334,6 @@ public class GameManager : MonoBehaviour
         FurnaceManager.Instance.SaveSmeltingProgress();
 
         dayNightCycle.SaveDayNight();
-
-        Campfire campfire = FindFirstObjectByType<Campfire>();
-        if (campfire != null)
-            SaveSystem.SaveCampfire(currentWorldName, campfire.GetSaveData());
 
         if (exit)
         {
@@ -401,9 +375,9 @@ public class GameManager : MonoBehaviour
         LoadingScreenUI.Instance.SetProgress(0f);
 
         // 2. Terrain generation (0%–70%)
-        voxelGrid.OnProgress = p => LoadingScreenUI.Instance.SetProgressRange(p, 0f, 0.7f);
+        VoxelGrid.Instance.OnProgress = p => LoadingScreenUI.Instance.SetProgressRange(p, 0f, 0.7f);
         yield return StartCoroutine(GenerateTerrainPhase());
-        voxelGrid.OnProgress = null;
+        VoxelGrid.Instance.OnProgress = null;
 
         // 3. Spawning (70%–80%)
         yield return StartCoroutine(SpawnEntitiesPhase(p => LoadingScreenUI.Instance.SetProgressRange(p, 0.7f, 0.8f)));
@@ -436,11 +410,7 @@ public class GameManager : MonoBehaviour
         }
 
         Player player = playerInstance.GetComponent<Player>();
-        Campfire campfire = campFireInstance.GetComponent<Campfire>();
-
-        // --- Bind UI Bars ---
         BindPlayerUI(player);
-        BindCampfireUI(campfire);
 
         // --- Load systems that depend on world/player ---
         CraftingManager.Instance.LoadCraftingProgress();
@@ -500,7 +470,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         gameOverMenuUI.SetActive(false);
 
-        voxelGrid.ResetWorld();
+        VoxelGrid.Instance.ResetWorld();
         if (playerInstance.TryGetComponent(out Player player))
         {
             RespawnPlayer(player);
@@ -539,6 +509,7 @@ public class GameManager : MonoBehaviour
         Cursor.visible = false;
     }
 
+    // Called by main menu quit button
     public void QuitGame()
     {
         Time.timeScale = 1f;

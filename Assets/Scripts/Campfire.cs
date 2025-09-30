@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ public enum GemColor
     Yellow
 }
 
-public class Campfire : MonoBehaviour, IInteractable
+public class Campfire : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Health health;
 
@@ -73,30 +74,38 @@ public class Campfire : MonoBehaviour, IInteractable
         GameManager.Instance.GameOver();
     }
 
-    public CampfireSaveData GetSaveData()
+    public string SaveState()
     {
-        return new CampfireSaveData
+        CampfireSaveData data = new()
         {
             currentHealth = health.GetHealth(),
             unlockedGems = new List<GemColor>(unlockedGems)
         };
+
+        return JsonUtility.ToJson(data);
     }
 
-    public void LoadFromSaveData(CampfireSaveData data)
+    public void LoadState(string json)
     {
-        health.SetHealth(data.currentHealth);
+        CampfireSaveData data = JsonUtility.FromJson<CampfireSaveData>(json);
+        GameManager.Instance.SetCampfire(gameObject, data);
 
-        unlockedGems.Clear();
-        foreach (GemColor color in data.unlockedGems)
+        if (data == null)
         {
-            unlockedGems.Add(color);
+            health.SetHealth(health.maxHealth);
+            UpdateGemVisibility();
         }
-        UpdateGemVisibility();
-    }
+        else
+        {
+            health.SetHealth(data.currentHealth);
+            Debug.Log($"[Campfire] Loaded health: {data.currentHealth}");
 
-    public void LoadDefault()
-    {
-        health.SetHealth(health.maxHealth);
-        UpdateGemVisibility();
+            unlockedGems.Clear();
+            foreach (GemColor color in data.unlockedGems)
+            {
+                unlockedGems.Add(color);
+            }
+            UpdateGemVisibility();
+        }
     }
 }

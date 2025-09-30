@@ -4,25 +4,22 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     private GameObject player;
-    public float spawnRadius = 20f;
-    public float spawnInterval = 5f;
+    [SerializeField] private float spawnRadius = 20f;
+    [SerializeField] private float spawnInterval = 5f;
     private int maxEnemies;
 
     private float timer;
     private int currentEnemyCount = 0;
 
-    public LayerMask groundLayer;
+    [SerializeField] private LayerMask groundLayer;
 
-    public DayNightCycle dayNightCycle;
-    public VoxelGrid voxelGrid;
-    public EnemyPool enemyPool;
+    [SerializeField] private DayNightCycle dayNightCycle;
+    [SerializeField] private EnemyPool enemyPool;
 
     void Start()
     {
         if (dayNightCycle != null)
-        {
             maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
-        }
     }
 
     void Update()
@@ -33,9 +30,7 @@ public class EnemySpawner : MonoBehaviour
             return;
 
         if (dayNightCycle != null)
-        {
             maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
-        }
 
         timer += Time.deltaTime;
 
@@ -57,7 +52,7 @@ public class EnemySpawner : MonoBehaviour
             Vector3 spawnPos = enemyHit.point;
 
             Vector3Int spawnPosInt = Vector3Int.RoundToInt(spawnPos);
-            if (voxelGrid.IsOccupied(spawnPosInt)) return;
+            if (VoxelGrid.Instance.IsOccupied(spawnPosInt)) return;
 
             int day = dayNightCycle.GetCurrentDay();
             List<EnemyTier> availableTiers = enemyPool.GetAvailableTiers(day);
@@ -66,7 +61,7 @@ public class EnemySpawner : MonoBehaviour
 
             GameObject selectedPrefab = availableTiers[Random.Range(0, availableTiers.Count)].prefab;
 
-            GameObject enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
+            Enemy enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
 
             if (enemy != null)
             {
@@ -84,13 +79,9 @@ public class EnemySpawner : MonoBehaviour
     public void SetPlayer(GameObject player)
     {
         if (player != null)
-        {
             this.player = player;
-        }
         else
-        {
             Debug.LogWarning("Player is null!");
-        }
     }
 
     private int CalculateMaxEnemies(int currentDay)
@@ -105,11 +96,11 @@ public class EnemySpawner : MonoBehaviour
         {
             if (enemy == null) continue;
 
-            if (enemy.TryGetComponent(out BreakableObject breakable))
+            if (enemy.TryGetComponent(out BreakableObject breakable) && enemy.TryGetComponent(out PrefabID id))
             {
                 dataList.Add(new EnemySaveData
                 {
-                    prefabName = enemy.name.Replace("(Clone)", ""),
+                    prefabName = id.prefabKey,
                     position = enemy.transform.position,
                     currentHealth = breakable.GetHealth()
                 });
@@ -132,7 +123,7 @@ public class EnemySpawner : MonoBehaviour
         {
             foreach (EnemySaveData data in savedEnemies)
             {
-                GameObject prefab = enemyPool.GetPrefabByName(data.prefabName);
+                GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabName);
                 if (prefab == null) continue;
 
                 Enemy enemy = enemyPool.GetEnemy(prefab, data.position).GetComponent<Enemy>();

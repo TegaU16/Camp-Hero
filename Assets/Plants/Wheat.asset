@@ -15,4 +15,9 @@ MonoBehaviour:
   plant: {fileID: 11400000, guid: 673ea92b4941aad4d9b1b6df762082de, type: 2}
   harvestAmount: 10
   totalGrowthTime: 300
-  growthStages: []
+  growthStages:
+  - {fileID: 5284645084058873925, guid: 783f53e10433f244eae036d78a8d1649, type: 3}
+  - {fileID: 8887055900009601500, guid: 08c2a97f7bf7b424a96091efe69624f0, type: 3}
+  - {fileID: 2951787496531803564, guid: 4efb99af5b4df424183718d134638ca3, type: 3}
+  - {fileID: 5029973428129288183, guid: 27f2e3c1f2154224d9a721130dc30bc3, type: 3}
+  - {fileID: 5423996704719990151, guid: e2c489ecd644e9a4db3aa04b5c8c3c23, type: 3}

@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Wooden Crate
   m_EditorClassIdentifier: 
-  itemType: 3
-  actionType: 5
-  stackable: 1
-  maxStack: 10
+  itemTypes: 10
+  actionType: 1
+  maxStack: 5
   icon: {fileID: 21300000, guid: e432df3956a9d234e822bfac4a7d4808, type: 3}
   itemName: Wooden Crate
-  equippedPrefab: {fileID: 1258222546633234032, guid: 173fc638c1d74354c9e5c6dad1b88975, type: 3}
-  itemDrop: {fileID: 3568643769161297899, guid: aa3a799404fd97f44a998ca9862e58eb, type: 3}
-  animatorController: {fileID: 0}
+  equippedPrefab: {fileID: 3494299805136151111, guid: 173fc638c1d74354c9e5c6dad1b88975, type: 3}
+  itemDrop: {fileID: 6645998381682210763, guid: aa3a799404fd97f44a998ca9862e58eb, type: 3}
   buildingGhost: {fileID: 7423042443656293166, guid: 008134843eb16e84092c752de9e3acaa, type: 3}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
   toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 10
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

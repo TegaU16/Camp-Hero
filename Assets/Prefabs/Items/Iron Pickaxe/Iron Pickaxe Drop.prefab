@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &6978496104417196840
+--- !u!1001 &6201022443579194210
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,108 +8,106 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
-      propertyPath: m_Name
-      value: Iron Pickaxe Drop
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
-      propertyPath: m_Layer
-      value: 6
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalRotation.y
       value: -0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303382859775989200, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_Name
+      value: Iron Pickaxe Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6420509162352421165}
-    - targetCorrespondingSourceObject: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+      addedObject: {fileID: 8509166938146163703}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6323446894084683521}
-    - targetCorrespondingSourceObject: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+      addedObject: {fileID: -3866440556828782596}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 9060257375483051983}
-    - targetCorrespondingSourceObject: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
+      addedObject: {fileID: -7208583916094363655}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4319423325005486624}
-  m_SourcePrefab: {fileID: 100100000, guid: 925469f746502314dacd205ac1facbf7, type: 3}
---- !u!1 &5776964375906120770 stripped
+      addedObject: {fileID: 3120167489744256846}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5209475024947673823}
+  m_SourcePrefab: {fileID: 100100000, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+--- !u!1 &6543480528732816947 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 3527302870640856938, guid: 925469f746502314dacd205ac1facbf7, type: 3}
-  m_PrefabInstance: {fileID: 6978496104417196840}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5b72775760d0aa546a3e898aacfa6139, type: 3}
+  m_PrefabInstance: {fileID: 6201022443579194210}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &6420509162352421165
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5776964375906120770}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.16032809, y: 0.96196866, z: 0.96196854}
-  m_Center: {x: 0.00000006705522, y: 0.5010253, z: 0}
---- !u!54 &6323446894084683521
+--- !u!54 &8509166938146163703
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5776964375906120770}
+  m_GameObject: {fileID: 6543480528732816947}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -130,39 +128,72 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &9060257375483051983
+--- !u!65 &-3866440556828782596
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6543480528732816947}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16032809, y: 0.96196866, z: 0.96196854}
+  m_Center: {x: 0.00000006705522, y: 0.5010253, z: 0}
+--- !u!114 &-7208583916094363655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5776964375906120770}
+  m_GameObject: {fileID: 6543480528732816947}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 54660bbb6fa3ce54ebd5e4e88b17b093, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!114 &4319423325005486624
+  savedObjectIndex: 0
+--- !u!114 &3120167489744256846
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5776964375906120770}
+  m_GameObject: {fileID: 6543480528732816947}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &-5209475024947673823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6543480528732816947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: pickaxe_iron_drop

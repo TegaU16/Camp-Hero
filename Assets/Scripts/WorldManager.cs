@@ -118,7 +118,7 @@ public class WorldManager : MonoBehaviour
             worldName.GetComponent<TextMeshProUGUI>().text = metadata.worldName;
 
             Transform lastPlayed = buttonObj.transform.Find("Last Played Text");
-            lastPlayed.GetComponent<TextMeshProUGUI>().text = $"Last Played: {metadata.lastPlayedDate}";
+            lastPlayed.GetComponent<TextMeshProUGUI>().text = metadata.lastPlayedDate;
 
             buttonObj.GetComponent<Button>().onClick.AddListener(() =>
             {

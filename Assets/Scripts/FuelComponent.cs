@@ -1,5 +1,3 @@
-using UnityEngine;
-
 [System.Serializable]
 public class FuelComponent
 {
@@ -7,11 +5,14 @@ public class FuelComponent
     public float currentFuel = 0f;
     public float fuelUseRate = 1.0f;
 
-    public void AddFuel(Item item, int count = 1)
+    public void AddFuel(Item item)
     {
-        if (item == null || item.fuelValue <= 0 || count <= 0) return;
+        if (item == null || item.fuelValue <= 0)
+        {
+            return;
+        }
 
-        currentFuel += item.fuelValue * count;
+        currentFuel += item.fuelValue;
         if (currentFuel > maxFuel)
             currentFuel = maxFuel;
     }
@@ -25,6 +26,7 @@ public class FuelComponent
 
     public float GetFuelRatio()
     {
-        return currentFuel / maxFuel;
+        float ratio = currentFuel / maxFuel;
+        return ratio;
     }
 }

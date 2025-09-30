@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Wood
   m_EditorClassIdentifier: 
-  itemType: 7
-  actionType: 6
-  stackable: 1
+  itemTypes: 8
+  actionType: 0
   maxStack: 20
   icon: {fileID: 21300000, guid: 24d9df8111cf7b34383e462fe4a1d750, type: 3}
   itemName: Wood
-  equippedPrefab: {fileID: 4896905793200760084, guid: 6d3ab85934e116a4abb69f10e10f8a3e, type: 3}
+  equippedPrefab: {fileID: 569438102506341038, guid: 6d3ab85934e116a4abb69f10e10f8a3e, type: 3}
   itemDrop: {fileID: 1300611963905405125, guid: f79f665cc05bf4642a2e279c720fdd0f, type: 3}
-  animatorController: {fileID: 0}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
-  toolType: 0
+  toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 5
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

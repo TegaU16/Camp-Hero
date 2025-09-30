@@ -7,7 +7,6 @@ public class KeyStructureSpawner : MonoBehaviour
 {
     public static KeyStructureSpawner Instance;
 
-    public VoxelGrid voxelGrid;
     public GameObject[] trialStructurePrefabs;
 
     private readonly List<Vector3> keyStructurePositions = new();
@@ -23,8 +22,8 @@ public class KeyStructureSpawner : MonoBehaviour
     {
         HashSet<Vector2Int> usedChunks = new();
 
-        float chunkSize = voxelGrid.chunkSize * voxelGrid.voxelSize;
-        int gridSize = voxelGrid.gridSize;
+        float chunkSize = VoxelGrid.Instance.chunkSize * VoxelGrid.Instance.voxelSize;
+        int gridSize = VoxelGrid.Instance.gridSize;
 
         float minDistanceFromCenter = worldSize * 0.2f;
         float maxDistanceFromCenter = worldSize * 0.45f;
@@ -39,7 +38,7 @@ public class KeyStructureSpawner : MonoBehaviour
             for (int attempt = 0; attempt < maxAttempts && !placed; attempt++)
             {
                 // Create a deterministic RNG for this prefab+attempt
-                int hashSeed = voxelGrid.seed ^ trialStructurePrefab.name.GetHashCode() ^ attempt;
+                int hashSeed = VoxelGrid.Instance.seed ^ trialStructurePrefab.name.GetHashCode() ^ attempt;
                 System.Random rng = new(hashSeed);
 
                 int x = rng.Next(0, gridSize);
@@ -69,7 +68,7 @@ public class KeyStructureSpawner : MonoBehaviour
                 keyStructurePositions.Add(groundPos);
 
                 GameObject placedStructure = Instantiate(trialStructurePrefab, groundPos, Quaternion.identity);
-                voxelGrid.MarkAreaOccupied(placedStructure, true, true);
+                VoxelGrid.Instance.MarkAreaOccupied(placedStructure, true, true);
 
                 TrialAltar trialAltar = placedStructure.GetComponentInChildren<TrialAltar>();
                 if (trialAltar != null)
@@ -80,26 +79,20 @@ public class KeyStructureSpawner : MonoBehaviour
 
                 KeyStructureCenter centerMarker = placedStructure.GetComponentInChildren<KeyStructureCenter>(true);
                 if (centerMarker != null)
-                    voxelGrid.MarkAreaOccupied(centerMarker.gameObject, true, false);
+                    VoxelGrid.Instance.MarkAreaOccupied(centerMarker.gameObject, true, false);
 
-                if (voxelGrid.chunkMap.TryGetValue(chunkCoord, out VoxelChunk chunk))
-                {
-                    placedStructure.transform.parent = chunk.chunkObject.transform;
-                    Vector3 spawnPos = placedStructure.transform.position;
-                    chunk.objects.Add(placedStructure);
-                    chunk.savedObjectPositions.Add(spawnPos);
+                VoxelChunk chunk = VoxelGrid.Instance.chunkMap[chunkCoord];
 
-                    TrialAltarSaveData trialAltarData = new();
-                    if (placedStructure.TryGetComponent(out TrialAltar altar))
-                    {
-                        trialAltarData.currentWave = altar.currentWave;
-                        trialAltarData.trialCompleted = altar.trialCompleted;
-                        trialAltarData.keyAvailable = altar.keyAvailable;
-                    }
+                placedStructure.transform.parent = chunk.chunkObject.transform;
+                Vector3 spawnPos = placedStructure.transform.position;
+                chunk.objects.Add(placedStructure);
 
-                    chunk.savedObjects.Add(new SpawnedObjectData(spawnPos, trialStructurePrefab, trialAltarSaveData: trialAltarData));
-                    chunk.hasKeyStructure = true;
-                }
+                SpawnedObjectData data = new(spawnPos, placedStructure, trialStructurePrefab);
+
+                chunk.savedObjects.Add(data);
+                chunk.savedObjectPositions.Add(spawnPos);
+                
+                chunk.hasKeyStructure = true;
 
                 placed = true;
             }

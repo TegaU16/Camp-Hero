@@ -14,7 +14,7 @@ public class FoodManager : MonoBehaviour
             if (InventoryManager.Instance.IsExtensionOpen()) return;
 
             Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
-            if (selectedItem == null || selectedItem.itemType != ItemType.Food) return;
+            if (selectedItem == null || (selectedItem.itemTypes & ItemType.Food) == 0) return;
 
             Eat(selectedItem);
         }

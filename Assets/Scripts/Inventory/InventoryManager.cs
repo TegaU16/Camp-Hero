@@ -14,19 +14,15 @@ public class InventoryManager : MonoBehaviour
     
     public List<Item> discoveredItems = new();
 
-    private int numGold = 100;
     public const int numHotbarSlots = 7;
 
     public InventoryUIHandler inventoryUIHandler;
 
-    private GameObject variableExtension;
     public List<GameObject> inventoryExtensions;
     public GameObject deleteSlot;
 
     public GameObject inventoryItemPrefab;
-    public GameObject playerObject;
-
-    public Player player;
+    private GameObject playerObject;
 
     public PickupNotification pickupNotification;
 
@@ -44,10 +40,12 @@ public class InventoryManager : MonoBehaviour
 
     [Header("Keys")]
     public KeyCode inventoryToggleKey = KeyCode.Tab;
-    public KeyCode interactionKey = KeyCode.E;
     public KeyCode itemDropKey = KeyCode.Q;
     public KeyCode itemStackDropKey = KeyCode.LeftControl;
     public KeyCode exitExtensionKey = KeyCode.Escape;
+
+    [HideInInspector] public StorageUnit activeChest;
+    [HideInInspector] public FurnaceUnit activeFurnace;
 
     public bool JustClosedExtension { get; set; }
     public int LastRemainingCount { get; private set; }
@@ -61,15 +59,11 @@ public class InventoryManager : MonoBehaviour
     private void Start()
     {
         foreach (Item item in startItems)
-        {
             AddItem(item);
-        }
 
         ChangeSelectedSlot(0);
-        player = playerObject.GetComponentInChildren<Player>();
 
         itemEquip.EquipItem(GetSelectedItem(false));
-        inventoryExtensions.Add(variableExtension);
     }
 
     // Update is called once per frame
@@ -79,7 +73,6 @@ public class InventoryManager : MonoBehaviour
 
         HandleSlotSelection();
         HandleInventoryToggle();
-        HandleInteraction();
         HandleItemDropping();
         HandleExtensionExit();
     }
@@ -145,14 +138,11 @@ public class InventoryManager : MonoBehaviour
     public void EquipSelectedItem()
     {
         Item selectedItem = GetSelectedItem(false);
+
         if (selectedItem != null && selectedItem.equippedPrefab != null)
-        {
             itemEquip.EquipItem(selectedItem);
-        }
         else
-        {
             itemEquip.EquipItem(null);
-        }
     }
 
     public void UseSelectedItem()
@@ -166,14 +156,11 @@ public class InventoryManager : MonoBehaviour
 
                 // Check if the item count is zero after using it
                 InventoryItem itemInSlot = inventoryUIHandler.inventorySlots[selectedSlot].GetComponentInChildren<InventoryItem>();
+
                 if (itemInSlot == null || itemInSlot.count <= 0)
-                {
                     itemEquip.EquipItem(null);  // Unequip the item if it's no longer in the inventory
-                }
                 else if (selectedItem.equippedPrefab != null)
-                {
                     itemEquip.EquipItem(selectedItem);
-                }
             }
         }
         else
@@ -201,7 +188,7 @@ public class InventoryManager : MonoBehaviour
 
             if (itemInSlot != null)
             {
-                if (itemInSlot.item == item && item.stackable)
+                if (itemInSlot.item == item)
                 {
                     int availableSpace = item.maxStack - itemInSlot.count;
                     int itemsToAdd = Mathf.Min(count, availableSpace);
@@ -230,7 +217,7 @@ public class InventoryManager : MonoBehaviour
                 InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                if (itemInSlot != null && itemInSlot.item == item && itemInSlot.count < item.maxStack && item.stackable)
+                if (itemInSlot != null && itemInSlot.item == item && itemInSlot.count < item.maxStack)
                 {
                     int availableSpace = item.maxStack - itemInSlot.count;
                     int itemsToAdd = Mathf.Min(count, availableSpace);
@@ -280,7 +267,6 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-
     public void DropSelectedItem()
     {
         Item selectedItem = GetSelectedItem(true);
@@ -312,7 +298,7 @@ public class InventoryManager : MonoBehaviour
 
             if (itemInSlot != null)
             {
-                DropItem(itemInSlot.item, itemInSlot.count);
+                DropItem(itemInSlot.item, itemInSlot.count, scatter: true);
                 itemInSlot.count = 0;
                 Destroy(itemInSlot.gameObject);
             }
@@ -321,20 +307,17 @@ public class InventoryManager : MonoBehaviour
         EquipSelectedItem();
     }
 
-    public void DropItem(Item item, int count)
+    public void DropItem(Item item, int count, bool scatter = false)
     {
-        Vector3 pos = playerObject.transform.position + playerObject.transform.forward * 1f + Vector3.up * 2f;
+        if (item == null || item.itemDrop == null) return;
 
-        if (item != null && item.itemDrop != null)
-        {
-            GameObject instance = Instantiate(item.itemDrop, pos, item.itemDrop.transform.rotation);
-            
-            if (instance.TryGetComponent(out InteractableItem interactable))
-            {
-                interactable.itemCount = count;
-                interactable.EnablePickupAfterDelay(0.25f);
-            }
-        }
+        Vector3 pos = playerObject.transform.position
+                      + Vector3.up * 1.5f;
+
+        float scatterDistance = 0.5f;
+        float scatterForce = 2f;
+
+        ItemSpawner.Spawn(item, pos, count, torsoBone: null, scatter, scatterDistance, scatterForce);
 
         EquipSelectedItem();
     }
@@ -378,17 +361,14 @@ public class InventoryManager : MonoBehaviour
 
             Item item = itemInSlot.item;
 
-            if (delete == true && itemInSlot.item.stackable == true)
+            if (delete == true)
             {
                 itemInSlot.count--;
+
                 if (itemInSlot.count <= 0)
-                {
                     Destroy(itemInSlot.gameObject);
-                }
                 else
-                {
                     itemInSlot.RefreshCount();
-                }
             }
 
             return item;
@@ -410,10 +390,9 @@ public class InventoryManager : MonoBehaviour
         foreach (InventorySlot slot in inventoryUIHandler.inventorySlots)
         {
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+
             if (itemInSlot != null && itemInSlot.item == item)
-            {
                 return true;
-            }
         }
 
         return false;
@@ -490,14 +469,6 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    void HandleInteraction()
-    {
-        if (Input.GetKeyDown(interactionKey) && !IsExtensionOpen())
-        {
-            TryInteractWithObject();
-        }
-    }
-
     void HandleItemDropping()
     {
         if (!Input.GetKeyDown(itemDropKey) || IsExtensionOpen()) return;
@@ -511,9 +482,7 @@ public class InventoryManager : MonoBehaviour
     void HandleExtensionExit()
     {
         if (IsExtensionOpen() && Input.GetKeyDown(exitExtensionKey))
-        {
             ResetExtensions();
-        }
     }
 
     public bool IsExtensionOpen()
@@ -523,9 +492,7 @@ public class InventoryManager : MonoBehaviour
             if (inventoryExtensions[i] != null)
             {
                 if (inventoryExtensions[i].activeSelf)
-                {
                     return true;
-                }
             }
         }
 
@@ -539,28 +506,22 @@ public class InventoryManager : MonoBehaviour
         GameManager.Instance.ToggleCameraFollow(false);
     }
 
-    void ResetExtensions()
+    public void ResetExtensions()
     {
         if (darkBackground != null) darkBackground.SetActive(false);
 
         StorageUI storageUI = storageMenuUI.GetComponent<StorageUI>();
         if (storageUI != null && storageUI.gameObject.activeSelf)
-        {
             storageUI.Close();
-        }
 
         FurnaceUI furnaceUI = furnaceMenuUI.GetComponent<FurnaceUI>();
         if (furnaceUI != null && furnaceUI.gameObject.activeSelf)
-        {
             furnaceUI.Close();
-        }
 
         for (int i = 0; i < inventoryExtensions.Count; i++)
         {
             if (inventoryExtensions[i] != null)
-            {
                 inventoryExtensions[i].SetActive(false);
-            }
         }
 
         deleteSlot.SetActive(false);
@@ -568,21 +529,6 @@ public class InventoryManager : MonoBehaviour
         GameManager.Instance.ToggleCameraFollow(true);
 
         ItemTooltipUI.Instance.HideTooltip();
-    }
-
-    void TryInteractWithObject()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        LayerMask layerOne = LayerMask.GetMask("Item");
-        LayerMask layerTwo = LayerMask.GetMask("Pickable");
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 5f, layerOne) || Physics.Raycast(ray, out hit, 5f, layerTwo))  // 5f is the interaction distance
-        {
-            if (hit.collider.TryGetComponent(out InteractableItem interactable))
-            {
-                interactable.Interact();
-            }
-        }
     }
 
     public bool IsInventoryFullForItem(Item item, int count = 1)
@@ -597,8 +543,7 @@ public class InventoryManager : MonoBehaviour
 
             if (itemInSlot != null &&
                 itemInSlot.item == item &&
-                itemInSlot.count < item.maxStack &&
-                item.stackable)
+                itemInSlot.count < item.maxStack)
             {
                 int space = item.maxStack - itemInSlot.count;
                 remaining -= Mathf.Min(remaining, space);
@@ -613,7 +558,7 @@ public class InventoryManager : MonoBehaviour
 
             if (itemInSlot == null)
             {
-                int space = item.stackable ? item.maxStack : 1;
+                int space = item.maxStack;
                 remaining -= Mathf.Min(remaining, space);
             }
         }
@@ -621,38 +566,11 @@ public class InventoryManager : MonoBehaviour
         return remaining > 0; // If there's still remaining, inventory is full
     }
 
-    public bool AddGold(int count)
-    {
-        numGold += count;
-        return true;
-    }
-
-    public bool RemoveGold(int count)
-    {
-        if (numGold < count)
-        {
-            return false;
-        }
-
-        numGold -= count;
-        return true;
-    }
-
-    public void SetVariableExtension(GameObject extension)
-    {
-        variableExtension = extension;
-    }
-
     public void SetPlayer(GameObject playerObject)
     {
         if (playerObject != null)
-        {
             this.playerObject = playerObject;
-            player = playerObject.GetComponent<Player>();
-        }
         else
-        {
             Debug.LogWarning("Player is null!");
-        }
     }
 }

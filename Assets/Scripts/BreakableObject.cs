@@ -1,12 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
-public class BreakableObject : MonoBehaviour
+public class BreakableObject : MonoBehaviour, ISaveableObject
 {
     [System.Serializable]
     public struct Drop
     {
-        public ItemDrop drop;
+        public Item drop;
         public int minValue;
         public int maxValue;
         [Range(0f, 1f)] public float dropChance;
@@ -31,6 +31,10 @@ public class BreakableObject : MonoBehaviour
     public int objectLevel;
 
     private bool isDestroyed = false;
+
+    public bool PlacedByPlayer { get; set; }
+
+    public bool DestroyedByEnemy { get; set; }
 
     [HideInInspector] public VoxelChunk owningChunk;
     [HideInInspector] public int savedObjectIndex = -1;
@@ -63,7 +67,7 @@ public class BreakableObject : MonoBehaviour
         health = reset ? maxHealth : (int)(maxHealth * healthPercent);
     }
 
-    public void TakeDamage(int damage, bool crit, Vector3 hitPoint, Vector3 hitNormal)
+    public void TakeDamage(int damage, bool crit, Vector3 hitPoint, Vector3 hitNormal, bool fromEnemy = false)
     {
         if (isDestroyed) return;
 
@@ -86,6 +90,7 @@ public class BreakableObject : MonoBehaviour
                 return;
             }
 
+            DestroyedByEnemy = fromEnemy;
             DestroyObject();
         }
         else
@@ -123,32 +128,89 @@ public class BreakableObject : MonoBehaviour
         if (isDestroyed) return;
         isDestroyed = true;
 
-        foreach (Drop itemDrop in drops)
+        if (!DestroyedByEnemy)
         {
-            if (Random.value <= itemDrop.dropChance)
+            foreach (Drop itemDrop in drops)
             {
-                Vector3 pos = gameObject.transform.position + new Vector3(0f, 2f, 0f);
-                int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
+                if (Random.value <= itemDrop.dropChance)
+                {
+                    int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
+                    dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
 
-                dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
+                    SpawnDrop(itemDrop.drop, dropAmount, transform.position, torsoBone, scatter: false);
+                }
+            }
 
-                itemDrop.drop.SpawnObject(pos, dropAmount, torsoBone);
+            LevelManager.Instance.AddExp(expDropped);
+        }
+
+        // Drop items in furnace slots
+        if (TryGetComponent(out FurnaceUnit furnaceUnit))
+        {
+            foreach (FurnaceSlot slot in furnaceUnit.furnaceSlots)
+            {
+                slot.SyncNameFromItem();
+                if (!string.IsNullOrEmpty(slot.itemName))
+                {
+                    SpawnDrop(
+                        ItemRegistry.GetItemByName(slot.itemName),
+                        slot.count,
+                        transform.position
+                    );
+                }
             }
         }
 
-        LevelManager.Instance.AddExp(expDropped);
-        
+        // Drop items in chest slots
+        if (TryGetComponent(out StorageUnit storageUnit))
+        {
+            foreach (StoredItem storedItem in storageUnit.items)
+            {
+                storedItem.SyncNameFromItem();
+                if (!string.IsNullOrEmpty(storedItem.itemName))
+                {
+                    SpawnDrop(
+                        ItemRegistry.GetItemByName(storedItem.itemName),
+                        storedItem.count,
+                        transform.position
+                    );
+                }
+            }
+        }
+
+        if (TryGetComponent(out WallSegment wall))
+        {
+            BuildingManager buildingManager = FindAnyObjectByType<BuildingManager>();
+            if (buildingManager != null)
+            {
+                Vector3 wallPos = wall.transform.position;
+                Vector3Int wallPosInt = buildingManager.WorldToGrid(wallPos);
+                buildingManager.DestroyWall(wallPosInt);
+            }
+        }
+
         if (entityType == EntityType.Static)
         {
             if (owningChunk != null && savedObjectIndex >= 0 && savedObjectIndex < owningChunk.savedObjects.Count)
             {
-                owningChunk.savedObjects.RemoveAt(savedObjectIndex);
+                VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, savedObjectIndex);
                 owningChunk.isDirty = true;
             }
 
-            GameManager.Instance.voxelGrid.MarkAreaOccupied(gameObject, false);
+            VoxelGrid.Instance.MarkAreaOccupied(gameObject, false);
             Destroy(gameObject);
         }
+    }
+
+    private void SpawnDrop(Item drop, int amount, Vector3 origin, Transform bone = null, bool scatter = true)
+    {
+        if (drop == null || amount <= 0) return;
+
+        Vector3 pos = origin + Vector3.up * 1.5f;
+        float scatterDistance = 0.5f;
+        float scatterForce = 1.5f;
+      
+        ItemSpawner.Spawn(drop, pos, amount, bone, scatter, scatterDistance, scatterForce);
     }
 
     IEnumerator BounceObject(Transform objTransform)
@@ -188,4 +250,23 @@ public class BreakableObject : MonoBehaviour
     public int GetHealth() => health;
 
     public void SetHealth(int currentHealth) => health = currentHealth;
+
+    public string SaveState()
+    {
+        BreakableObjectData data = new()
+        {
+            currentHealth = health
+        };
+
+        return JsonUtility.ToJson(data);
+    }
+
+    public void LoadState(string json)
+    {
+        BreakableObjectData data = JsonUtility.FromJson<BreakableObjectData>(json);
+        if (data != null)
+        {
+            health = data.currentHealth;
+        }
+    }
 }

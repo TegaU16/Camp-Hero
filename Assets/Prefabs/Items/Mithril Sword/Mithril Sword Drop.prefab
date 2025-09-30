@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5096226864092177559
+--- !u!1001 &8745448472107326673
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,87 +8,90 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
-      propertyPath: m_Name
-      value: Mithril Sword Drop
-      objectReference: {fileID: 0}
-    - target: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
-      propertyPath: m_Layer
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
-      objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: -0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -90
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6841486992446588716, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - target: {fileID: -8679921383154817045, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+      propertyPath: m_Name
+      value: Mithril Sword Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 836728112542328717}
-    - targetCorrespondingSourceObject: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+      addedObject: {fileID: -5482152169749751396}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3684613596815892792}
-    - targetCorrespondingSourceObject: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+      addedObject: {fileID: -2038143551864083082}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3640429707247921429}
-    - targetCorrespondingSourceObject: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
+      addedObject: {fileID: -4969497438115076841}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5353842004261966463}
-  m_SourcePrefab: {fileID: 100100000, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
---- !u!1 &1370052873551362305 stripped
+      addedObject: {fileID: 4661699773996137320}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5893342130878795014}
+  m_SourcePrefab: {fileID: 100100000, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+--- !u!1 &8475628114037023104 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
-  m_PrefabInstance: {fileID: 5096226864092177559}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b13e5a21cacc13547828fae30391cec4, type: 3}
+  m_PrefabInstance: {fileID: 8745448472107326673}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &836728112542328717
+--- !u!54 &-5482152169749751396
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1370052873551362305}
+  m_GameObject: {fileID: 8475628114037023104}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -109,13 +112,13 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &3684613596815892792
+--- !u!65 &-2038143551864083082
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1370052873551362305}
+  m_GameObject: {fileID: 8475628114037023104}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -128,41 +131,53 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.00060000014, y: 0.0050999997, z: 0.0016000004}
-  m_Center: {x: 1.1641535e-10, y: 0.0025499999, z: 0}
---- !u!114 &3640429707247921429
+  m_Size: {x: 0.059999995, y: 0.51, z: 0.16}
+  m_Center: {x: 0.000000012107192, y: 0.255, z: 0}
+--- !u!114 &-4969497438115076841
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1370052873551362305}
+  m_GameObject: {fileID: 8475628114037023104}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!114 &5353842004261966463
+  savedObjectIndex: 0
+--- !u!114 &4661699773996137320
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1370052873551362305}
+  m_GameObject: {fileID: 8475628114037023104}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
   outlineMode: 0
   outlineColor: {r: 0, g: 0.57156754, b: 1, a: 1}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &5893342130878795014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8475628114037023104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: sword_mithril_drop

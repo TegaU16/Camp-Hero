@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Farm Plot
   m_EditorClassIdentifier: 
-  itemType: 3
-  actionType: 5
-  stackable: 1
+  itemTypes: 2
+  actionType: 1
   maxStack: 5
   icon: {fileID: 21300000, guid: c78fd87f3d2615a4e82a040a13341f13, type: 3}
   itemName: Farm Plot
   equippedPrefab: {fileID: 2354023674030380701, guid: 240d18b74d1f2ee4a946a8c02811e28d, type: 3}
-  itemDrop: {fileID: 9147574728846580954, guid: c4fbf380fe6c5eb42a30fcf1003ebb28, type: 3}
-  animatorController: {fileID: 0}
-  buildingGhost: {fileID: 3146475566173688005, guid: 32ada1d989e6a92428a5909e04f86a93, type: 3}
-  height: 0
+  itemDrop: {fileID: 4930816415636188809, guid: c4fbf380fe6c5eb42a30fcf1003ebb28, type: 3}
+  buildingGhost: {fileID: 8660114640829910520, guid: 32ada1d989e6a92428a5909e04f86a93, type: 3}
   buildingSize: {x: 1, y: 1}
   attackDistance: 3
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
   toolType: 3
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

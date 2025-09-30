@@ -12,32 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Iron Axe
   m_EditorClassIdentifier: 
-  itemType: 2
-  actionType: 3
-  stackable: 1
+  itemTypes: 1
+  actionType: 0
   maxStack: 1
   icon: {fileID: 21300000, guid: faf3c3c8cc94b144ab183c06dc17cdfc, type: 3}
   itemName: Iron Axe
   equippedPrefab: {fileID: 8142341619756156903, guid: 948de5810501e2942998b8be966b7ff2, type: 3}
-  itemDrop: {fileID: 7384958991215756822, guid: 10251b8a21f05544d985b38051886b31, type: 3}
-  animatorController: {fileID: 0}
+  itemDrop: {fileID: 8706993344553825615, guid: 10251b8a21f05544d985b38051886b31, type: 3}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1.8
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 20
   - 30
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 2
   toolType: 0
   foodValue: 0
@@ -46,5 +35,3 @@ MonoBehaviour:
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

@@ -13,9 +13,6 @@ public class Animal : MonoBehaviour, ISimulatable
     public VoxelAgent agent;
     private CharacterController characterController;
 
-    [Header("Voxel Settings")]
-    private VoxelGrid voxelGrid;
-
     [Header("Wander Settings")]
     public float wanderRadius = 10f;
     public float waitTimeMin = 2f;
@@ -120,25 +117,7 @@ public class Animal : MonoBehaviour, ISimulatable
 
     public void Init(Vector3 spawnPosition)
     {
-        if (voxelGrid == null)
-        {
-            voxelGrid = FindFirstObjectByType<VoxelGrid>();
-
-            if (voxelGrid == null)
-            {
-                Debug.LogError($"[{name}] voxelGrid is STILL NULL after search! Aborting Init.");
-                return; // Abort if still null
-            }
-        }
-
-        if (PathfinderManager.Instance == null)
-        {
-            Debug.LogError("[Animal] PathfinderManager.Instance is null during Init!");
-        }
-
         latestSpawnPos = spawnPosition;
-
-        agent.SetVoxelGrid(voxelGrid); // <-- Now voxelGrid is guaranteed valid
 
         agent.CancelPath();
         agent.Init(spawnPosition);
@@ -183,9 +162,6 @@ public class Animal : MonoBehaviour, ISimulatable
 
     IEnumerator WanderRoutine()
     {
-        if (voxelGrid == null)
-            voxelGrid = FindFirstObjectByType<VoxelGrid>();
-
         yield return new WaitForSeconds(1f);
 
         while (true)
@@ -254,10 +230,10 @@ public class Animal : MonoBehaviour, ISimulatable
 
         Vector3Int target = center + offset;
 
-        target.x = Mathf.Clamp(target.x, 0, voxelGrid.gridSize * voxelGrid.chunkSize - 1);
-        target.z = Mathf.Clamp(target.z, 0, voxelGrid.gridSize * voxelGrid.chunkSize - 1);
+        target.x = Mathf.Clamp(target.x, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
+        target.z = Mathf.Clamp(target.z, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
 
-        float height = voxelGrid.GetHeightAt(target.x, target.z);
+        float height = VoxelGrid.Instance.GetHeightAt(target.x, target.z);
         target.y = Mathf.RoundToInt(height);
 
         return target;

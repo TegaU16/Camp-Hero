@@ -225,6 +225,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12a9e980403883747903e87f0a2c8c12, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7047266678312269534}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12a9e980403883747903e87f0a2c8c12, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1879773668602083914}
     - targetCorrespondingSourceObject: {fileID: -6698288345246850286, guid: 12a9e980403883747903e87f0a2c8c12, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3121284361312886744}
@@ -519,7 +522,7 @@ MonoBehaviour:
   baseHealth: 100
   expDropped: 15
   drops:
-  - drop: {fileID: 11400000, guid: e0889cee30252e846b918fe03d7b06e6, type: 2}
+  - drop: {fileID: 11400000, guid: 9f87f19d5e136e942afac09b787c4f7b, type: 2}
     minValue: 1
     maxValue: 3
     dropChance: 1
@@ -555,8 +558,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 3
-  acceleration: 10
   stoppingDistance: 0.1
   rotationSpeed: 720
   animator: {fileID: 0}
@@ -587,6 +588,19 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.5, z: 0.1}
+--- !u!114 &1879773668602083914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2717055778412663618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: cow
 --- !u!1 &2738811648624477527 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8108813959105189052, guid: 12a9e980403883747903e87f0a2c8c12, type: 3}

@@ -8,10 +8,12 @@ public class TrialEnemyPool : MonoBehaviour
     public GameObject[] trialEnemyPrefabs;
     public int poolSizePerType = 10;
 
-    private readonly Dictionary<GameObject, List<GameObject>> pools = new();
+    private readonly Dictionary<GameObject, Queue<TrialEnemyMarker>> pools = new();
     private readonly Dictionary<GameObject, GameObject> enemyToPrefab = new();
 
     [HideInInspector] public HashSet<GameObject> activeEnemies = new();
+
+    public Vector3 poolGraveyardPosition = new(0, -1000, 0);
 
     private void Awake()
     {
@@ -22,76 +24,61 @@ public class TrialEnemyPool : MonoBehaviour
     {
         foreach (GameObject prefab in trialEnemyPrefabs)
         {
-            List<GameObject> pool = new();
+            Queue<TrialEnemyMarker> pool = new();
             for (int i = 0; i < poolSizePerType; i++)
             {
-                GameObject enemy = Instantiate(prefab);
-                enemy.SetActive(false);
-                pool.Add(enemy);
-                enemyToPrefab[enemy] = prefab;
+                GameObject enemyPrefab = Instantiate(prefab);
+                TrialEnemyMarker enemy = enemyPrefab.GetComponent<TrialEnemyMarker>();
+                enemyPrefab.SetActive(false);
+                pool.Enqueue(enemy);
             }
             pools[prefab] = pool;
         }
     }
 
-    public GameObject GetEnemy(GameObject prefab, Vector3 position)
+    public void GetEnemy(GameObject prefab, Vector3 position)
     {
-        if (!pools.ContainsKey(prefab))
-        {
-            Debug.LogWarning($"No trial pool found for: {prefab.name}");
-            return null;
-        }
+        if (!pools.ContainsKey(prefab)) return;
+        
+        Queue<TrialEnemyMarker> currentEnemyPool = pools[prefab];
+        TrialEnemyMarker trialEnemy = currentEnemyPool.Dequeue();
+        Enemy enemy = trialEnemy.GetComponent<Enemy>();
 
-        foreach (GameObject enemy in pools[prefab])
-        {
-            if (enemy.GetComponent<TrialEnemyMarker>() == null)
-                enemy.AddComponent<TrialEnemyMarker>();
-
-            if (!enemy.activeInHierarchy)
-            {
-                enemy.transform.position = position;
-                enemy.SetActive(true);
-                if (enemy.TryGetComponent(out TrialEnemyMarker marker))
-                {
-                    marker.OnTrialSpawn();
-                }
-
-                activeEnemies.Add(enemy);
-                return enemy;
-            }
-        }
-
-        // Expand pool if needed
-        GameObject newEnemy = Instantiate(prefab, position, Quaternion.identity);
-        newEnemy.SetActive(false);
-        pools[prefab].Add(newEnemy);
-
-        if (newEnemy.GetComponent<TrialEnemyMarker>() == null)
-            newEnemy.AddComponent<TrialEnemyMarker>();
-
-        newEnemy.SetActive(true);
-
-        if (newEnemy.TryGetComponent(out TrialEnemyMarker newMarker))
-            newMarker.OnTrialSpawn();
-
-        return newEnemy;
+        trialEnemy.gameObject.SetActive(true);
+        enemy.animator.enabled = false;
+        trialEnemy.transform.SetPositionAndRotation(position, Quaternion.identity);
+        enemy.Init(position);
+        enemy.animator.enabled = true;
     }
 
-    public void ReturnEnemyToPool(GameObject enemy)
+    public void ReturnTrialEnemy(GameObject enemyObj)
     {
-        if (enemy == null) return;
+        if (!enemyObj.TryGetComponent(out Enemy enemy)) return;
 
-        if (!enemyToPrefab.ContainsKey(enemy))
+        enemy.CancelInvoke();
+        enemy.StopAllCoroutines();
+
+        if (enemy.TryGetComponent(out Animator animator))
         {
-            Debug.LogWarning($"Enemy {enemy.name} does not belong to any pool.");
-            enemy.SetActive(false);
-            return;
+            animator.enabled = true;
+            animator.SetFloat("Speed", 0f);
         }
 
-        if (enemy.TryGetComponent(out BreakableObject breakable))
-            breakable.ResetObject();
+        if (enemy.TryGetComponent(out SimpleRagdollController ragdollController))
+        {
+            ragdollController.DisableRagdoll();
+        }
 
-        activeEnemies.Remove(enemy);
-        enemy.SetActive(false);
+        enemy.transform.position = poolGraveyardPosition;
+        enemy.gameObject.SetActive(false);
+
+        PrefabID id = enemyObj.GetComponent<PrefabID>();
+        GameObject enemyPrefab = PrefabRegistry.GetPrefabByKey(id.prefabKey);
+
+        Queue<TrialEnemyMarker> pool = pools[enemyPrefab];
+        TrialEnemyMarker trialEnemy = enemyObj.GetComponent<TrialEnemyMarker>();
+        pool.Enqueue(trialEnemy);
+
+        activeEnemies.Remove(trialEnemy.gameObject);
     }
 }

@@ -54,9 +54,7 @@ public class Player : MonoBehaviour
         cam = Camera.main != null ? Camera.main.transform : null;
 
         if (cam == null)
-        {
             Debug.LogError("Main Camera not found! Ensure there is a Camera tagged as 'MainCamera' in the scene.");
-        }
 
         cachedSpeed = speed;
         cachedSprintSpeed = sprintSpeed;
@@ -123,13 +121,9 @@ public class Player : MonoBehaviour
                 buffer = 0f;
             }
             else if (buffer >= bufferCooldown)
-            {
                 staminaBar.IncreaseStamina();
-            }
             else
-            {
                 buffer += Time.fixedDeltaTime;
-            }
 
             animator.SetFloat("Speed", direction.magnitude * moveSpeed);
         }
@@ -198,15 +192,14 @@ public class Player : MonoBehaviour
             controller.enabled = false;
 
         if (ragdollController != null)
-        {
             ragdollController.EnableRagdoll();
-        }
         else
-        {
             Debug.LogWarning("No SimpleRagdollController found!");
-        }
 
+        InventoryManager.Instance.ResetExtensions();
         InventoryManager.Instance.DropAllItems();
+
+        InteractableItemManager.Instance.ForceMergeAll();
 
         foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
         {

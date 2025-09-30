@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5695370255866614846
+--- !u!1001 &3080256680212790412
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,127 +8,106 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3169592655101279424, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2100000, guid: f479e8dedd9212b48853048fc1e3c3ed, type: 2}
-    - target: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-      propertyPath: m_Name
-      value: Iron Ore Drop
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
       objectReference: {fileID: 0}
-    - target: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-      propertyPath: m_Layer
-      value: 6
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
       objectReference: {fileID: 0}
-    - target: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.2
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0.7071067
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4303061242095880111, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_Name
+      value: Iron Ore Drop
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      propertyPath: m_TagString
+      value: Pickable
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8439674977324246766}
-    - targetCorrespondingSourceObject: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+      addedObject: {fileID: -2177827885612339649}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3171506184529647195}
-    - targetCorrespondingSourceObject: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+      addedObject: {fileID: 8732658885735969621}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4841979115970849156}
-    - targetCorrespondingSourceObject: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+      addedObject: {fileID: -116146974849567280}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1610364912590691333}
-  m_SourcePrefab: {fileID: 100100000, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
---- !u!1 &9220661571881093419 stripped
+      addedObject: {fileID: 556140175248840086}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6748348952689616416}
+  m_SourcePrefab: {fileID: 100100000, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+--- !u!1 &2773703832446058973 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 3529797132021144853, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-  m_PrefabInstance: {fileID: 5695370255866614846}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5f9c2e183bde6294b9e9d328a8cc88dc, type: 3}
+  m_PrefabInstance: {fileID: 3080256680212790412}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8439674977324246766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9220661571881093419}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 5
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
---- !u!114 &3171506184529647195
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9220661571881093419}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: f226f58a459e96c4e8e68c4633c1ae94, type: 2}
-  isGold: 0
-  itemCount: 0
-  mergeDistance: 2
-  maxItemCount: 100
-  mergeCheckInterval: 1
---- !u!54 &4841979115970849156
+--- !u!54 &-2177827885612339649
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9220661571881093419}
+  m_GameObject: {fileID: 2773703832446058973}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -149,13 +128,13 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &1610364912590691333
+--- !u!65 &8732658885735969621
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9220661571881093419}
+  m_GameObject: {fileID: 2773703832446058973}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -170,3 +149,51 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.8459999, y: 0.8460001, z: 0.84599984}
   m_Center: {x: -0.000000044703476, y: 0.564, z: 0}
+--- !u!114 &-116146974849567280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2773703832446058973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
+  item: {fileID: 11400000, guid: f226f58a459e96c4e8e68c4633c1ae94, type: 2}
+  itemCount: 0
+  mergeDistance: 2
+  maxItemCount: 100
+  savedObjectIndex: 0
+--- !u!114 &556140175248840086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2773703832446058973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
+  outlineWidth: 5
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &6748348952689616416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2773703832446058973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: ore_iron_drop

@@ -12,38 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Mithril Sword
   m_EditorClassIdentifier: 
-  itemType: 1
-  actionType: 3
-  stackable: 1
+  itemTypes: 1
+  actionType: 0
   maxStack: 1
   icon: {fileID: 21300000, guid: ac1d084d51132dc4aa9e5264ca36a820, type: 3}
   itemName: Mithril Sword
   equippedPrefab: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
-  itemDrop: {fileID: 1370052873551362305, guid: ee2324911d668ce4c9519dc0d77434ef, type: 3}
-  animatorController: {fileID: 0}
+  itemDrop: {fileID: 8475628114037023104, guid: ee2324911d668ce4c9519dc0d77434ef, type: 3}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 1.8
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 40
   - 60
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 3
   toolType: 2
   foodValue: 0
+  plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

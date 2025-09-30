@@ -216,6 +216,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2023774751360520589}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -152799000722691668}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8149135242866884305}
@@ -312,7 +315,7 @@ MonoBehaviour:
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
-  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
+  personality: {fileID: 11400000, guid: 4c8cc3ef1c7dcd64294dc30d887f0700, type: 2}
   agent: {fileID: 412454301896586459}
   animator: {fileID: 5404485727569505106}
   ragdollController: {fileID: 8491393488900717002}
@@ -450,6 +453,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 7233558314745915786, guid: d0667485cef428f42a8ff4a9c83840dc, type: 3}
   projectileSpawnPoint: {fileID: 7802702386979314340}
+--- !u!114 &-152799000722691668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633517326538075026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: kaboomer
 --- !u!4 &2152927287455985960 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 177a267c81cdfcf43a67dca8fd4962e3, type: 3}

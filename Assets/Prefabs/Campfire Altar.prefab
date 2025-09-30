@@ -112,6 +112,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 328f449eff795fb47928cc1a1bbd33b4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4888275488695857962}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 328f449eff795fb47928cc1a1bbd33b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7860533531604974133}
   m_SourcePrefab: {fileID: 100100000, guid: 328f449eff795fb47928cc1a1bbd33b4, type: 3}
 --- !u!1 &2275237391970149600 stripped
 GameObject:
@@ -167,6 +170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 1000
+  healthBar: {fileID: 0}
 --- !u!114 &7595181801036424877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,7 +184,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: {fileID: 852866813266411254}
-  healthBar: {fileID: 0}
   blueGem: {fileID: 4829322627691929550}
   greenGem: {fileID: 9118201622759628550}
   redGem: {fileID: 5224303904984877010}
@@ -198,6 +201,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 0
+--- !u!114 &-7860533531604974133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8230836892471065354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: campfire
 --- !u!1 &9118201622759628550 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -9191007592835606179, guid: 328f449eff795fb47928cc1a1bbd33b4, type: 3}

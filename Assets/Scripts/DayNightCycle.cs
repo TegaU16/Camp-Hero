@@ -3,33 +3,33 @@ using UnityEngine;
 public class DayNightCycle : MonoBehaviour
 {
     [Range(0, 24)]
-    public float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
-    public float dayDurationInSeconds = 120f;
+    [SerializeField] private float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
+    [SerializeField] private float dayDurationInSeconds = 120f;
     private int currentDay = 0;
     private bool hasAdvancedDayToday = false;
 
-    public Light sun;
-    public Light moon;
+    [SerializeField] private Light sun;
+    [SerializeField] private Light moon;
 
-    public Gradient sunColor;
-    public AnimationCurve lightIntensity;
+    [SerializeField] private Gradient sunColor;
+    [SerializeField] private AnimationCurve lightIntensity;
 
-    public Gradient moonColor;
+    [SerializeField] private Gradient moonColor;
 
-    public Gradient skyTint;
-    public AnimationCurve atmosphereThickness;
+    [SerializeField] private Gradient skyTint;
+    [SerializeField] private AnimationCurve atmosphereThickness;
 
     private Material skyboxMaterial;
 
-    public GameObject sunVisual;
-    public float sunDistance = 1000f;
+    [SerializeField] private GameObject sunVisual;
+    [SerializeField] private float sunDistance = 1000f;
 
-    public GameObject moonVisual;
-    public float moonDistance = 1000f;
+    [SerializeField] private GameObject moonVisual;
+    [SerializeField] private float moonDistance = 1000f;
 
     private GameObject player;
 
-    public DayTextUI dayTextUI;
+    [SerializeField] private DayTextUI dayTextUI;
 
     void Start()
     {
@@ -116,22 +116,17 @@ public class DayNightCycle : MonoBehaviour
     public void SetPlayer(GameObject player)
     {
         if (player != null)
-        {
             this.player = player;
-        }
         else
-        {
             Debug.LogWarning("Player is null!");
-        }
     }
 
     public void AdvanceDay()
     {
         currentDay++;
+
         if (dayTextUI != null)
-        {
             dayTextUI.ShowDay(currentDay);
-        }
     }
 
     public int GetCurrentDay()
@@ -146,7 +141,7 @@ public class DayNightCycle : MonoBehaviour
 
     public void SaveDayNight()
     {
-        DayNightSaveData data = new DayNightSaveData
+        DayNightSaveData data = new()
         {
             timeOfDay = this.timeOfDay,
             currentDay = this.currentDay

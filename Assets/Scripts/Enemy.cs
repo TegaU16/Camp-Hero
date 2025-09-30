@@ -77,7 +77,6 @@ public class Enemy : MonoBehaviour
     public Animator animator;
     public SimpleRagdollController ragdollController;
     public CharacterController characterController;
-    private VoxelGrid voxelGrid;
     private Transform myTransform;
 
     private void Awake()
@@ -159,6 +158,7 @@ public class Enemy : MonoBehaviour
     void FixedUpdate()
     {
         if (!isActive || currentState == State.Dead) return;
+        if (!characterController.enabled) return;
 
         agent.UpdateAgent();
 
@@ -331,12 +331,9 @@ public class Enemy : MonoBehaviour
 
     private Vector3Int GetTargetGridPosition(Vector3 worldPos)
     {
-        if (voxelGrid == null)
-            voxelGrid = FindFirstObjectByType<VoxelGrid>();
-
         int x = Mathf.RoundToInt(worldPos.x);
         int z = Mathf.RoundToInt(worldPos.z);
-        float y = voxelGrid.GetHeightAt(x, z);
+        float y = VoxelGrid.Instance.GetHeightAt(x, z);
         return new Vector3Int(x, Mathf.RoundToInt(y), z);
     }
 
@@ -363,13 +360,19 @@ public class Enemy : MonoBehaviour
 
     public void Init(Vector3 spawnPos)
     {
-        if (voxelGrid == null)
-        {
-            voxelGrid = FindFirstObjectByType<VoxelGrid>();
-        }
-
         latestSpawnPos = spawnPos;
+
+        agent.CancelPath();
         agent.Init(spawnPos);
+
+        characterController.enabled = false;
+        myTransform.position = spawnPos;
+        characterController.enabled = true;
+
+        ResetAnimatorPose();
+        verticalVelocity = 0f;
+        knockbackVelocity = Vector3.zero;
+
         isActive = true;
         justSpawned = true;
 
@@ -455,9 +458,7 @@ public class Enemy : MonoBehaviour
 
     public void FreezeMovement()
     {
-        if (moveSpeed != 0) // cache only if actually moving
-            cachedMoveSpeed = moveSpeed;
-        moveSpeed = cachedMoveSpeed / 4f;
+        moveSpeed = cachedMoveSpeed;
     }
 
     public void ResetMovement()
@@ -490,7 +491,7 @@ public class Enemy : MonoBehaviour
             Vector3 hitPoint = targetBreakable.GetComponent<Collider>().ClosestPoint(transform.position);
             Vector3 hitNormal = (hitPoint - transform.position).normalized;
 
-            targetBreakable.TakeDamage(finalDamage, false, hitPoint, hitNormal);
+            targetBreakable.TakeDamage(finalDamage, false, hitPoint, hitNormal, fromEnemy: true);
         }
     }
 
@@ -499,6 +500,7 @@ public class Enemy : MonoBehaviour
         if (currentState == State.Dead) return;
 
         currentState = State.Dead;
+        isActive = false;
         animator.enabled = false;
 
         if (ragdollController != null)
@@ -524,25 +526,8 @@ public class Enemy : MonoBehaviour
             breakableObject.DestroyObject();
         }
 
+        EnemyPool.Instance.ReturnEnemy(this);
         gameObject.SetActive(false);
-    }
-
-    public void ResetEnemy(Vector3 spawnPosition)
-    {
-        PooledAIUtility.ResetAI(
-            this,
-            animator,
-            spawnPosition,
-            ragdollController
-        );
-
-        SetChasing();
-        currentTarget = campfireTarget;
-
-        if (breakableObject != null)
-        {
-            breakableObject.ResetObject();
-        }
     }
 
     public void SetChasing()
@@ -653,5 +638,11 @@ public class Enemy : MonoBehaviour
     public State GetCurrentState()
     {
         return currentState;
+    }
+
+    public void ResetAnimatorPose()
+    {
+        animator.Rebind();
+        animator.Update(0f);
     }
 }

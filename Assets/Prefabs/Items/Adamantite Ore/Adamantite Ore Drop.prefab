@@ -92,6 +92,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f88af9234142d84e80b749518dbf363, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3996420967441539096}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f88af9234142d84e80b749518dbf363, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8411670999943985690}
   m_SourcePrefab: {fileID: 100100000, guid: 8f88af9234142d84e80b749518dbf363, type: 3}
 --- !u!1 &5577426781986146749 stripped
 GameObject:
@@ -111,11 +114,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 5048ece4c9d8c624d94431bd52e9f818, type: 2}
-  isGold: 0
   itemCount: 0
   mergeDistance: 2
   maxItemCount: 100
-  mergeCheckInterval: 1
+  savedObjectIndex: 0
 --- !u!54 &1933178855354647423
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -182,3 +184,16 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &-8411670999943985690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5577426781986146749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: ore_adamantite_drop

@@ -179,6 +179,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1361809052639613521}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5084524195992717406}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: d8ebaad9d612f7746bd957d715265637, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3569064597451268800}
@@ -1012,7 +1015,7 @@ MonoBehaviour:
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
-  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
+  personality: {fileID: 11400000, guid: e31666094eb058341b756b42d1f055f8, type: 2}
   agent: {fileID: 8515405239404360121}
   animator: {fileID: 4465363624190883282}
   ragdollController: {fileID: 5665800037854704043}
@@ -1059,6 +1062,19 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1.5, z: 0}
+--- !u!114 &5084524195992717406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6941125607410677010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: fire_golem
 --- !u!4 &7716922747194240936 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d8ebaad9d612f7746bd957d715265637, type: 3}

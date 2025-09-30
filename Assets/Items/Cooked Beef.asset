@@ -12,32 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
   m_Name: Cooked Beef
   m_EditorClassIdentifier: 
-  itemType: 5
-  actionType: 0
-  stackable: 1
-  maxStack: 10
+  itemTypes: 4
+  actionType: 1
+  maxStack: 20
   icon: {fileID: 21300000, guid: d2ee464cb6c36a14ba5bf57b5126c110, type: 3}
   itemName: Cooked Beef
   equippedPrefab: {fileID: 5958534300661063731, guid: 15c2f87ba45ca6b43ace0c154fd47c94, type: 3}
-  itemDrop: {fileID: 8729888732823847107, guid: 9d3a0a2a212b2514990c77dac988f3e5, type: 3}
-  animatorController: {fileID: 0}
+  itemDrop: {fileID: 901433794703204569, guid: 41f902663e1a9524cbb95ca94f6549f9, type: 3}
   buildingGhost: {fileID: 0}
-  height: 0
   buildingSize: {x: 1, y: 1}
   attackDistance: 3
-  attackSpeed: 0
-  attackDelay: 0
   attackDamage:
   - 0
   - 0
   critChance: 2
   critFactor: 2
-  attackLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  hitEffect: {fileID: 0}
-  swingSound: {fileID: 0}
-  hitSound: {fileID: 0}
   toolLevel: 0
   toolType: 3
   foodValue: 25
@@ -46,5 +35,3 @@ MonoBehaviour:
   smeltRate: 0.01
   output: {fileID: 0}
   outputCount: 1
-  attacking: 0
-  readyToAttack: 1

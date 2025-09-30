@@ -57,20 +57,42 @@ public static class SaveSystem
     public static void SaveChunk(string worldName, VoxelChunk chunk)
     {
         Directory.CreateDirectory(GetChunksPath(worldName));
+
+        List<SpawnedObjectData> savedObjects = new();
+
+        for (int i = 0; i < chunk.objects.Count; i++)
+        {
+            GameObject instance = chunk.objects[i];
+            if (instance == null) continue;
+
+            string prefabKey = instance.GetComponent<PrefabID>().prefabKey;
+
+            if (prefabKey == null)
+            {
+                Debug.Log($"Tried saving {instance.name}");
+                continue;
+            }
+            GameObject prefab = PrefabRegistry.GetPrefabByKey(prefabKey);
+
+            savedObjects.Add(new SpawnedObjectData(
+                instance.transform.position,
+                instance,
+                prefab
+            ));
+        }
+
         ChunkSaveData data = new()
         {
             chunkPosition = chunk.chunkPosition,
-            spawnedObjects = chunk.savedObjects != null
-                ? new List<SpawnedObjectData>(chunk.savedObjects)
-                : new List<SpawnedObjectData>(),
+            spawnedObjects = savedObjects,
             hasNaturalObjects = chunk.hasNaturalObjects,
             hasKeyStructure = chunk.hasKeyStructure
         };
 
-        chunk.SaveChunkFurnaces(data);
-        chunk.SaveChunkStorages(data);
-
-        File.WriteAllText(GetChunkPath(worldName, chunk.chunkPosition), JsonUtility.ToJson(data, true));
+        File.WriteAllText(
+            GetChunkPath(worldName, chunk.chunkPosition),
+            JsonUtility.ToJson(data, true)
+        );
     }
 
     public static ChunkSaveData LoadChunk(string worldName, Vector3 chunkPos)
@@ -94,80 +116,6 @@ public static class SaveSystem
             catch (IOException ex)
             {
                 Debug.LogError($"Failed to clear chunk saves for world '{worldName}': {ex.Message}");
-            }
-        }
-    }
-
-    // ----- TRIAL ALTARS -----
-    private static string GetTrialAltarsPath(string worldName) =>
-    Path.Combine(GetWorldPath(worldName), "trial_altars");
-
-    private static string GetTrialAltarPath(string worldName, string altarID) =>
-        Path.Combine(GetTrialAltarsPath(worldName), $"trial_altar_{altarID}.json");
-
-    public static void SaveTrialAltarState(string worldName, string altarID, TrialAltarSaveData data)
-    {
-        Directory.CreateDirectory(GetTrialAltarsPath(worldName)); // ensure dir exists
-        string json = JsonUtility.ToJson(data, true);
-        File.WriteAllText(GetTrialAltarPath(worldName, altarID), json);
-    }
-
-    public static TrialAltarSaveData LoadTrialAltarState(string worldName, string altarID)
-    {
-        string path = GetTrialAltarPath(worldName, altarID);
-        if (!File.Exists(path)) return null;
-        return JsonUtility.FromJson<TrialAltarSaveData>(File.ReadAllText(path));
-    }
-
-    public static void ClearAllTrialAltarSaves(string worldName)
-    {
-        string dir = GetTrialAltarsPath(worldName);
-        if (Directory.Exists(dir))
-        {
-            try
-            {
-                Directory.Delete(dir, true);
-            }
-            catch (IOException ex)
-            {
-                Debug.LogError($"Failed to clear trial altar saves for world '{worldName}': {ex.Message}");
-            }
-        }
-    }
-
-    // ----- GEM ALTARS -----
-    private static string GetGemAltarsPath(string worldName) =>
-    Path.Combine(GetWorldPath(worldName), "gem_altars");
-
-    private static string GetGemAltarPath(string worldName, string altarID) =>
-        Path.Combine(GetGemAltarsPath(worldName), $"gem_altar_{altarID}.json");
-
-    public static void SaveGemAltarState(string worldName, string altarID, GemAltarSaveData data)
-    {
-        Directory.CreateDirectory(GetGemAltarsPath(worldName)); // ensure dir exists
-        string json = JsonUtility.ToJson(data, true);
-        File.WriteAllText(GetGemAltarPath(worldName, altarID), json);
-    }
-
-    public static GemAltarSaveData LoadGemAltarState(string worldName, string altarID)
-    {
-        string path = GetGemAltarPath(worldName, altarID);
-        if (!File.Exists(path)) return null;
-        return JsonUtility.FromJson<GemAltarSaveData>(File.ReadAllText(path));
-    }
-
-    public static void ClearAllGemAltarSaves(string worldName)
-    {
-        string dir = GetGemAltarsPath(worldName);
-        if (Directory.Exists(dir))
-        {
-            try
-            {
-                Directory.Delete(dir, true);
-            }
-            catch (IOException ex)
-            {
-                Debug.LogError($"Failed to clear gem altar saves for world '{worldName}': {ex.Message}");
             }
         }
     }
@@ -294,27 +242,5 @@ public static class SaveSystem
         string json = File.ReadAllText(path);
         DayNightSaveData data = JsonUtility.FromJson<DayNightSaveData>(json);
         return data;
-    }
-
-    // ----- CAMPFIRE -----
-    private static string GetCampfirePath(string worldName) =>
-    Path.Combine(GetWorldPath(worldName), "campfire.json");
-
-    public static void SaveCampfire(string worldName, CampfireSaveData data)
-    {
-        string json = JsonUtility.ToJson(data, true);
-        string path = GetCampfirePath(worldName);
-
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        File.WriteAllText(path, json);
-    }
-
-    public static CampfireSaveData LoadCampfire(string worldName)
-    {
-        string path = GetCampfirePath(worldName);
-        if (!File.Exists(path)) return null;
-
-        string json = File.ReadAllText(path);
-        return JsonUtility.FromJson<CampfireSaveData>(json);
     }
 }
