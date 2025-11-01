@@ -202,3 +202,5 @@ MonoBehaviour:
   floatUpDistance: 1
   duration: 1
   fadeDuration: 0.5
+  baseColor: {r: 1, g: 1, b: 1, a: 1}
+  critColor: {r: 1, g: 0.8627451, b: 0, a: 1}

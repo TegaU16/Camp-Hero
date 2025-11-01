@@ -7,10 +7,7 @@ public class FuelComponent
 
     public void AddFuel(Item item)
     {
-        if (item == null || item.fuelValue <= 0)
-        {
-            return;
-        }
+        if (item == null || item.fuelValue <= 0) return;
 
         currentFuel += item.fuelValue;
         if (currentFuel > maxFuel)

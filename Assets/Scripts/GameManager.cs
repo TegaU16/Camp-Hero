@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Linq;
+using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -21,7 +24,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverMenuUI;
     public GameObject winMenuUI;
     public GameObject darkBackground;
-    [HideInInspector] public bool isPaused = false;
+    public GameObject retryConfirmMenuUI;
 
     [Header("Managers")]
     public InventoryManager inventoryManager;
@@ -35,7 +38,10 @@ public class GameManager : MonoBehaviour
 
     [HideInInspector] public string currentWorldName;
     [HideInInspector] public string currentSeed;
-    private bool isLoading = false;
+
+    public bool IsLoading { get; private set; }
+    public bool IsGameOver { get; private set; }
+    public bool IsPaused { get; private set; }
 
     private PlayerSaveData pendingPlayerData;
 
@@ -54,6 +60,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (IsGameOver) return;
+
         if (Input.GetKeyDown(togglePauseKey))
         {
             if (InventoryManager.Instance.JustClosedExtension)
@@ -64,8 +72,10 @@ public class GameManager : MonoBehaviour
                 return;
             }
 
-            if (isPaused) ResumeGame();
-            else PauseGame();
+            if (IsPaused) 
+                ResumeGame();
+            else 
+                PauseGame();
         }
     }
 
@@ -79,15 +89,19 @@ public class GameManager : MonoBehaviour
 
         if (metadata != null)
         {
+            // ✅ Normal case — both new or existing worlds
             currentWorldName = metadata.worldName;
             currentSeed = metadata.seed;
-
-            // Update last played timestamp
             metadata.lastPlayedDate = System.DateTime.Now.ToString();
+
+            metadata.worldStats ??= new RunStats();
+            WorldSession.CurrentRunStats = metadata.worldStats;
+
             SaveSystem.SaveWorldMeta(metadata);
         }
         else
         {
+            // ⚠️ Fallback — metadata missing or corrupt
             Debug.LogWarning($"[GenerateTerrainPhase] No metadata found for world '{currentWorldName}'. Creating default metadata.");
 
             // Assign defaults
@@ -100,10 +114,14 @@ public class GameManager : MonoBehaviour
                 seed = currentSeed,
                 createdDate = System.DateTime.Now.ToString(),
                 lastPlayedDate = System.DateTime.Now.ToString(),
-                difficulty = DifficultyManager.Instance.GetDifficulty()
+                difficulty = DifficultyManager.Instance.GetDifficulty(),
+                worldStats = new RunStats()
             };
 
             SaveSystem.SaveWorldMeta(metadata);
+
+            WorldSession.CurrentRunStats = new RunStats();
+            WorldSession.CurrentRunStats.ResetStats();
         }
 
         int seed = ConsistentHash(currentSeed);
@@ -136,24 +154,17 @@ public class GameManager : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator LoadSystemsPhase(System.Action<float> onProgress)
+    private IEnumerator LoadNPCsPhase(System.Action<float> onProgress)
     {
-        int totalChunks = VoxelGrid.Instance.chunks.Count;
-        int processed = 0;
-
-        foreach (VoxelChunk chunk in VoxelGrid.Instance.chunks)
-        {
-            ChunkSaveData data = SaveSystem.LoadChunk(currentWorldName, chunk.chunkPosition);
-
-            processed++;
-            onProgress?.Invoke((float)processed / totalChunks);
-            yield return null;
-        }
+        yield return new WaitUntil(() => VoxelGrid.Instance.worldGenerated);
+        yield return null;
 
         // Enemy & animal spawns (count as final part of systems)
         enemySpawner.LoadAllEnemies();
         animalSpawner.LoadAllAnimals();
-        onProgress?.Invoke(1f);
+
+        onProgress?.Invoke(1f); // signal progress complete
+        yield return null; // ensure UI updates
     }
 
     // ----------------- PLAYER -----------------
@@ -164,7 +175,9 @@ public class GameManager : MonoBehaviour
 
         LayerMask groundMask = LayerMask.GetMask("Ground");
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 50f, groundMask))
+        {
             spawnPos = hit.point + Vector3.up * 0.2f;
+        }
         else
         {
             Debug.LogWarning("[SpawnPlayer] Failed to find ground under spawn position. Using default Y=3.");
@@ -202,15 +215,17 @@ public class GameManager : MonoBehaviour
         player.health.SetHealth(data.currentHealth);
 
         player.staminaBar.maxStamina = data.maxStamina;
-        player.staminaBar.SetCurrentStamina((int)data.currentStamina);
+        player.staminaBar.SetNewStamina((int)data.currentStamina);
 
         player.transform.position = data.position;
 
         InventoryManager.Instance.AddSavedPlayerItems(data.inventory);
         InventoryManager.Instance.EquipSelectedItem();
 
-        PlayerStatsManager.Instance.stats.availablePoints = data.availablePoints;
+        PlayerStatsManager.Instance.stats.availablePoints = data.attributes.availablePoints;
+        PlayerStatsManager.Instance.stats.goldenPoints = data.attributes.goldenPoints;
         PlayerStatsManager.Instance.UpdateAvailablePoints();
+        PlayerStatsManager.Instance.LoadPlayerUpgrades(data.attributes.unlockedUpgrades);
 
         LevelManager.Instance.SetLevelData(data.levelData);
 
@@ -228,6 +243,7 @@ public class GameManager : MonoBehaviour
 
             if (player.healthBar != null)
                 player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
+
             if (player.staminaBar != null)
                 player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
 
@@ -323,13 +339,6 @@ public class GameManager : MonoBehaviour
 
         VoxelGrid.Instance.SaveAllChunks(currentWorldName);
 
-        WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
-        if (metadata != null)
-        {
-            metadata.lastPlayedDate = System.DateTime.Now.ToString();
-            SaveSystem.SaveWorldMeta(metadata);
-        }
-
         CraftingManager.Instance.SaveCraftingProgress();
         FurnaceManager.Instance.SaveSmeltingProgress();
 
@@ -346,12 +355,19 @@ public class GameManager : MonoBehaviour
 
         enemySpawner.SaveAllEnemies();
         animalSpawner.SaveAllAnimals();
+
+        WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
+        if (metadata != null)
+        {
+            metadata.lastPlayedDate = System.DateTime.Now.ToString();
+            SaveSystem.SaveWorldMeta(metadata);
+        }
     }
 
     public void LoadGame()
     {
-        if (isLoading) return;
-        isLoading = true;
+        if (IsLoading) return;
+        IsLoading = true;
 
         currentWorldName = WorldSession.CurrentWorldName;
         currentSeed = WorldSession.CurrentSeed;
@@ -362,14 +378,14 @@ public class GameManager : MonoBehaviour
             currentSeed = "12345";
         }
 
+        WorldSession.CurrentRunStats ??= new RunStats();
+
         // Start full load routine
         StartCoroutine(LoadGameRoutine());
     }
 
     private IEnumerator LoadGameRoutine()
     {
-        LoadingScreenUI.Instance.Show();
-
         // 1. Wait until UIManager and bars are ready
         yield return StartCoroutine(WaitForUI());
         LoadingScreenUI.Instance.SetProgress(0f);
@@ -386,11 +402,14 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(BindUIAndApplySaves());
 
         // 5. Systems (85%–95%)
-        yield return StartCoroutine(LoadSystemsPhase(p => LoadingScreenUI.Instance.SetProgressRange(p, 0.85f, 0.95f)));
+        yield return StartCoroutine(LoadNPCsPhase(p => LoadingScreenUI.Instance.SetProgressRange(p, 0.85f, 0.95f)));
 
         // 6. Finalization (95%–100%)
         LoadingScreenUI.Instance.SetProgress(1f);
+        yield return null;
+        yield return new WaitForSeconds(0.1f);
 
+        IsLoading = false;
         LoadingScreenUI.Instance.Hide();
     }
 
@@ -420,13 +439,10 @@ public class GameManager : MonoBehaviour
         OnUIBound();
     }
 
-
     private IEnumerator WaitForUI()
     {
         while (!UIManager.Instance.IsInitialized)
-        {
             yield return null;
-        }
     }
 
     // ----------------- UTILS -----------------
@@ -441,7 +457,9 @@ public class GameManager : MonoBehaviour
         unchecked
         {
             int hash = 23;
-            foreach (char c in input) hash = hash * 31 + c;
+            foreach (char c in input) 
+                hash = hash * 31 + c;
+
             return hash;
         }
     }
@@ -450,43 +468,48 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         Time.timeScale = 0f;
+
+        WorldSession.CurrentRunStats.daysSurvived = dayNightCycle.GetElapsedTime();
+        WorldSession.CurrentRunStats.totalExpGained = LevelManager.Instance.GetTotalExp();
+
+        GameOverUI.Instance.DisplayStats(WorldSession.CurrentRunStats);
+
         gameOverMenuUI.SetActive(true);
         darkBackground.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        Utility.DisableButtonsOutside(gameOverMenuUI.transform, buttonsInScene, true);
+
+        IsGameOver = true;
+        UpdateWorldState(WorldState.Failed);
     }
 
     public void WinGame()
     {
         Time.timeScale = 0f;
+
+        if (winMenuUI.transform.Find("Score Text").TryGetComponent(out TextMeshProUGUI scoreText))
+            scoreText.text = $"Score\n{LevelManager.Instance.GetTotalExp()}";
+
         winMenuUI.SetActive(true);
         darkBackground.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-    }
 
-    public void RetryGame()
-    {
-        Time.timeScale = 1f;
-        gameOverMenuUI.SetActive(false);
+        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        Utility.DisableButtonsOutside(winMenuUI.transform, buttonsInScene, true);
 
-        VoxelGrid.Instance.ResetWorld();
-        if (playerInstance.TryGetComponent(out Player player))
-        {
-            RespawnPlayer(player);
-        }
-
-        InventoryManager.Instance.ClearItems();
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        IsGameOver = true;
+        UpdateWorldState(WorldState.Won);
     }
 
     public void ReturnToMainMenu()
     {
         Time.timeScale = 1f;
         SaveGame(true);
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+        SceneLoader.Instance.LoadScene("MainMenuScene");
     }
 
     public void PauseGame()
@@ -494,7 +517,7 @@ public class GameManager : MonoBehaviour
         pauseMenuUI.SetActive(true);
         darkBackground.SetActive(true);
         Time.timeScale = 0f;
-        isPaused = true;
+        IsPaused = true;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -504,15 +527,40 @@ public class GameManager : MonoBehaviour
         pauseMenuUI.SetActive(false);
         darkBackground.SetActive(false);
         Time.timeScale = 1f;
-        isPaused = false;
+        IsPaused = false;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    // Called by main menu quit button
     public void QuitGame()
     {
         Time.timeScale = 1f;
-        Application.Quit();
+        SceneLoader.Instance.LoadScene("MainMenuScene");
+    }
+
+    private void UpdateWorldState(WorldState newState)
+    {
+        if (string.IsNullOrEmpty(currentWorldName)) return;
+
+        WorldMetaData meta = SaveSystem.LoadWorldMeta(currentWorldName);
+        if (meta != null)
+        {
+            meta.worldState = newState;
+            meta.lastPlayedDate = System.DateTime.Now.ToString();
+            SaveSystem.SaveWorldMeta(meta);
+        }
+    }
+
+    public void ToggleRetryConfirm(bool open)
+    {
+        retryConfirmMenuUI.SetActive(open);
+
+        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        Utility.DisableButtonsOutside(retryConfirmMenuUI.transform, buttonsInScene, open);
+    }
+
+    public bool IsGameManagerReady()
+    {
+        return !IsGameOver && !IsPaused && !IsLoading;
     }
 }

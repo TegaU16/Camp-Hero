@@ -6,12 +6,11 @@ public class Cannon : Defense
 
     protected override void Update()
     {
+        if (!GameManager.Instance.IsGameManagerReady()) return;
         base.Update();
 
         if (currentTarget != null && rotatingPart != null)
-        {
             RotateTowardTarget();
-        }
     }
 
     private void RotateTowardTarget()

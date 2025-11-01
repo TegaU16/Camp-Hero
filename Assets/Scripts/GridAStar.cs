@@ -56,26 +56,27 @@ public class GridAStar
 
         while (openSet.Count > 0)
         {
-            if (++iteration > 10000)
-            {
-                Debug.LogError("A* iteration limit reached");
-                return null;
-            }
-
+            iteration++;
             Node current = openSet.Pop();
             openMap.Remove(current.position);
 
-            if (current.position == end)
-                return Retrace(current);
+            if (iteration > 10000)
+            {
+                Debug.LogError($"[A* Debug] Iteration limit reached! Start: {start}, End: {end}");
+                return null;
+            }
+            
+            if (current.position == end) return Retrace(current);
 
             closedSet.Add(current.position);
 
             foreach (Vector3Int neighbor in GetNeighbors(current.position))
             {
-                if (isOccupied(neighbor))
-                    continue;
+                int heightDiff = neighbor.y - current.position.y;
 
                 if (closedSet.Contains(neighbor)) continue;
+
+                if (isOccupied(neighbor)) continue;
 
                 int tentativeG = current.gCost + 1;
 
@@ -99,12 +100,10 @@ public class GridAStar
             }
         }
 
-        // If no path found
         return null;
     }
 
     private int Heuristic(Vector3Int a, Vector3Int b) => (int)Vector3Int.Distance(a, b);
-
 
     private IEnumerable<Vector3Int> GetNeighbors(Vector3Int pos)
     {
@@ -117,20 +116,13 @@ public class GridAStar
             int ny = Mathf.RoundToInt(surfaceY);
 
             int heightDiff = ny - pos.y;
-
-            if (Mathf.Abs(heightDiff) > maxStepHeight)
-                continue;
+            if (Mathf.Abs(heightDiff) > maxStepHeight) continue;
 
             Vector3Int neighbor = new(nx, ny, nz);
 
-            if (isOccupied(neighbor))
-                continue;
-
-            Vector3 mid = (pos + neighbor);
-            mid /= 2f;
+            Vector3 mid = ScaleVector3(pos + neighbor, 0.5f);
             Vector3Int midInt = Vector3Int.RoundToInt(mid);
-            if (isOccupied(midInt))
-                continue;
+            if (isOccupied(midInt)) continue;
 
             yield return neighbor;
         }
@@ -147,5 +139,15 @@ public class GridAStar
         }
         path.Reverse();
         return path;
+    }
+
+    private Vector3 ScaleVector3(Vector3 vector, float scale)
+    {
+        Vector3 scaledVector = new(
+            vector.x * scale,
+            vector.y * scale,
+            vector.z * scale);
+
+        return scaledVector;
     }
 }

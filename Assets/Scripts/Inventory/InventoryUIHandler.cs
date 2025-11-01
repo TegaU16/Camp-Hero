@@ -33,7 +33,7 @@ public class InventoryUIHandler : MonoBehaviour
 
         foreach (InventorySlot slot in GetAllSlots())
         {
-            if (RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
+            if (slot != null && RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
             {
                 if (isLeft)
                     slot.HandleLeftClick();

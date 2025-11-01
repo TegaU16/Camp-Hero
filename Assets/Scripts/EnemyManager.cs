@@ -46,6 +46,7 @@ public class EnemyManager : MonoBehaviour
 
     public List<Targetable> GetActiveTargets()
     {
+        activeTargets.RemoveAll(t => t == null || !t.gameObject.activeInHierarchy);
         return activeTargets;
     }
 
@@ -66,9 +67,14 @@ public class EnemyManager : MonoBehaviour
             int count = Mathf.Min(batchSize, activeEnemies.Count - i);
             for (int j = 0; j < count; j++)
             {
-                activeEnemies[i + j].AssignBestTarget(activeTargets);
+                Enemy enemy = activeEnemies[i + j];
+
+                if (enemy.GetCurrentState() == Enemy.State.Idle || enemy.GetCurrentState() == Enemy.State.Chasing)
+                    enemy.AssignBestTarget(activeTargets);
             }
             yield return null; // wait for next frame
         }
     }
+
+    public List<Enemy> GetActiveEnemies() => activeEnemies;
 }

@@ -15,19 +15,15 @@ public class Defense : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         fireCooldown -= Time.deltaTime;
 
         if (currentTarget != null && !IsTargetAlive(currentTarget))
-        {
             currentTarget = null;
-        }
 
         if (currentTarget == null)
-        {
             FindTarget();
-        }
 
         if (currentTarget != null && fireCooldown <= 0f)
         {
@@ -78,7 +74,7 @@ public class Defense : MonoBehaviour
 
         GameObject projectileObj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         if (projectileObj.TryGetComponent(out Projectile projectile))
-            projectile.SetTarget(currentTarget, damage);
+            projectile.SetTarget(transform, currentTarget, damage);
     }
 
     protected bool IsTargetAlive(Transform target)

@@ -9,7 +9,6 @@ public class TrialEnemyPool : MonoBehaviour
     public int poolSizePerType = 10;
 
     private readonly Dictionary<GameObject, Queue<TrialEnemyMarker>> pools = new();
-    private readonly Dictionary<GameObject, GameObject> enemyToPrefab = new();
 
     [HideInInspector] public HashSet<GameObject> activeEnemies = new();
 
@@ -28,7 +27,7 @@ public class TrialEnemyPool : MonoBehaviour
             for (int i = 0; i < poolSizePerType; i++)
             {
                 GameObject enemyPrefab = Instantiate(prefab);
-                TrialEnemyMarker enemy = enemyPrefab.GetComponent<TrialEnemyMarker>();
+                TrialEnemyMarker enemy = enemyPrefab.AddComponent<TrialEnemyMarker>();
                 enemyPrefab.SetActive(false);
                 pool.Enqueue(enemy);
             }
@@ -65,9 +64,7 @@ public class TrialEnemyPool : MonoBehaviour
         }
 
         if (enemy.TryGetComponent(out SimpleRagdollController ragdollController))
-        {
             ragdollController.DisableRagdoll();
-        }
 
         enemy.transform.position = poolGraveyardPosition;
         enemy.gameObject.SetActive(false);

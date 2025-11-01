@@ -9,6 +9,8 @@ public class PathfinderManager : MonoBehaviour
 
     [SerializeField] private int maxRequestsPerFrame = 5;
 
+    private float lastResultTime = 0f;
+
     private readonly Queue<PathRequest> requestQueue = new();
     private readonly Queue<PathResult> resultQueue = new();
     private readonly Dictionary<VoxelAgent, PathRequest> latestRequests = new();
@@ -87,6 +89,9 @@ public class PathfinderManager : MonoBehaviour
                     lock (queueLock)
                         if (latestRequests.TryGetValue(request.Agent, out PathRequest latest) && latest.RequestId != request.RequestId) continue;
 
+                    if (!IsWalkable(request.Start))
+                        request.Start = FindNearestUnblocked(request.Start);
+
                     if (!IsWalkable(request.Target))
                         request.Target = FindNearestUnblocked(request.Target);
 
@@ -132,7 +137,6 @@ public class PathfinderManager : MonoBehaviour
         }
     }
 
-    private float lastResultTime = 0f;
 
     private void Update()
     {
@@ -170,7 +174,7 @@ public class PathfinderManager : MonoBehaviour
     public GridAStar BuildLocalPathfinder()
     {
         GridAStar astar = new(
-            (x, _, z) => VoxelGrid.Instance.GetHeightAt(x, z),
+            (x, _, z) => Utility.GetHeightAt(x, z),
             pos => !VoxelGrid.Instance.IsWalkable(pos),
             maxStepHeight: 1
         );
@@ -180,22 +184,52 @@ public class PathfinderManager : MonoBehaviour
 
     public bool IsWalkable(Vector3Int pos) => VoxelGrid.Instance.IsWalkable(pos);
 
-    public Vector3Int FindNearestUnblocked(Vector3Int center)
+    public Vector3Int FindNearestUnblocked(Vector3Int center, int maxRadius = 5)
     {
-        Vector3Int[] offsets = {
-            new(1,0,0), new(-1,0,0),
-            new(0,0,1), new(0,0,-1),
-            new(1,0,1), new(-1,0,1),
-            new(1,0,-1), new(-1,0,-1)
-        };
+        if (IsWalkable(center)) return center;
 
-        foreach (Vector3Int offset in offsets)
+        Queue<Vector3Int> queue = new();
+        HashSet<Vector3Int> visited = new();
+
+        queue.Enqueue(center);
+        visited.Add(center);
+
+        int radius = 0;
+
+        // 4-connected neighbors (N, S, E, W) + diagonals for 8-connected
+        Vector3Int[] directions = {
+        new(1,0,0), new(-1,0,0),
+        new(0,0,1), new(0,0,-1),
+        new(1,0,1), new(-1,0,1),
+        new(1,0,-1), new(-1,0,-1)
+    };
+
+        while (queue.Count > 0 && radius <= maxRadius)
         {
-            Vector3Int candidate = center + offset;
-            if (IsWalkable(candidate)) return candidate;
+            int count = queue.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                Vector3Int current = queue.Dequeue();
+
+                foreach (Vector3Int dir in directions)
+                {
+                    Vector3Int neighbor = current + dir;
+
+                    if (visited.Contains(neighbor)) continue;
+
+                    visited.Add(neighbor);
+
+                    if (IsWalkable(neighbor)) return neighbor;
+
+                    queue.Enqueue(neighbor);
+                }
+            }
+
+            radius++;
         }
 
-        return center;
+        return center; // fallback if nothing found
     }
 
     private Vector3Int WorldToGrid(Vector3 pos) =>

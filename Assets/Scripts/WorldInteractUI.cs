@@ -8,6 +8,14 @@ public class WorldInteractUI : MonoBehaviour
     private Camera cam;
     private float heightOffset;
 
+    private void Update()
+    {
+        if (!GameManager.Instance.IsGameManagerReady()) return;
+        if (target == null) return;
+
+        // still update each frame in case player/camera moves
+        RefreshImmediately();
+    }
     public void Setup(string text, Transform targetTransform)
     {
         interactText.text = text;
@@ -30,14 +38,5 @@ public class WorldInteractUI : MonoBehaviour
 
         transform.position = target.position + Vector3.up * heightOffset;
         transform.forward = cam.transform.forward;
-    }
-
-    private void Update()
-    {
-        if (GameManager.Instance.isPaused) return;
-        if (target == null) return;
-
-        // still update each frame in case player/camera moves
-        RefreshImmediately();
     }
 }

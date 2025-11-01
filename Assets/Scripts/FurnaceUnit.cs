@@ -57,7 +57,7 @@ public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
 
     private void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         if (inputSlot != null)
             SaveUI();
@@ -108,9 +108,7 @@ public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
 
             inputData.count--;
             if (inputData.count <= 0)
-            {
                 inputData.item = null;
-            }
 
             if (inputSlot != null)
                 LoadUI();
@@ -139,10 +137,9 @@ public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
     private void LoadSlot(FurnaceSlot data, InventorySlot slot)
     {
         slot.ClearSlot();
+
         if (data.item != null && data.count > 0)
-        {
             InventoryManager.Instance.SpawnNewItem(data.item, slot, data.count);
-        }
     }
 
     private void SaveSlot(InventorySlot slot, ref FurnaceSlot data)

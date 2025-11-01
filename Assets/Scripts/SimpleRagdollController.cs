@@ -10,6 +10,9 @@ public class SimpleRagdollController : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private VoxelAgent agent;
 
+    [Header("For Procedural Animations")]
+    [SerializeField] private ProceduralAnimator proceduralAnimator;
+
     public bool IsSetup { get; private set; } = false;
 
     void Awake()
@@ -30,7 +33,8 @@ public class SimpleRagdollController : MonoBehaviour
     {
         if (!IsSetup)
         {
-            if (TryGetComponent(out CharacterController cc)) cc.enabled = false;
+            if (TryGetComponent(out CharacterController cc)) 
+                cc.enabled = false;
 
             // Enable physics on all rigidbodies
             foreach (Rigidbody rb in allRigidbodies)
@@ -51,6 +55,9 @@ public class SimpleRagdollController : MonoBehaviour
 
             if (animator != null)
                 animator.enabled = false;
+
+            if (proceduralAnimator != null)
+                proceduralAnimator.enabled = true;
 
             if (agent != null)
                 agent.enabled = false;
@@ -91,6 +98,9 @@ public class SimpleRagdollController : MonoBehaviour
             animator.Update(0f);
         }
 
+        if (proceduralAnimator != null)
+            proceduralAnimator.enabled = true;
+
         if (agent != null)
         {
             agent.enabled = false; // force reset
@@ -104,8 +114,7 @@ public class SimpleRagdollController : MonoBehaviour
     {
         foreach(Collider col in collidersToIgnore)
         {
-            if (col == colIgnore)
-                return true;
+            if (col == colIgnore) return true;
         }
 
         return false;

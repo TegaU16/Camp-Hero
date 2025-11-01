@@ -50,6 +50,13 @@ public static class SaveSystem
         return JsonUtility.FromJson<WorldMetaData>(File.ReadAllText(path));
     }
 
+    public static void DeleteWorldMeta(string worldName)
+    {
+        string worldDir = Path.Combine(WorldsPath, worldName);
+        if (Directory.Exists(worldDir))
+            Directory.Delete(worldDir, true);
+    }
+
     // ----- CHUNKS -----
     private static string GetChunkPath(string worldName, Vector3 chunkPos) =>
         Path.Combine(GetChunksPath(worldName), $"chunk_{chunkPos.x}_{chunkPos.z}.json");
@@ -128,9 +135,7 @@ public static class SaveSystem
     {
         CraftingSaveData data = new();
         foreach (CraftingRecipe recipe in unlockedRecipes)
-        {
             data.unlockedRecipeIDs.Add(recipe.resultItem.name);
-        }
 
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(GetCraftingPath(worldName), json);
@@ -148,7 +153,8 @@ public static class SaveSystem
         foreach (string id in data.unlockedRecipeIDs)
         {
             CraftingRecipe recipe = database.GetRecipeByID(id);
-            if (recipe != null) unlocked.Add(recipe);
+            if (recipe != null) 
+                unlocked.Add(recipe);
         }
 
         return unlocked;
@@ -162,9 +168,7 @@ public static class SaveSystem
     {
         SmeltingSaveData data = new();
         foreach (SmeltingRecipe recipe in unlockedRecipes)
-        {
             data.unlockedRecipeIDs.Add(recipe.resultItem.name);
-        }
 
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(GetSmeltingPath(worldName), json);
@@ -182,7 +186,8 @@ public static class SaveSystem
         foreach (string id in data.unlockedRecipeIDs)
         {
             SmeltingRecipe recipe = database.GetRecipeByID(id);
-            if (recipe != null) unlocked.Add(recipe);
+            if (recipe != null) 
+                unlocked.Add(recipe);
         }
 
         return unlocked;

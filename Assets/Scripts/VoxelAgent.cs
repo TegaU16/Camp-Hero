@@ -31,6 +31,12 @@ public class VoxelAgent : MonoBehaviour
     private readonly float directTrackingCheckInterval = 0.5f;
     private float nextTrackingCheckTime = 0f;
 
+    private void Start()
+    {
+        if (TryGetComponent(out Enemy enemy))
+            stoppingDistance = enemy.meleeAttackRange - 0.5f;
+    }
+
     public void Init(Vector3 startWorldPos)
     {
         path = null;
@@ -74,21 +80,15 @@ public class VoxelAgent : MonoBehaviour
         {
             int x = Mathf.RoundToInt(pos.x);
             int z = Mathf.RoundToInt(pos.z);
-            float height = VoxelGrid.Instance.GetHeightAt(x, z);
+            float height = Utility.GetHeightAt(x, z);
             Vector3Int checkPos = new(x, Mathf.RoundToInt(height), z);
 
-            if (!VoxelGrid.Instance.IsWalkable(checkPos))
-            {
-                return false;
-            }
+            if (!VoxelGrid.Instance.IsWalkable(checkPos)) return false;
 
             if (i > 0)
             {
                 int heightDiff = Mathf.Abs(checkPos.y - from.y);
-                if (heightDiff > 1)
-                {
-                    return false;
-                }
+                if (heightDiff > 1) return false;
             }
 
             pos += step;
@@ -161,15 +161,11 @@ public class VoxelAgent : MonoBehaviour
         toTarget.y = 0f;
 
         if (toTarget.magnitude > stoppingDistance)
-        {
             velocity = toTarget.normalized;
-        }
         else
-        {
             velocity = Vector3.zero;
-        }
 
-        float targetY = VoxelGrid.Instance.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
+        float targetY = Utility.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
         currentY = Mathf.Lerp(currentY, targetY, yLerpSpeed * Time.deltaTime);
 
         Vector3 faceDir = isWalkingDirect ? (GridToWorld(directTarget) - transform.position) : velocity;
@@ -186,9 +182,7 @@ public class VoxelAgent : MonoBehaviour
         float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
 
         if (animator != null)
-        {
             animator.SetFloat(speedParam, flatSpeed > 0.05f ? 1f : 0f, 0.2f, Time.deltaTime);
-        }
     }
 
     public bool WantsToMove()
@@ -215,7 +209,7 @@ public class VoxelAgent : MonoBehaviour
 
     private Vector3 GridToWorld(Vector3Int gridPos)
     {
-        float y = VoxelGrid.Instance.GetHeightAt(gridPos.x, gridPos.z);
+        float y = Utility.GetHeightAt(gridPos.x, gridPos.z);
         return new Vector3(gridPos.x, y + 1f, gridPos.z);
     }
 

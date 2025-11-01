@@ -68,14 +68,13 @@ public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
 
         waveInProgress = false;
 
-        if (!waveFail) currentWave++;
+        if (!waveFail) 
+            currentWave++;
 
         SetBarrierActive(false);
 
         if (currentWave >= enemyWavePrefabs.Length)
-        {
             GrantKey();
-        }
     }
 
     private IEnumerator SpawnWave(GameObject enemyPrefab, int count, float delayBetweenSpawns = 1.5f)
@@ -108,9 +107,7 @@ public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
             Vector3 finalPos = spawn.position;
 
             if (Physics.Raycast(spawn.position + Vector3.up * 50, Vector3.down, out RaycastHit hit, 100f, LayerMask.GetMask("Ground"))) 
-            {
                 finalPos = hit.point;
-            }
 
             TrialEnemyPool.Instance.GetEnemy(enemyPrefab, finalPos);
 
@@ -135,10 +132,7 @@ public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
     {
         if (key == null) return;
 
-        if (InventoryManager.Instance.IsInventoryFullForItem(key))
-        {
-            return;
-        }
+        if (InventoryManager.Instance.IsInventoryFullForItem(key)) return;
 
         InventoryManager.Instance.AddItem(key);
 
@@ -148,14 +142,11 @@ public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
 
     public string GetInteractText()
     {
-        if (keyAvailable)
-            return "Collect Key";
+        if (keyAvailable) return "Collect Key";
 
-        if (trialCompleted)
-            return "Trial Completed";
+        if (trialCompleted) return "Trial Completed";
 
-        if (waveInProgress)
-            return "Wave in Progress";
+        if (waveInProgress) return "Wave in Progress";
 
         return $"Start Wave {currentWave + 1}";
     }
@@ -171,18 +162,12 @@ public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
         if (waveIndex < 0)
             waveIndex = currentWave;
 
-        if (enemyWavePrefabs == null || enemyWavePrefabs.Length == 0)
-            return null;
+        if (enemyWavePrefabs == null || enemyWavePrefabs.Length == 0) return null;
 
-        if (waveIndex < 0 || waveIndex >= enemyWavePrefabs.Length)
-            return null;
+        if (waveIndex < 0 || waveIndex >= enemyWavePrefabs.Length) return null;
 
         GameObject prefab = enemyWavePrefabs[waveIndex];
-        if (prefab == null)
-            return null;
-
-        if (!prefab.TryGetComponent(out Enemy enemy))
-            return null;
+        if (prefab == null || !prefab.TryGetComponent(out Enemy enemy)) return null;
 
         return enemy;
     }

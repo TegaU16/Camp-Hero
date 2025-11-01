@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
@@ -8,19 +9,19 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
     private bool isInteracted = false;
     private bool canPickup = true;
 
-    [Header("For Item Drops")]
-    public float mergeDistance = 2f;
     public int maxItemCount = 100;
 
-    private int pickableLayerMask;
     private Rigidbody rb;
 
     [HideInInspector] public VoxelChunk owningChunk;
     [HideInInspector] public int savedObjectIndex;
 
+    [HideInInspector] public Vector2Int CurrentCell;
+
+    private static readonly List<InteractableItem> mergeBuffer = new();
+
     private void Start()
     {
-        pickableLayerMask = LayerMask.GetMask("Pickable");
         rb = GetComponent<Rigidbody>();
 
         if (rb != null)
@@ -30,10 +31,24 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         }
     }
 
-    private void OnEnable() => InteractableItemManager.Instance.Register(this);
-    private void OnDisable() { if (InteractableItemManager.HasInstance) InteractableItemManager.Instance.Unregister(this); }
+    private void OnEnable()
+    {
+        ItemGrid.Register(this);
+        InteractableItemManager.Instance.Register(this);
+    }
+    private void OnDisable() 
+    {
+        ItemGrid.Unregister(this);
+        if (InteractableItemManager.HasInstance) 
+            InteractableItemManager.Instance.Unregister(this); 
+    }
 
-    private void FixedUpdate()
+    private void Update()
+    {
+        ItemGrid.UpdateItemCell(this);
+    }
+
+    public void CheckGround()
     {
         if (transform.position.y < -0.1f)
         {
@@ -71,37 +86,35 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
             DestroyInteractableItem(this);
     }
 
-    public void MergeNearbyObjects()
+    public void TryMergeNearby()
     {
         if (rb == null) return;
 
-        Collider[] nearbyColliders = new Collider[20];
-        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, mergeDistance, nearbyColliders, pickableLayerMask);
+        mergeBuffer.Clear();
 
-        if (hitCount == nearbyColliders.Length)
+        foreach (InteractableItem other in ItemGrid.GetNearby(transform.position))
         {
-            Collider[] expandedArray = new Collider[hitCount * 2];
-            hitCount = Physics.OverlapSphereNonAlloc(transform.position, mergeDistance, expandedArray, pickableLayerMask);
-            nearbyColliders = expandedArray;
-        }
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider collider = nearbyColliders[i];
-            if (collider.gameObject == gameObject) continue;
-
-            InteractableItem other = collider.GetComponent<InteractableItem>();
-            if (other == null || other.item.itemName != item.itemName) continue;
+            if (other == this || other.rb == null || other.item.itemName != item.itemName) continue;
 
             int totalItemCount = itemCount + other.itemCount;
 
             if (totalItemCount <= maxItemCount)
             {
                 itemCount = totalItemCount;
-                DestroyInteractableItem(other);
-                break;
+                mergeBuffer.Add(other);
             }
+            else
+            {
+                int transferable = maxItemCount - itemCount;
+                itemCount += transferable;
+                other.itemCount -= transferable;
+            }
+
+            if (itemCount >= maxItemCount) break;
         }
+
+        foreach (InteractableItem merged in mergeBuffer)
+            DestroyInteractableItem(merged);
     }
 
     private void DestroyInteractableItem(InteractableItem interactable)

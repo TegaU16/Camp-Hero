@@ -9,7 +9,7 @@ public class FoodManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
-            if (GameManager.Instance.isPaused) return;
+            if (!GameManager.Instance.IsGameManagerReady()) return;
 
             if (InventoryManager.Instance.IsExtensionOpen()) return;
 
@@ -34,8 +34,6 @@ public class FoodManager : MonoBehaviour
     public void SetPlayer(GameObject player)
     {
         if (player != null)
-        {
             playerObj = player;
-        }
     }
 }

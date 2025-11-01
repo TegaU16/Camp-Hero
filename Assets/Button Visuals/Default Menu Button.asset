@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d006280b851d187428380b60e0f1c2aa, type: 3}
+  m_Name: Default Menu Button
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonVisualProfile
+  unselectedSprite: {fileID: 21300000, guid: 5d6fb5d2d0db158459ca083c1626c825, type: 3}
+  selectedSprite: {fileID: 21300000, guid: b75266008c88e5148b11dbe93034f0c7, type: 3}
+  hoverSprite: {fileID: 21300000, guid: 0f33dce43bcf55944b970548f6463a00, type: 3}
+  pressedSprite: {fileID: 21300000, guid: 4f3fc760f8b09424cb90381831578ac5, type: 3}
+  unselectedTextColor: {r: 0.4264151, g: 0.4264151, b: 0.4264151, a: 1}
+  selectedTextColor: {r: 0.9547169, g: 0.9547169, b: 0.9547169, a: 1}
+  hoverTextColor: {r: 1, g: 1, b: 1, a: 1}
+  pressedTextColor: {r: 1, g: 1, b: 1, a: 1}
+  unselectedOutlineColor: {r: 0.11698109, g: 0.11698109, b: 0.11698109, a: 1}
+  selectedOutlineColor: {r: 0.21509439, g: 0.21509439, b: 0.21509439, a: 1}
+  hoverOutlineColor: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}
+  pressedOutlineColor: {r: 0.2981131, g: 0.2981131, b: 0.2981131, a: 1}
+  unselectedUnderlayColor: {r: 0.08679241, g: 0.08679241, b: 0.08679241, a: 1}
+  selectedUnderlayColor: {r: 0.13207549, g: 0.13207549, b: 0.13207549, a: 1}
+  hoverUnderlayColor: {r: 0.2905661, g: 0.2905661, b: 0.2905661, a: 1}
+  pressedUnderlayColor: {r: 0.20754719, g: 0.20754719, b: 0.20754719, a: 1}

@@ -1,40 +1,57 @@
-using UnityEngine;
 using TMPro;
-using DG.Tweening;
+using UnityEngine;
+using System.Collections;
 
 public class DayTextUI : MonoBehaviour
 {
-    public CanvasGroup canvasGroup;
-    public TextMeshProUGUI dayText;
-    public float fadeDuration = 1f;
-    public float displayDuration = 2f;
-    public Vector3 moveOffset = new(0f, 50f, 0f); // Optional: move text up slightly
+    [SerializeField] private TextMeshProUGUI dayText;
+    [SerializeField] private float typeSpeed = 0.05f; // seconds between each letter
+    [SerializeField] private float visibleDuration = 2f; // how long text stays fully visible
+    [SerializeField] private CanvasGroup canvasGroup;
 
-    private Vector3 originalPosition;
+    private Coroutine currentRoutine;
 
-    void Awake()
+    private void Awake()
     {
-        originalPosition = dayText.rectTransform.anchoredPosition;
-        canvasGroup.alpha = 0f;
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
     }
 
-    public void ShowDay(int day)
+    public void ShowDay(int dayNumber)
     {
-        dayText.text = $"Day {day}";
+        string fullText = $"Day {dayNumber}";
+
+        if (currentRoutine != null)
+            StopCoroutine(currentRoutine);
+
+        currentRoutine = StartCoroutine(TypeTextRoutine(fullText));
+    }
+
+    private IEnumerator TypeTextRoutine(string fullText)
+    {
+        canvasGroup.alpha = 1f;
+        dayText.text = "";
+
+        // Typewriter effect
+        foreach (char c in fullText)
+        {
+            dayText.text += c;
+            yield return new WaitForSeconds(typeSpeed);
+        }
+
+        // Wait before fading out
+        yield return new WaitForSeconds(visibleDuration);
+
+        // Smooth fade out
+        float fadeDuration = 1f;
+        float t = 0;
+        while (t < fadeDuration)
+        {
+            t += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, t / fadeDuration);
+            yield return null;
+        }
+
         canvasGroup.alpha = 0f;
-        dayText.rectTransform.anchoredPosition = originalPosition;
-
-        Sequence seq = DOTween.Sequence();
-
-        // Move up and fade in
-        seq.Append(canvasGroup.DOFade(1f, fadeDuration));
-        seq.Join(dayText.rectTransform.DOAnchorPos(originalPosition + moveOffset, fadeDuration));
-
-        // Wait while visible
-        seq.AppendInterval(displayDuration);
-
-        // Move down and fade out
-        seq.Append(canvasGroup.DOFade(0f, fadeDuration));
-        seq.Join(dayText.rectTransform.DOAnchorPos(originalPosition, fadeDuration));
     }
 }

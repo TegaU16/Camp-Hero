@@ -51,7 +51,7 @@ public class FurnaceUI : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         if (linkedFurnace != null)
         {

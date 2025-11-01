@@ -8853,7 +8853,7 @@ AnimationClip:
   - time: 0.5
     functionName: PerformHit
     data: 
-    objectReferenceParameter: {fileID: 0}
+    objectReferenceParameter: {fileID: 11400000, guid: 5396fe5797ba69c47b9e45983d94caeb, type: 2}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0

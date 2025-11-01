@@ -55,32 +55,26 @@ public class LaserAttack : MonoBehaviour, IRangedAttackBehavior
                 laser.SetPosition(0, origin);
                 laser.SetPosition(1, hit.point);
 
-                if (hit.transform == target)
-                {
-                    float deltaDamage = baseDamagePerSecond * Time.deltaTime;
-                    damageBuffer += deltaDamage;
+                float deltaDamage = baseDamagePerSecond * DifficultyManager.Instance.GetDamageMultiplier() * Time.deltaTime;
+                damageBuffer += deltaDamage;
 
-                    int wholeDamage = Mathf.FloorToInt(damageBuffer);
-                    if (wholeDamage > 0)
+                int wholeDamage = Mathf.FloorToInt(damageBuffer);
+
+                if (wholeDamage > 0)
+                {
+                    if (hit.collider.TryGetComponent(out Health health))
                     {
-                        if (hit.collider.TryGetComponent(out Health health))
-                        {
-                            health.TakeDamage(wholeDamage);
-                        }
-                        else if (target.TryGetComponent(out BreakableObject breakable))
-                        {
-                            Vector3 hitPoint = hit.collider.ClosestPoint(transform.position);
-                            Vector3 hitNormal = (hitPoint - transform.position).normalized;
-
-                            breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal);
-                        }
-
-                        damageBuffer -= wholeDamage;
+                        health.TakeDamage(wholeDamage);
                     }
-                }
-                else
-                {
-                    // Hit something else — optional: stop or reflect
+                    else if (target.TryGetComponent(out BreakableObject breakable))
+                    {
+                        Vector3 hitPoint = hit.collider.ClosestPoint(transform.position);
+                        Vector3 hitNormal = (hitPoint - transform.position).normalized;
+
+                        breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal, true);
+                    }
+
+                    damageBuffer -= wholeDamage;
                 }
             }
             else

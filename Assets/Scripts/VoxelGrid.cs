@@ -26,6 +26,7 @@ public class VoxelGrid : MonoBehaviour
     private string worldName;
 
     [SerializeField] private GameObject borderWallPrefab;
+    [SerializeField] private int chunksFromBorder;
 
     [HideInInspector]
     public bool worldGenerated = false;
@@ -167,13 +168,6 @@ public class VoxelGrid : MonoBehaviour
             yield return null; // let UI update
         }
 
-        // campfire / borders / save
-        /*yield return null;
-        SpawnCampfireAtCenter();
-        currentStep++;
-        OnProgress?.Invoke((float)currentStep / totalSteps);
-        yield return null;*/
-
         CreateWorldBorders();
         currentStep++;
         OnProgress?.Invoke((float)currentStep / totalSteps);
@@ -271,8 +265,8 @@ public class VoxelGrid : MonoBehaviour
     {
         if (campFirePrefab == null) return;
 
-        Vector3Int gridPos = WorldToVoxelCoord(worldCenter);
-        Vector3 snappedPos = VoxelCoordToWorld(gridPos);
+        Vector3Int gridPos = Utility.WorldToVoxelCoord(worldCenter);
+        Vector3 snappedPos = Utility.VoxelCoordToWorld(gridPos);
 
         Vector3 rayStart = snappedPos + Vector3.up * maxHeight;
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Ground")))
@@ -325,9 +319,7 @@ public class VoxelGrid : MonoBehaviour
     public void SaveAllChunks(string worldName)
     {
         foreach (VoxelChunk chunk in chunks)
-        {
             SaveSystem.SaveChunk(worldName, chunk);
-        }
     }
 
     void GenerateChunkTerrain(VoxelChunk chunk, Vector3 chunkPosition)
@@ -370,7 +362,7 @@ public class VoxelGrid : MonoBehaviour
                 Vector3 voxelPosition = new(cx * voxelSize, height, cz * voxelSize);
 
                 Voxel voxel = new(voxelPosition);
-                
+
                 chunk.voxels[cx, cz] = voxel;
 
                 Color lightColor = Color.white;
@@ -395,24 +387,26 @@ public class VoxelGrid : MonoBehaviour
         };
 
         MeshFilter filter = chunk.chunkObject.GetComponent<MeshFilter>();
-        if (!filter) filter = chunk.chunkObject.AddComponent<MeshFilter>();
+        if (!filter) 
+            filter = chunk.chunkObject.AddComponent<MeshFilter>();
 
         MeshRenderer renderer = chunk.chunkObject.GetComponent<MeshRenderer>();
-        if (!renderer) renderer = chunk.chunkObject.AddComponent<MeshRenderer>();
+        if (!renderer) 
+            renderer = chunk.chunkObject.AddComponent<MeshRenderer>();
+
+        MeshCollider meshCollider = chunk.chunkObject.GetComponent<MeshCollider>();
+        if (!meshCollider)
+            meshCollider = chunk.chunkObject.AddComponent<MeshCollider>();
 
         filter.mesh = mesh;
         renderer.material = voxelMaterial;
-
-        MeshCollider meshCollider = chunk.chunkObject.GetComponent<MeshCollider>();
-        if (!meshCollider) meshCollider = chunk.chunkObject.AddComponent<MeshCollider>();
-
         meshCollider.sharedMesh = mesh;
 
         chunk.chunkObject.layer = LayerMask.NameToLayer("Ground");
         chunk.generatedMesh = mesh;
     }
 
-    void TryAddSideIfNeighborLower(float[,] heightMap, int x, int z, int size, Vector3 chunkPos, Vector3 pos, Vector3 dir, int dx, int dz, ref int faceCount, 
+    void TryAddSideIfNeighborLower(float[,] heightMap, int x, int z, int size, Vector3 chunkPos, Vector3 pos, Vector3 dir, int dx, int dz, ref int faceCount,
         List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, List<Color> vertexColors, List<Vector3> normals, Color vertexColor, NoiseSettings noiseSettings)
     {
         int nx = x + dx;
@@ -437,9 +431,7 @@ public class VoxelGrid : MonoBehaviour
         }
 
         if (neighborHeight < currentHeight)
-        {
             AddFace(vertices, triangles, uvs, vertexColors, normals, pos, dir, ref faceCount, vertexColor);
-        }
     }
 
     void AddFace(List<Vector3> vertices, List<int> triangles, List<Vector2> uvs, List<Color> colors, List<Vector3> normals, Vector3 position, Vector3 normal, ref int faceCount, Color vertexColor)
@@ -534,7 +526,7 @@ public class VoxelGrid : MonoBehaviour
 
                     Vector3 offset = CalculatePositionOffset(cx, cz, seed);
                     Vector3 testPosition = basePosition + offset;
-                    Vector3Int spawnPosSnapped = WorldToVoxelCoord(testPosition);
+                    Vector3Int spawnPosSnapped = Utility.WorldToVoxelCoord(testPosition);
                     testPosition = spawnPosSnapped + new Vector3(voxelSize / 2f, 0, voxelSize / 2f);
 
                     if (IsOccupied(spawnPosSnapped)) continue;
@@ -546,6 +538,8 @@ public class VoxelGrid : MonoBehaviour
 
                         if (Vector3.Distance(spawnPosition, worldCenter) < minDistanceFromCenter)
                             continue;
+
+                        if (!IsWithinBorders(spawnPosition)) continue;
 
                         bool tooClose = false;
                         foreach (Vector3 spawnedPosition in chunk.savedObjectPositions)
@@ -605,13 +599,15 @@ public class VoxelGrid : MonoBehaviour
         {
             Vector2 randomOffset = Random.insideUnitCircle * clusterRadius;
             Vector3 candidatePosition = centerPosition + new Vector3(randomOffset.x, 5f, randomOffset.y);
-            Vector3Int candidatePosInt = WorldToVoxelCoord(candidatePosition);
+            Vector3Int candidatePosInt = Utility.WorldToVoxelCoord(candidatePosition);
 
             if (IsOccupied(candidatePosInt)) continue;
 
             if (Physics.Raycast(candidatePosition, Vector3.down, out RaycastHit hit, 10f, groundLayer))
             {
                 Vector3 finalPosition = hit.point;
+
+                if (!IsWithinBorders(finalPosition)) continue;
 
                 bool tooClose = false;
                 foreach (Vector3 existing in chunk.savedObjectPositions)
@@ -717,8 +713,7 @@ public class VoxelGrid : MonoBehaviour
         chunk.objects.Clear();
         chunk.savedObjectPositions.Clear();
 
-        if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0)
-            return;
+        if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0) return;
 
         chunk.savedObjects = new List<SpawnedObjectData>(savedData.spawnedObjects);
 
@@ -734,9 +729,7 @@ public class VoxelGrid : MonoBehaviour
             obj.transform.parent = chunk.chunkObject.transform;
 
             if (!string.IsNullOrEmpty(objData.savedStateJson) && obj.TryGetComponent(out ISaveableObject saveable))
-            {
                 saveable.LoadState(objData.savedStateJson);
-            }
 
             chunk.objects.Add(obj);
             chunk.savedObjectPositions.Add(spawnPosition);
@@ -812,36 +805,43 @@ public class VoxelGrid : MonoBehaviour
     void CreateWorldBorders()
     {
         float terrainSize = gridSize * chunkSize * voxelSize;
-        float borderOffset = chunkSize * voxelSize;
+        float borderOffset = chunkSize * voxelSize * chunksFromBorder;
 
         float innerSize = terrainSize - 2 * borderOffset;
         float wallHeight = 50f;
 
-        Vector3 center = new(terrainSize / 2, 0, terrainSize / 2);
-
         // Positive Z wall
-        CreateBorderWall(new Vector3(center.x, wallHeight / 2, terrainSize - borderOffset), new Vector3(innerSize, wallHeight, 1));
+        CreateBorderWall(new Vector3(worldCenter.x, wallHeight / 2, terrainSize - borderOffset), new Vector3(innerSize, wallHeight, 1));
 
         // Negative Z wall
-        CreateBorderWall(new Vector3(center.x, wallHeight / 2, borderOffset), new Vector3(innerSize, wallHeight, 1));
+        CreateBorderWall(new Vector3(worldCenter.x, wallHeight / 2, borderOffset), new Vector3(innerSize, wallHeight, 1));
 
         // Positive X wall
-        CreateBorderWall(new Vector3(terrainSize - borderOffset, wallHeight / 2, center.z), new Vector3(1, wallHeight, innerSize));
+        CreateBorderWall(new Vector3(terrainSize - borderOffset, wallHeight / 2, worldCenter.z), new Vector3(1, wallHeight, innerSize));
 
         // Negative X wall
-        CreateBorderWall(new Vector3(borderOffset, wallHeight / 2, center.z), new Vector3(1, wallHeight, innerSize));
+        CreateBorderWall(new Vector3(borderOffset, wallHeight / 2, worldCenter.z), new Vector3(1, wallHeight, innerSize));
     }
 
     void CreateBorderWall(Vector3 position, Vector3 scale)
     {
-        if (borderWallPrefab == null)
-        {
-            return;
-        }
+        if (borderWallPrefab == null) return;
 
         GameObject wall = Instantiate(borderWallPrefab, position, Quaternion.identity);
         wall.transform.localScale = scale;
         wall.name = "WorldBorder";
+    }
+
+    public bool IsWithinBorders(Vector3 position)
+    {
+        float terrainSize = gridSize * chunkSize * voxelSize;
+        float borderOffset = chunkSize * voxelSize * chunksFromBorder;
+        float innerSize = terrainSize - 2 * borderOffset;
+
+        float halfInner = innerSize / 2f;
+
+        return (Mathf.Abs(position.x - worldCenter.x) <= halfInner &&
+                Mathf.Abs(position.z - worldCenter.z) <= halfInner);
     }
 
     public bool IsOccupied(Vector3Int pos) =>
@@ -849,21 +849,13 @@ public class VoxelGrid : MonoBehaviour
 
     public bool IsWalkable(Vector3Int pos)
     {
-        if (!voxelStates.TryGetValue(pos, out VoxelState state))
-        {
-            // Voxel not in dictionary → treat as walkable by default
-            return true;
-        }
+        if (!voxelStates.TryGetValue(pos, out VoxelState state)) return true;
         return state.HasFlag(VoxelState.Walkable);
     }
 
     public bool IsBuildable(Vector3Int pos)
     {
-        if (!voxelStates.TryGetValue(pos, out VoxelState state))
-        {
-            // Voxel not in dictionary → treat as buildable by default
-            return true;
-        }
+        if (!voxelStates.TryGetValue(pos, out VoxelState state)) return true;
         return state.HasFlag(VoxelState.Buildable);
     }
 
@@ -873,7 +865,9 @@ public class VoxelGrid : MonoBehaviour
             current = VoxelState.None;
 
         if (enable)
+        {
             voxelStates[pos] = current | flag;
+        }
         else
         {
             current &= ~flag;
@@ -888,8 +882,8 @@ public class VoxelGrid : MonoBehaviour
     {
         Bounds bounds = prefab.GetComponentInChildren<Renderer>().bounds;
 
-        Vector3Int min = WorldToVoxelCoord(bounds.min);
-        Vector3Int max = WorldToVoxelCoord(bounds.max);
+        Vector3Int min = Utility.WorldToVoxelCoord(bounds.min);
+        Vector3Int max = Utility.WorldToVoxelCoord(bounds.max);
 
         for (int x = min.x; x <= max.x; x++)
         {
@@ -912,10 +906,7 @@ public class VoxelGrid : MonoBehaviour
         for (int i = 0; i < biomes.Count; i++)
         {
             float t = (i + 1) / (float)biomes.Count;
-            if (normalizedNoise < t)
-            {
-                return biomes[i];
-            }
+            if (normalizedNoise < t) return biomes[i];
         }
 
         return biomes[^1];
@@ -944,13 +935,9 @@ public class VoxelGrid : MonoBehaviour
         float normalizedHeight = total / maxAmplitude;
 
         if (settings.useHeightCurve)
-        {
             normalizedHeight = settings.heightCurve.Evaluate(normalizedHeight);
-        }
         else
-        {
             normalizedHeight = Mathf.Pow(normalizedHeight, settings.heightExponent);
-        }
 
         return normalizedHeight * settings.heightScale;
     }
@@ -961,72 +948,10 @@ public class VoxelGrid : MonoBehaviour
         return Mathf.PerlinNoise((x + seed) * scale, (z + seed) * scale) * 2f - 1f;
     }
 
-    public void ResetWorld()
-    {
-        // Destroy all chunk GameObjects
-        foreach (VoxelChunk chunk in chunks)
-        {
-            if (chunk.chunkObject != null)
-                Destroy(chunk.chunkObject);
-        }
-
-        chunks.Clear();
-
-        if (structureManager != null) 
-            structureManager.ClearStructures();
-
-        SaveSystem.ClearAllChunkSaves(worldName);
-
-        // Regenerate
-        StartCoroutine(GenerateTerrain());
-        CreateWorldBorders();
-    }
-
-    public Vector3Int WorldToVoxelCoord(Vector3 worldPos)
-    {
-        return new Vector3Int(
-            Mathf.FloorToInt(worldPos.x / voxelSize),
-            Mathf.FloorToInt(worldPos.y / voxelSize),
-            Mathf.FloorToInt(worldPos.z / voxelSize)
-        );
-    }
-
-    public Vector3 VoxelCoordToWorld(Vector3Int voxelCoord)
-    {
-        return new Vector3(
-            voxelCoord.x + 0.5f,
-            voxelCoord.y + 0.5f,
-            voxelCoord.z + 0.5f);
-    }
-
-    public float GetHeightAt(int x, int z)
-    {
-        int chunkX = Mathf.FloorToInt((float)x / chunkSize);
-        int chunkZ = Mathf.FloorToInt((float)z / chunkSize);
-
-        // Handle negative modulus properly
-        int localX = x - chunkX * chunkSize;
-        int localZ = z - chunkZ * chunkSize;
-
-        Vector2Int chunkKey = new(chunkX, chunkZ);
-
-        if (!chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
-        {
-            return 0f; // or some default height
-        }
-
-        if (localX < 0 || localX >= chunkSize || localZ < 0 || localZ >= chunkSize)
-        {
-            return 0f; // or default height
-        }
-
-        return chunk.heightMap[localX, localZ];
-    }
-
     public Vector3 GetDefaultSpawnPosition()
     {
         Vector3 defaultSpawn = GameManager.Instance.campFireInstance.transform.position + new Vector3(2, 0, 2);
-        float height = GetHeightAt((int)defaultSpawn.x, (int)defaultSpawn.z);
+        float height = Utility.GetHeightAt((int)defaultSpawn.x, (int)defaultSpawn.z);
         defaultSpawn.y = height;
 
         return defaultSpawn;

@@ -21,6 +21,7 @@ MonoBehaviour:
   itemDrop: {fileID: 8569962744507519543, guid: d5c0cb3301255874590e57e8c27aeaac, type: 3}
   buildingGhost: {fileID: 1909887875303421355, guid: f42dbe78ab315ea4c9cce25e64ab7cd9, type: 3}
   buildingSize: {x: 2, y: 2}
+  attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
   attackDistance: 1
   attackDamage:
   - 0

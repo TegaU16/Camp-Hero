@@ -4,11 +4,15 @@ using UnityEngine.UI;
 
 public class StaminaBar : MonoBehaviour
 {
+    [Header("UI References")]
     public Slider slider;
-    public float decrementRate;
-    public float incrementRate;
     public TextMeshProUGUI staminaText;
-    public float maxStamina;
+
+    [Header("Settings")]
+    public float decrementRate = 5f;
+    public float incrementRate = 10f;
+    public float maxStamina = 100f;
+
     private float currentStamina;
 
     private void Awake()
@@ -19,59 +23,51 @@ public class StaminaBar : MonoBehaviour
     public void Initialize(float maxStamina, float currentStamina)
     {
         this.maxStamina = maxStamina;
-        this.currentStamina = currentStamina;
-        slider.maxValue = maxStamina;
-        slider.value = currentStamina;
-        UpdateStaminaText((int)currentStamina);
+        this.currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
+        RefreshUI();
     }
 
     public void SetMaxStamina(float stamina)
     {
         maxStamina = stamina;
-        currentStamina = stamina;
+        currentStamina = Mathf.Min(currentStamina, maxStamina);
+        RefreshUI();
+    }
 
-        slider.maxValue = maxStamina;
-        slider.value = currentStamina;
-        UpdateStaminaText((int)currentStamina);
+    public void AddStamina(float amount)
+    {
+        ChangeStamina(amount);
     }
 
     public void DecreaseStamina()
     {
-        currentStamina -= decrementRate * Time.deltaTime;
-        slider.value = currentStamina;
-        UpdateStaminaText((int)currentStamina);
+        ChangeStamina(-decrementRate * Time.deltaTime);
     }
 
     public void IncreaseStamina()
     {
         if (currentStamina < maxStamina)
-        {
-            currentStamina += incrementRate * Time.deltaTime;
-            slider.value = currentStamina;
-            UpdateStaminaText((int)currentStamina);
-        }
+            ChangeStamina(incrementRate * Time.deltaTime);
     }
 
-    public void SetNewStamina(int stamina)
+    public void SetNewStamina(float stamina)
+    {
+        currentStamina = Mathf.Clamp(stamina, 0, maxStamina);
+        RefreshUI();
+    }
+
+    public float GetStamina() => currentStamina;
+
+    private void ChangeStamina(float delta)
+    {
+        currentStamina = Mathf.Clamp(currentStamina + delta, 0, maxStamina);
+        RefreshUI();
+    }
+
+    private void RefreshUI()
     {
         slider.maxValue = maxStamina;
-        SetCurrentStamina(stamina);
         slider.value = currentStamina;
-    }
-
-    public void SetCurrentStamina(int stamina)
-    {
-        currentStamina = stamina;
-        UpdateStaminaText(stamina);
-    }
-
-    public float GetStamina()
-    {
-        return currentStamina;
-    }
-
-    private void UpdateStaminaText(int staminaValue)
-    {
-        staminaText.text = staminaValue.ToString();
+        staminaText.text = ((int)currentStamina).ToString();
     }
 }

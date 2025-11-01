@@ -16,6 +16,7 @@ public class WorldManager : MonoBehaviour
     public Button editButton;
     public Transform worldListParent;
     public GameObject worldButtonPrefab;
+    public GameObject retryConfirmMenu;
 
     [Header("World Create Menu")]
     public TMP_InputField worldNameInput;
@@ -23,6 +24,11 @@ public class WorldManager : MonoBehaviour
     public Button createWorldButton;
     public GameObject[] difficultyLabels;
     private Difficulty pendingDifficulty = Difficulty.Easy;
+
+    [Header("World Edit Menu")]
+    public TMP_InputField worldNameEditInput;
+    public GameObject[] difficultyLabelsEdit;
+    private Difficulty editingDifficulty;
 
     private string WorldsPath => Path.Combine(Application.persistentDataPath, "Worlds");
 
@@ -34,9 +40,9 @@ public class WorldManager : MonoBehaviour
         deleteButton.interactable = false;
         editButton.interactable = false;
 
-        playButton.GetComponent<SelectableImage>().Deselect();
-        deleteButton.GetComponent<SelectableImage>().Deselect();
-        editButton.GetComponent<SelectableImage>().Deselect();
+        playButton.GetComponent<InteractiveButton>().Deselect();
+        deleteButton.GetComponent<InteractiveButton>().Deselect();
+        editButton.GetComponent<InteractiveButton>().Deselect();
 
         pendingDifficulty = DifficultyManager.Instance.GetDifficulty();
         UpdateDifficultyLabels(pendingDifficulty);
@@ -47,8 +53,11 @@ public class WorldManager : MonoBehaviour
 
     public void CreateWorld()
     {
-        string worldName = worldNameInput.text.Trim();
-        if (string.IsNullOrWhiteSpace(worldName)) return;
+        string baseName = worldNameInput.text.Trim();
+        if (string.IsNullOrWhiteSpace(baseName)) return;
+
+        // Ensure unique world name
+        string worldName = GetUniqueWorldName(baseName);
 
         string seedString = string.IsNullOrWhiteSpace(seedInput.text)
             ? Random.Range(0, int.MaxValue).ToString()
@@ -78,9 +87,10 @@ public class WorldManager : MonoBehaviour
 
         UpdateDifficultyLabels(metadata.difficulty);
 
-        SceneManager.LoadScene("GameScene");
-    }
+        LoadingScreenUI.Instance.Show();
 
+        SceneLoader.Instance.LoadScene("GameScene");
+    }
 
     void LoadWorldList()
     {
@@ -120,6 +130,14 @@ public class WorldManager : MonoBehaviour
             Transform lastPlayed = buttonObj.transform.Find("Last Played Text");
             lastPlayed.GetComponent<TextMeshProUGUI>().text = metadata.lastPlayedDate;
 
+            GameObject activeIcon = buttonObj.transform.Find("Active World Icon").gameObject;
+            GameObject failedIcon = buttonObj.transform.Find("Failed World Icon").gameObject;
+            GameObject wonIcon = buttonObj.transform.Find("Won World Icon").gameObject;
+
+            activeIcon.SetActive(metadata.worldState == WorldState.Active);
+            failedIcon.SetActive(metadata.worldState == WorldState.Failed);
+            wonIcon.SetActive(metadata.worldState == WorldState.Won);
+
             buttonObj.GetComponent<Button>().onClick.AddListener(() =>
             {
                 SelectWorld(metadata, buttonObj);
@@ -132,25 +150,22 @@ public class WorldManager : MonoBehaviour
         selectedWorldName = metadata.worldName;
         selectedSeed = metadata.seed;
 
-        DifficultyManager.Instance.SetDifficulty(metadata.difficulty);
         UpdateDifficultyLabels(metadata.difficulty);
 
         playButton.interactable = true;
         deleteButton.interactable = true;
         editButton.interactable = true;
 
-        playButton.GetComponent<SelectableImage>().Select();
-        deleteButton.GetComponent<SelectableImage>().Select();
-        editButton.GetComponent<SelectableImage>().Select();
+        playButton.GetComponent<InteractiveButton>().Select();
+        deleteButton.GetComponent<InteractiveButton>().Select();
+        editButton.GetComponent<InteractiveButton>().Select();
 
-        currentButton.GetComponent<SelectableImage>().Select();
+        currentButton.GetComponent<InteractiveButton>().Select();
 
         foreach (Transform child in worldListParent.transform)
         {
-            if (child != null && child != currentButton.transform && child.TryGetComponent(out SelectableImage selectable))
-            {
-                selectable.Deselect();
-            }
+            if (child != null && child != currentButton.transform && child.TryGetComponent(out InteractiveButton interactiveButton))
+                interactiveButton.Deselect();
         }
     }
 
@@ -163,39 +178,98 @@ public class WorldManager : MonoBehaviour
 
         string json = File.ReadAllText(metaPath);
         WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
+
+        if (metadata.worldState == WorldState.Failed)
+        {
+            ToggleRetryConfirm(true);
+            return;
+        }
+
         metadata.lastPlayedDate = System.DateTime.Now.ToString();
         File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
 
         WorldSession.CurrentWorldName = selectedWorldName;
         WorldSession.CurrentSeed = selectedSeed;
 
-        SceneManager.LoadScene("GameScene");
+        LoadingScreenUI.Instance.Show();
+
+        SceneLoader.Instance.LoadScene("GameScene");
     }
 
     public void DeleteSelectedWorld()
     {
         if (string.IsNullOrEmpty(selectedWorldName)) return;
 
-        string worldDir = Path.Combine(WorldsPath, selectedWorldName);
-        if (Directory.Exists(worldDir))
-            Directory.Delete(worldDir, true);
+        SaveSystem.DeleteWorldMeta(selectedWorldName);
 
         selectedWorldName = null;
         selectedSeed = null;
+
         playButton.interactable = false;
         deleteButton.interactable = false;
         editButton.interactable = false;
 
+        playButton.GetComponent<InteractiveButton>().Deselect();
+        deleteButton.GetComponent<InteractiveButton>().Deselect();
+        editButton.GetComponent<InteractiveButton>().Deselect();
+
         LoadWorldList();
     }
 
-    public void SetDifficulty()
+    public void ToggleRetryConfirm(bool open)
     {
+        retryConfirmMenu.SetActive(open);
+        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
+
+        Utility.DisableButtonsOutside(retryConfirmMenu.transform, buttonsInScene, open);
+    }
+
+    public void RetryFailedWorld()
+    {
+        string metaPath = Path.Combine(WorldsPath, selectedWorldName, "meta.json");
+        if (!File.Exists(metaPath)) return;
+
+        string json = File.ReadAllText(metaPath);
+        WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
+
+        string currentWorldName = metadata.worldName;
+        string currentSeed = metadata.seed;
+
+        SaveSystem.DeleteWorldMeta(currentWorldName); // delete old folder
+
+        // Recreate metadata after deletion
+        WorldMetaData newMeta = new()
+        {
+            worldName = currentWorldName,
+            seed = currentSeed,
+            createdDate = System.DateTime.Now.ToString(),
+            lastPlayedDate = System.DateTime.Now.ToString(),
+            difficulty = DifficultyManager.Instance.GetDifficulty(),
+            worldState = WorldState.Active
+        };
+        SaveSystem.SaveWorldMeta(newMeta);
+
+        newMeta.lastPlayedDate = System.DateTime.Now.ToString();
+        File.WriteAllText(metaPath, JsonUtility.ToJson(newMeta, true));
+
+        WorldSession.CurrentWorldName = selectedWorldName;
+        WorldSession.CurrentSeed = selectedSeed;
+
+        LoadingScreenUI.Instance.Show();
+
+        SceneLoader.Instance.LoadScene("GameScene");
+    }
+
+    public void SetDifficulty(bool right)
+    {
+        int cycleStep = right ? 1 : -1;
+        int length = System.Enum.GetValues(typeof(Difficulty)).Length;
+        int nextIndex = ((int)pendingDifficulty + cycleStep + length) % length;
+
         if (string.IsNullOrEmpty(selectedWorldName))
         {
             // We're in world creation mode
-            pendingDifficulty = (Difficulty)(((int)pendingDifficulty + 1) % System.Enum.GetValues(typeof(Difficulty)).Length);
-            DifficultyManager.Instance.SetDifficulty(pendingDifficulty);
+            pendingDifficulty = (Difficulty)nextIndex;
             UpdateDifficultyLabels(pendingDifficulty);
             return;
         }
@@ -207,10 +281,8 @@ public class WorldManager : MonoBehaviour
         string json = File.ReadAllText(metaPath);
         WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
 
-        Difficulty next = (Difficulty)(((int)metadata.difficulty + 1) % System.Enum.GetValues(typeof(Difficulty)).Length);
-
+        Difficulty next = (Difficulty)nextIndex;
         metadata.difficulty = next;
-        DifficultyManager.Instance.SetDifficulty(next);
         UpdateDifficultyLabels(next);
 
         File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
@@ -218,10 +290,10 @@ public class WorldManager : MonoBehaviour
 
     private void UpdateDifficultyLabels(Difficulty difficulty)
     {
+        DifficultyManager.Instance.SetDifficulty(difficulty);
+
         for (int i = 0; i < difficultyLabels.Length; i++)
-        {
             difficultyLabels[i].SetActive(i == (int)difficulty);
-        }
     }
 
     private void OnWorldNameChanged(string text)
@@ -229,12 +301,107 @@ public class WorldManager : MonoBehaviour
         bool valid = !string.IsNullOrWhiteSpace(text);
         createWorldButton.interactable = valid;
 
-        if (createWorldButton.TryGetComponent(out SelectableImage selectable))
+        if (createWorldButton.TryGetComponent(out InteractiveButton interactiveButton))
         {
             if (valid)
-                selectable.Select();
+                interactiveButton.Select();
             else
-                selectable.Deselect();
+                interactiveButton.Deselect();
         }
+    }
+
+    public void OpenEditWorldMenu()
+    {
+        if (string.IsNullOrEmpty(selectedWorldName)) return;
+
+        string metaPath = Path.Combine(WorldsPath, selectedWorldName, "meta.json");
+        if (!File.Exists(metaPath)) return;
+
+        string json = File.ReadAllText(metaPath);
+        WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
+
+        worldNameEditInput.text = metadata.worldName;
+        editingDifficulty = metadata.difficulty;
+        UpdateEditDifficultyLabels(editingDifficulty);
+    }
+
+    public void CycleEditDifficulty(bool right)
+    {
+        int cycleStep = right ? 1 : -1;
+        int length = System.Enum.GetValues(typeof(Difficulty)).Length;
+
+        int nextIndex = ((int)editingDifficulty + cycleStep + length) % length;
+        editingDifficulty = (Difficulty)nextIndex;
+
+        UpdateEditDifficultyLabels(editingDifficulty);
+    }
+
+    private void UpdateEditDifficultyLabels(Difficulty difficulty)
+    {
+        for (int i = 0; i < difficultyLabelsEdit.Length; i++)
+            difficultyLabelsEdit[i].SetActive(i == (int)difficulty);
+    }
+
+    public void SaveEditedWorld()
+    {
+        string oldName = selectedWorldName;
+        string newName = worldNameEditInput.text.Trim();
+
+        if (string.IsNullOrWhiteSpace(newName)) return;
+
+        string oldWorldDir = Path.Combine(WorldsPath, oldName);
+        if (!Directory.Exists(oldWorldDir)) return;
+
+        // Ensure unique name if changed
+        if (oldName != newName)
+            newName = GetUniqueWorldName(newName);
+
+        string newWorldDir = Path.Combine(WorldsPath, newName);
+
+        // If name changed, rename folder
+        if (oldName != newName)
+            Directory.Move(oldWorldDir, newWorldDir);
+
+        string metaPath = Path.Combine(newWorldDir, "meta.json");
+        if (!File.Exists(metaPath)) return;
+
+        string json = File.ReadAllText(metaPath);
+        WorldMetaData metadata = JsonUtility.FromJson<WorldMetaData>(json);
+
+        metadata.worldName = newName;
+        metadata.difficulty = editingDifficulty;
+        metadata.lastPlayedDate = System.DateTime.Now.ToString();
+
+        File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+
+        // Refresh state
+        selectedWorldName = newName;
+        UpdateDifficultyLabels(editingDifficulty);
+
+        LoadWorldList();
+    }
+
+    private string GetUniqueWorldName(string baseName)
+    {
+        if (!Directory.Exists(WorldsPath))
+            Directory.CreateDirectory(WorldsPath);
+
+        string worldDir = Path.Combine(WorldsPath, baseName);
+
+        // If no conflict, we’re done
+        if (!Directory.Exists(worldDir)) return baseName;
+
+        // If conflict, append suffixes incrementally until unique
+        int counter = 1;
+        string newName;
+        do
+        {
+            newName = $"{baseName}_{counter:D2}";
+            worldDir = Path.Combine(WorldsPath, newName);
+            counter++;
+        }
+        while (Directory.Exists(worldDir));
+
+        return newName;
     }
 }

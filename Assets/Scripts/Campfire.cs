@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,17 +45,13 @@ public class Campfire : MonoBehaviour, IInteractable, ISaveableObject
     public void RemoveGem(GemColor color)
     {
         if (unlockedGems.Remove(color))
-        {
             UpdateGemVisibility();
-        }
     }
 
     private void UpdateGemVisibility()
     {
         foreach (KeyValuePair<GemColor, GameObject> pair in gemObjects)
-        {
             pair.Value.SetActive(unlockedGems.Contains(pair.Key));
-        }
     }
 
     public void Interact()
@@ -98,13 +93,11 @@ public class Campfire : MonoBehaviour, IInteractable, ISaveableObject
         else
         {
             health.SetHealth(data.currentHealth);
-            Debug.Log($"[Campfire] Loaded health: {data.currentHealth}");
 
             unlockedGems.Clear();
             foreach (GemColor color in data.unlockedGems)
-            {
                 unlockedGems.Add(color);
-            }
+
             UpdateGemVisibility();
         }
     }

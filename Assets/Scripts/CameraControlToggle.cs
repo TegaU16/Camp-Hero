@@ -14,9 +14,7 @@ public class CameraControlToggle : MonoBehaviour
     void Start()
     {
         if (cinemachineCamera != null)
-        {
             orbitalFollow = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
-        }
     }
 
     void LateUpdate()

@@ -11,6 +11,7 @@ public class DefenderTotem : Defense
 
     protected override void Update()
     {
+        if (!GameManager.Instance.IsGameManagerReady()) return;
         pulseTimer -= Time.deltaTime;
 
         if (pulseTimer <= 0f && HasEnemiesInRange())
@@ -44,6 +45,8 @@ public class DefenderTotem : Defense
                 {
                     breakable.TakeDamage(pulseDamage, false, hitPoint, hitNormal);
                 }
+
+                enemy.OnAttacked(transform);
             }
         }
 
@@ -58,8 +61,7 @@ public class DefenderTotem : Defense
 
         for (int i = 0; i < hitCount; i++)
         {
-            if (hits[i].TryGetComponent(out Enemy enemy) && IsTargetAlive(enemy.gameObject.transform))
-                return true;
+            if (hits[i].TryGetComponent(out Enemy enemy) && IsTargetAlive(enemy.gameObject.transform)) return true;
         }
 
         return false;

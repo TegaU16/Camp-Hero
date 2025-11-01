@@ -16,24 +16,23 @@ public class BlessingAltar : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        if (hasBeenUsed)
-            return;
+        if (hasBeenUsed) return;
 
         hasBeenUsed = true;
 
         PlayerStatsManager statsManager = PlayerStatsManager.Instance;
-        statsManager.stats.strength.Value += 5;
-        statsManager.stats.vitality.Value += 5;
-        statsManager.stats.endurance.Value += 5;
-        statsManager.stats.stamina.Value += 5;
-        statsManager.stats.luck.Value += 5;
+        PlayerStats stats = statsManager.stats;
 
-        statsManager.stats.availablePoints += 0; // optional
+        statsManager.UpgradeStat(stats.strength, 5);
+        statsManager.UpgradeStat(stats.vitality, 5);
+        statsManager.UpgradeStat(stats.endurance, 5);
+        statsManager.UpgradeStat(stats.stamina, 5);
+        statsManager.UpgradeStat(stats.luck, 5);
+
+        stats.goldenPoints++;
 
         Player player = FindFirstObjectByType<Player>();
         player.UpdateVitals();
-
-        Debug.Log("Received Blessing: +5 to all stats");
 
         // Optional: play effect or disable altar visually
         Destroy(this); // or disable interaction

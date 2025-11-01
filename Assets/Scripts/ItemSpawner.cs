@@ -26,8 +26,7 @@ public static class ItemSpawner
         int chunkZ = (int)(position.z / VoxelGrid.Instance.chunkSize);
         Vector2Int chunkKey = new(chunkX, chunkZ);
 
-        if (!VoxelGrid.Instance.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
-            return null;
+        if (!VoxelGrid.Instance.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk)) return null;
 
         GameObject prefab = item.itemDrop;
         GameObject spawnedObject = torsoBone == null

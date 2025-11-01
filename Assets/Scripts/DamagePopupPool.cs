@@ -9,7 +9,7 @@ public class DamagePopupPool : MonoBehaviour
     [SerializeField] private int initialPoolSize = 20;
     [SerializeField] private Canvas worldCanvas;
 
-    private Queue<GameObject> popupPool = new Queue<GameObject>();
+    private readonly Queue<GameObject> popupPool = new();
 
     private void Awake()
     {
@@ -30,9 +30,7 @@ public class DamagePopupPool : MonoBehaviour
     public GameObject GetPopup()
     {
         if (popupPool.Count == 0)
-        {
             FillPool();  // Optional: expand if empty
-        }
 
         GameObject popup = popupPool.Dequeue();
         popup.SetActive(true);

@@ -1,36 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4412589446475282063
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4360539601765477406}
-  m_Layer: 7
-  m_Name: Step Check Point
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4360539601765477406
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4412589446475282063}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.4, z: 0.1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6797202462913651757}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &6475678035115606982
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -61,7 +30,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       propertyPath: m_LocalRotation.w
@@ -241,10 +210,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4360539601765477406}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
       insertIndex: -1
@@ -803,7 +769,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 0
-  attackRange: 1
+  enemyType: 0
+  meleeAttackRange: 1
   rangedAttackRange: 10
   attackCooldown: 2
   damage: 10
@@ -840,7 +807,7 @@ MonoBehaviour:
   baseHealth: 150
   expDropped: 15
   drops:
-  - drop: {fileID: 11400000, guid: 7b5cbd385dc784a4f9d509bdc7c77b4f, type: 2}
+  - drop: {fileID: 11400000, guid: dddd9191554eaaa429167b93efc7e802, type: 2}
     minValue: 1
     maxValue: 4
     dropChance: 0.2
@@ -849,6 +816,7 @@ MonoBehaviour:
   objectLevel: 0
   savedObjectIndex: -1
   torsoBone: {fileID: 8462229686125056536}
+  bounceCooldown: 0.2
 --- !u!114 &5838581026825397844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -865,6 +833,7 @@ MonoBehaviour:
   - {fileID: 7648035320434340961}
   animator: {fileID: 627319165041851991}
   agent: {fileID: 2614857085043307958}
+  proceduralAnimator: {fileID: 0}
 --- !u!114 &1859399712325388095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -892,7 +861,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stoppingDistance: 0.1
+  stoppingDistance: 0.05
   rotationSpeed: 720
   animator: {fileID: 627319165041851991}
   speedParam: Speed
@@ -956,11 +925,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
   prefabKey: goblin
---- !u!4 &6797202462913651757 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}
-  m_PrefabInstance: {fileID: 6475678035115606982}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8001282777043889387 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5272450080832786643, guid: b3ef42b786bc8b342888b240ecf4b296, type: 3}

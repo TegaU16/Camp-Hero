@@ -7,16 +7,12 @@ public class MainMenuManager : MonoBehaviour
     public void NavigateTo(GameObject destination)
     {
         if (destination != null)
-        {
             destination.SetActive(true);
-        }
 
         foreach (GameObject menu in menus)
         {
             if (menu != null && menu != destination)
-            {
                 menu.SetActive(false);
-            }
         }
     }
 

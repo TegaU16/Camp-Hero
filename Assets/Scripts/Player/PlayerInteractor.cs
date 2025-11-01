@@ -15,7 +15,7 @@ public class PlayerInteractor : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
         if (InventoryManager.Instance.IsExtensionOpen()) return;
 
         IInteractable nearest = FindNearestInteractable(out float dist);

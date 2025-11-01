@@ -66,6 +66,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -87,6 +89,7 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -107,7 +110,7 @@ MonoBehaviour:
   requiredKey: {fileID: 11400000, guid: 527f2762549ff8a4dadc125dfe178d7b, type: 2}
   bossPrefab: {fileID: 5482173699686684518, guid: 4413e226929a8dd459149ec634acf873, type: 3}
   bossSpawnPoint: {fileID: 5211026046734186928}
-  blessingAltarPrefab: {fileID: 0}
+  blessingAltarPrefab: {fileID: 6483958559380496520, guid: a802b45ced5da5b408f0c8e8649a5f94, type: 3}
 --- !u!64 &-7791162840643503333
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -154,6 +157,7 @@ GameObject:
   - component: {fileID: 9150057121855883343}
   - component: {fileID: 2968699669273079159}
   - component: {fileID: 7912134826380997618}
+  - component: {fileID: 7374453053096817555}
   m_Layer: 6
   m_Name: Green Gem
   m_TagString: Untagged
@@ -204,6 +208,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -225,10 +231,26 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7374453053096817555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3996664605477514180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 106e783c6d23dfb4da5b6747abbb27ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpinAndFloat
+  rotationSpeed: 20
+  floatAmplitude: 0.1
+  floatFrequency: 1.5
 --- !u!1 &4509814352592124774
 GameObject:
   m_ObjectHideFlags: 0

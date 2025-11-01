@@ -6,21 +6,40 @@ using System.Collections.Generic;
 public class EnemyPoolEditor : Editor
 {
     SerializedProperty enemyTiers;
-    SerializedProperty poolSizePerTier;
+
+    SerializedProperty dayNightCycle;
+    SerializedProperty poolGraveyardPosition;
+
+    SerializedProperty dailyGrowthRate;
+    SerializedProperty maxGrowthMultiplier;
 
     int previewDay = 1;
 
     void OnEnable()
     {
         enemyTiers = serializedObject.FindProperty("enemyTiers");
-        poolSizePerTier = serializedObject.FindProperty("poolSizePerTier");
+
+        dayNightCycle = serializedObject.FindProperty("dayNightCycle");
+        poolGraveyardPosition = serializedObject.FindProperty("poolGraveyardPosition");
+
+        dailyGrowthRate = serializedObject.FindProperty("dailyGrowthRate");
+        maxGrowthMultiplier = serializedObject.FindProperty("maxGrowthMultiplier");
     }
 
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
-        EditorGUILayout.PropertyField(poolSizePerTier);
+        EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(dayNightCycle, new GUIContent("Day Night Cycle"));
+        EditorGUILayout.PropertyField(poolGraveyardPosition, new GUIContent("Pool Graveyard Position"));
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Pool Growth Settings", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(dailyGrowthRate, new GUIContent("Daily Growth Rate"));
+        EditorGUILayout.PropertyField(maxGrowthMultiplier, new GUIContent("Max Growth Multiplier"));
+
         EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Enemy Tiers", EditorStyles.boldLabel);
@@ -30,11 +49,13 @@ public class EnemyPoolEditor : Editor
             SerializedProperty tier = enemyTiers.GetArrayElementAtIndex(i);
             SerializedProperty prefab = tier.FindPropertyRelative("prefab");
             SerializedProperty unlockDay = tier.FindPropertyRelative("unlockDay");
+            SerializedProperty basePoolSize = tier.FindPropertyRelative("poolSize");
 
             EditorGUILayout.BeginVertical("box");
 
             EditorGUILayout.PropertyField(prefab, new GUIContent("Prefab"));
             EditorGUILayout.PropertyField(unlockDay, new GUIContent("Unlock Day"));
+            EditorGUILayout.PropertyField(basePoolSize, new GUIContent("Base Pool Size"));
 
             if (GUILayout.Button("Remove Tier"))
             {
@@ -46,9 +67,7 @@ public class EnemyPoolEditor : Editor
         }
 
         if (GUILayout.Button("Add Enemy Tier"))
-        {
             enemyTiers.InsertArrayElementAtIndex(enemyTiers.arraySize);
-        }
 
         EditorGUILayout.Space(10);
 
@@ -57,14 +76,9 @@ public class EnemyPoolEditor : Editor
         bool hasDuplicates = false;
         for (int i = 0; i < enemyTiers.arraySize; i++)
         {
-            var prefabProp = enemyTiers.GetArrayElementAtIndex(i).FindPropertyRelative("prefab");
-            if (prefabProp.objectReferenceValue is GameObject prefab)
-            {
-                if (!seenPrefabs.Add(prefab))
-                {
-                    hasDuplicates = true;
-                }
-            }
+            SerializedProperty prefabProp = enemyTiers.GetArrayElementAtIndex(i).FindPropertyRelative("prefab");
+            if (prefabProp.objectReferenceValue is GameObject prefab && !seenPrefabs.Add(prefab))
+                hasDuplicates = true;
         }
 
         EditorGUILayout.HelpBox(hasDuplicates ? "⚠️ Duplicate enemy prefabs detected!" : "✓ No duplicate prefabs", MessageType.Info);
@@ -77,24 +91,18 @@ public class EnemyPoolEditor : Editor
         List<string> availableNames = new();
         for (int i = 0; i < enemyTiers.arraySize; i++)
         {
-            var tier = enemyTiers.GetArrayElementAtIndex(i);
-            var prefabProp = tier.FindPropertyRelative("prefab");
-            var unlockDayProp = tier.FindPropertyRelative("unlockDay");
+            SerializedProperty tier = enemyTiers.GetArrayElementAtIndex(i);
+            SerializedProperty prefabProp = tier.FindPropertyRelative("prefab");
+            SerializedProperty unlockDayProp = tier.FindPropertyRelative("unlockDay");
 
             if (prefabProp.objectReferenceValue is GameObject prefab && previewDay >= unlockDayProp.intValue)
-            {
                 availableNames.Add(prefab.name);
-            }
         }
 
         if (availableNames.Count > 0)
-        {
             EditorGUILayout.HelpBox("Tiers available on Day " + previewDay + ": " + string.Join(", ", availableNames), MessageType.None);
-        }
         else
-        {
             EditorGUILayout.HelpBox("No enemy tiers available on this day.", MessageType.Warning);
-        }
 
         serializedObject.ApplyModifiedProperties();
     }

@@ -41,6 +41,13 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     [SerializeField] private Transform torsoBone;
 
+    private bool canBounce = true;
+    [SerializeField] private float bounceCooldown = 0.2f;
+    private Coroutine activeBounce;
+
+    public delegate void EnemyKilledDelegate(Enemy enemy, int damageDealt, int damageRequired, BreakableObject breakableObject);
+    public event EnemyKilledDelegate OnEnemyKilled;
+
     private void OnEnable()
     {
         DifficultyManager.Instance.OnDifficultyChanged += HandleDifficultyChange;
@@ -67,12 +74,13 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         health = reset ? maxHealth : (int)(maxHealth * healthPercent);
     }
 
-    public void TakeDamage(int damage, bool crit, Vector3 hitPoint, Vector3 hitNormal, bool fromEnemy = false)
+    public void TakeDamage(int damage, bool crit, Vector3 hitPoint = default, Vector3 hitNormal = default, bool fromEnemy = false)
     {
         if (isDestroyed) return;
 
-        if (health > 0) ShowDamagePopup(damage, crit, hitPoint);
+        ShowDamagePopup(damage, crit, hitPoint);
 
+        int damageRequired = health;
         health -= damage;
         health = Mathf.Max(health, 0);
 
@@ -81,6 +89,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             if (TryGetComponent(out Enemy enemy))
             {
                 enemy.Die();
+                OnEnemyKilled?.Invoke(enemy, damage, damageRequired, this);
                 return;
             }
 
@@ -96,31 +105,36 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         else
         {
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
-            if (hitEffectManager != null)
-            {
+            if (hitEffectManager != null && hitNormal != Vector3.zero)
                 hitEffectManager.SpawnSparks(hitPoint, hitNormal);
-            }
 
             if (entityType == EntityType.Static)
-                StartCoroutine(BounceObject(transform));
+                TryBounce(transform);
         }
     }
 
     private void ShowDamagePopup(int damage, bool crit, Vector3 hitPoint)
     {
         GameObject popupInstance = DamagePopupPool.Instance.GetPopup();
+        Camera cam = Camera.main;
+        if (!cam) return;
 
-        Vector3 spawnPosition = hitPoint + Vector3.up * Random.Range(0.2f, 0.5f);
+        // Spawn a bit above the hit point
+        Vector3 spawnOffset = Vector3.up * Random.Range(0.2f, 0.5f);
+
+        // Offset slightly toward the camera so it's not occluded by the object
+        Vector3 directionToCamera = (cam.transform.position - hitPoint).normalized;
+        float cameraOffset = 0.3f; // adjust as needed
+        Vector3 spawnPosition = hitPoint + spawnOffset + directionToCamera * cameraOffset;
+
         popupInstance.transform.position = spawnPosition;
 
-        // Always face camera
-        popupInstance.transform.LookAt(Camera.main.transform);
-        popupInstance.transform.Rotate(0, 180, 0);
+        // Make it always face the camera
+        popupInstance.transform.LookAt(cam.transform);
+        popupInstance.transform.Rotate(0, 180f, 0); // because LookAt faces the back of the object
 
         if (popupInstance.TryGetComponent(out DamagePopup popup))
-        {
             popup.Setup(damage, crit);
-        }
     }
 
     public void DestroyObject()
@@ -128,7 +142,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         if (isDestroyed) return;
         isDestroyed = true;
 
-        if (!DestroyedByEnemy)
+        if (!DestroyedByEnemy || GetComponent<Enemy>() != null)
         {
             foreach (Drop itemDrop in drops)
             {
@@ -213,6 +227,17 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         ItemSpawner.Spawn(drop, pos, amount, bone, scatter, scatterDistance, scatterForce);
     }
 
+    private void TryBounce(Transform objTransform)
+    {
+        if (!canBounce) return;
+
+        if (activeBounce != null)
+            StopCoroutine(activeBounce);
+
+        activeBounce = StartCoroutine(BounceObject(objTransform));
+        StartCoroutine(BounceCooldown());
+    }
+
     IEnumerator BounceObject(Transform objTransform)
     {
         Vector3 originalScale = objTransform.localScale;
@@ -241,6 +266,13 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         objTransform.localScale = originalScale;
     }
 
+    private IEnumerator BounceCooldown()
+    {
+        canBounce = false;
+        yield return new WaitForSeconds(bounceCooldown);
+        canBounce = true;
+    }
+
     public void ResetObject()
     {
         isDestroyed = false;
@@ -265,8 +297,6 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
     {
         BreakableObjectData data = JsonUtility.FromJson<BreakableObjectData>(json);
         if (data != null)
-        {
             health = data.currentHealth;
-        }
     }
 }

@@ -11,14 +11,13 @@ public class PlayerSaveData
     public float currentStamina;
     public PlayerAttributesData attributes;
     public List<ItemData> inventory;
-    public int availablePoints;
     public LevelData levelData;
 }
 
 [System.Serializable]
 public class AnimalSaveData
 {
-    public string prefabName;
+    public string prefabID;
     public Vector3 position;
     public int currentHealth;
 }
@@ -51,6 +50,8 @@ public class WorldMetaData
     public string createdDate;
     public string lastPlayedDate;
     public Difficulty difficulty;
+    public WorldState worldState = WorldState.Active;
+    public RunStats worldStats;
 }
 
 [System.Serializable]
@@ -79,13 +80,9 @@ public class SpawnedObjectData
         prefabID = prefabObj.GetComponent<PrefabID>().prefabKey;
 
         if (instanceObj != null && instanceObj.TryGetComponent(out ISaveableObject saveable))
-        {
             savedStateJson = saveable.SaveState();
-        }
         else
-        {
             savedStateJson = null;
-        }
     }
 
     public SpawnedObjectData() { }
@@ -114,6 +111,11 @@ public class PlayerAttributesData
     public int endurance;
     public int stamina;
     public int luck;
+
+    public int availablePoints;
+    public int goldenPoints;
+
+    public List<string> unlockedUpgrades = new();
 }
 
 [System.Serializable]
@@ -156,6 +158,7 @@ public class DayNightSaveData
 {
     public float timeOfDay;
     public int currentDay;
+    public bool hasAdvancedDayToday;
 }
 
 [System.Serializable]

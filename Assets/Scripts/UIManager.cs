@@ -33,9 +33,7 @@ public class UIManager : MonoBehaviour
     private void CheckReady()
     {
         if (healthBars.ContainsKey("Player") && staminaBar != null)
-        {
             IsInitialized = true;
-        }
     }
 
     public HealthBar GetHealthBar(string id)

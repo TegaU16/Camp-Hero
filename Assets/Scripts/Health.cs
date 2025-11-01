@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -6,15 +7,84 @@ public class Health : MonoBehaviour
     private int currentHealth;
     private bool isDead = false;
 
-    [HideInInspector] public HealthBar healthBar;
+    [Header("Shield Settings")]
+    public int maxShield = 50;
+    private int currentShield;
+    public float shieldRegenRate = 5f; // amount per second
+    public float shieldRegenDelay = 3f; // seconds before regen starts
+    private Coroutine regenRoutine;
+    private bool canRegen = true;
+    [HideInInspector] public bool shieldActive;
 
-    public void TakeDamage(int amount)
+    [HideInInspector] public HealthBar healthBar;
+    [HideInInspector] public ShieldBar shieldBar;
+
+    public delegate void ThornsDamageDelegate(int currentDamage, BreakableObject breakable);
+    public event ThornsDamageDelegate OnHit;
+
+    public delegate int PreDamageDelegate(int incomingDamage);
+    public event PreDamageDelegate OnPreDamage;
+
+    private void Start()
+    {
+        currentHealth = maxHealth;
+        currentShield = maxShield;
+
+        // Initialize UI
+        if (healthBar != null)
+            healthBar.SetMaxHealth(maxHealth);
+
+        if (shieldBar != null)
+            shieldBar.SetMaxShield(maxShield);
+
+        UpdateShieldBarVisibility();
+    }
+
+    public void TakeDamage(int amount, Transform attacker = null)
     {
         if (isDead) return;
 
-        currentHealth = Mathf.Max(currentHealth - amount, 0);
+        if (TryGetComponent(out Player player) && attacker != null)
+        {
+            if (attacker.TryGetComponent(out Enemy enemy))
+            {
+                if (enemy.TryGetComponent(out BreakableObject breakable))
+                    OnHit?.Invoke(amount, breakable);
+            }
+
+            if (OnPreDamage != null)
+                amount = OnPreDamage.Invoke(amount);
+        }
+
+        // Shield absorbs first
+        int damageToHealth;
+
+        if (currentShield > 0 && shieldActive)
+        {
+            int absorbed = Mathf.Min(currentShield, amount);
+            currentShield -= absorbed;
+            damageToHealth = amount - absorbed;
+            if (shieldBar != null)
+                shieldBar.SetShield(currentShield);
+        }
+        else
+        {
+            damageToHealth = amount;
+        }
+
+        // Apply leftover damage to health
+        currentHealth = Mathf.Max(currentHealth - damageToHealth, 0);
         if (healthBar != null)
             healthBar.SetHealth(currentHealth);
+
+        // Stop and reset shield regen delay
+        if (shieldActive)
+        {
+            if (regenRoutine != null)
+                StopCoroutine(regenRoutine);
+
+            regenRoutine = StartCoroutine(ShieldRegenBuffer());
+        }
 
         if (currentHealth <= 0) Die();
     }
@@ -22,7 +92,6 @@ public class Health : MonoBehaviour
     public void AddHealth(int amount)
     {
         if (isDead) return;
-
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         if (healthBar != null)
             healthBar.SetHealth(currentHealth);
@@ -31,33 +100,55 @@ public class Health : MonoBehaviour
     public void SetHealth(int health)
     {
         currentHealth = health;
-        healthBar.SetHealth(health);
+        if (healthBar != null)
+            healthBar.SetHealth(health);
     }
 
-    public int GetHealth()
-    {
-        return currentHealth;
-    }
+    public int GetHealth() => currentHealth;
+    public int GetShield() => currentShield;
 
     void Die()
     {
         if (isDead) return;
         isDead = true;
 
-        if (gameObject.TryGetComponent(out Campfire campfire))
-        {
+        if (TryGetComponent(out Campfire campfire))
             campfire.Die();
-        }
 
-        if (gameObject.TryGetComponent(out Player player))
-        {
+        if (TryGetComponent(out Player player))
             player.Die();
-        }
     }
 
     public void ResetHealth(int maxHealth)
     {
         currentHealth = maxHealth;
+        currentShield = maxShield;
         isDead = false;
+        UpdateShieldBarVisibility();
+    }
+
+    private IEnumerator ShieldRegenBuffer()
+    {
+        canRegen = false;
+        yield return new WaitForSeconds(shieldRegenDelay);
+        canRegen = true;
+        StartCoroutine(ShieldRegen());
+    }
+
+    private IEnumerator ShieldRegen()
+    {
+        while (canRegen && currentShield < maxShield && !isDead)
+        {
+            currentShield = Mathf.Min(currentShield + Mathf.CeilToInt(shieldRegenRate * Time.deltaTime), maxShield);
+            if (shieldBar != null)
+                shieldBar.SetShield(currentShield);
+            yield return null;
+        }
+    }
+
+    public void UpdateShieldBarVisibility()
+    {
+        if (shieldBar != null)
+            shieldBar.gameObject.SetActive(shieldActive);
     }
 }

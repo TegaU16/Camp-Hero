@@ -18,7 +18,7 @@ public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
         if (selectedItem == null || selectedItem.plantData == null) return;
 
         plantedData = selectedItem.plantData;
-        growthTimer = 0f;
+        growthTimer = plantedData.totalGrowthTime; // countdown starts at total time
         currentStage = -1;
         isPlanted = true;
 
@@ -30,10 +30,15 @@ public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
     {
         if (!isPlanted || plantedData == null) return;
 
-        if (!IsFullyGrown()) growthTimer += Time.deltaTime;
+        if (!IsFullyGrown())
+        {
+            growthTimer -= Time.deltaTime; // countdown
+            growthTimer = Mathf.Max(growthTimer, 0f);
+        }
 
         int stageCount = plantedData.growthStages.Length;
-        int newStage = Mathf.FloorToInt((growthTimer / plantedData.totalGrowthTime) * stageCount);
+        float normalizedProgress = 1f - (growthTimer / plantedData.totalGrowthTime);
+        int newStage = Mathf.FloorToInt(normalizedProgress * stageCount);
         newStage = Mathf.Clamp(newStage, 0, stageCount - 1);
 
         if (newStage != currentStage)
@@ -49,12 +54,10 @@ public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
             Destroy(currentPlantInstance);
 
         if (currentStage >= 0 && plantedData.growthStages.Length > currentStage)
-        {
             currentPlantInstance = Instantiate(plantedData.growthStages[currentStage], plantSpawnPoint.position, Quaternion.identity, plantSpawnPoint);
-        }
     }
 
-    private bool IsFullyGrown() => isPlanted && growthTimer >= plantedData.totalGrowthTime;
+    private bool IsFullyGrown() => isPlanted && growthTimer <= 0f;
 
     private void Harvest()
     {
@@ -81,19 +84,25 @@ public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
 
     public string GetInteractText()
     {
-        if (!isPlanted)
-            return "Sow Seed";
+        if (!isPlanted) return "Sow Seed";
 
-        if (IsFullyGrown())
-            return "Harvest";
+        if (IsFullyGrown()) return "Harvest";
 
-        return "";
+        int totalSeconds = Mathf.CeilToInt(growthTimer);
+        if (totalSeconds < 60)
+        {
+            return $"{totalSeconds}";
+        }
+        else
+        {
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return $"{minutes}:{seconds:D2}";
+        }
     }
 
-    public Transform GetTransform()
-    {
-        return transform;
-    }
+
+    public Transform GetTransform() => transform;
 
     public string SaveState()
     {
@@ -114,7 +123,6 @@ public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
 
         if (string.IsNullOrEmpty(data.plantName))
         {
-            // No plant = reset
             plantedData = null;
             isPlanted = false;
             growthTimer = 0f;

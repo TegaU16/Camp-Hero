@@ -1,16 +1,21 @@
+using System.Collections.Generic;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using DG.Tweening;
 
 public class LevelManager : MonoBehaviour
 {
     private int level = 1;
     private int maxExp = 100;
     private int currentExp = 0;
+    private int maxLevelWithPointsGiven;
     public GameObject expBar;
     public TextMeshProUGUI levelText;
     public PlayerStatsManager playerStatsManager;
+
+    public delegate void LevelUpDelegate(int newLevel);
+    public event LevelUpDelegate OnLevelUp;
 
     public static LevelManager Instance;
 
@@ -25,6 +30,14 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         UpdateUI();
+
+        Dictionary<int, int> bonuses = new()
+        {
+            { 5, 3 },
+            { 10, 5 }
+        };
+
+        maxLevelWithPointsGiven = FindLevelForPoints(120, bonuses);
     }
 
     void UpdateUI()
@@ -52,39 +65,78 @@ public class LevelManager : MonoBehaviour
         level += 1;
         UpdateUI();
 
-        int pointsToAdd = 1;
+        int regularPointsToAdd = 1;
+        int goldenPointsToAdd = 0;
 
         if (level % 10 == 0)
-            pointsToAdd = 5;
+        {
+            regularPointsToAdd = 5;
+            goldenPointsToAdd = 2;
+        }
         else if (level % 5 == 0)
-            pointsToAdd = 3;
-        
-        playerStatsManager.AddPoints(pointsToAdd);
+        {
+            regularPointsToAdd = 3;
+            goldenPointsToAdd = 1;
+        }
+
+        if (level > maxLevelWithPointsGiven)
+        {
+            regularPointsToAdd = 0;
+            goldenPointsToAdd = 0;
+        }
+
+        playerStatsManager.AddPoints(regularPointsToAdd, goldenPointsToAdd);
+
+        if (GameManager.Instance.playerInstance.TryGetComponent(out Player player))
+        {
+            int playerHealthIncrease = (int)(player.health.maxHealth / 2f);
+            player.health.AddHealth(playerHealthIncrease);
+
+            float playerStaminaIncrease = player.staminaBar.maxStamina / 2f;
+            player.staminaBar.AddStamina(playerStaminaIncrease);
+        }
+
+        OnLevelUp?.Invoke(level);
+    }
+
+    int FindLevelForPoints(int maxPoints, Dictionary<int, int> bonuses, int basePoints = 1)
+    {
+        int total = 0;
+        int level = 2; // Start from level 2 (first transition from level 1)
+
+        while (total < maxPoints)
+        {
+            int pointsToAdd = basePoints;
+            foreach (KeyValuePair<int, int> bonus in bonuses)
+            {
+                if (level % bonus.Key == 0)
+                    pointsToAdd = bonus.Value;
+            }
+
+            total += pointsToAdd;
+            if (total >= maxPoints) return level;
+
+            level++;
+        }
+
+        return level;
     }
 
     private void UpdateMaxExp()
     {
         maxExp = (int)Mathf.Round(100 * level * Mathf.Pow(1.3f, level - 1));
 
-        if (expBar != null)
-        {
-            if (expBar.TryGetComponent(out Slider expSlider))
-            {
-                expSlider.maxValue = maxExp;
-            }
-        }
+        if (expBar != null && expBar.TryGetComponent(out Slider expSlider))
+            expSlider.maxValue = maxExp;
     }
 
     private void UpdateExpBar()
     {
-        if (expBar != null)
-        {
-            if (expBar.TryGetComponent(out Slider expSlider))
-            {
-                expSlider.DOValue(currentExp, 0.5f).SetEase(Ease.OutQuad);
-            }
-        }
+        if (expBar != null && expBar.TryGetComponent(out Slider expSlider))
+            expSlider.DOValue(currentExp, 0.5f).SetEase(Ease.OutQuad);
     }
+
+    public int GetLevel() => level;
 
     public LevelData GetLevelData()
     {
@@ -105,5 +157,15 @@ public class LevelManager : MonoBehaviour
         currentExp = levelData.currentExp;
 
         UpdateUI();
+    }
+
+    public int GetTotalExp()
+    {
+        int sumMax = 0;
+        for (int i = 0; i < level - 1; i++)
+            sumMax += (int)Mathf.Round(100 * level * Mathf.Pow(1.3f, i));
+
+        int totalExp = currentExp + sumMax;
+        return totalExp;
     }
 }

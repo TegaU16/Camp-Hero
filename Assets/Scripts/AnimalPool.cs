@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class AnimalPool : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public class AnimalPool : MonoBehaviour
 
     public Vector3 poolGraveyardPosition = new(0, -1000, 0);
 
-    readonly Queue<Animal> pool = new();
+    private Queue<Animal> pool = new();
+    private readonly List<Animal> activeAnimals = new();
 
     void Awake()
     {
@@ -27,7 +29,8 @@ public class AnimalPool : MonoBehaviour
 
     public Animal GetAnimal(Vector3 spawnPos)
     {
-        if (pool.Count == 0) CreateAnimal();
+        if (pool.Count == 0) 
+            CreateAnimal();
 
         Animal animal = pool.Dequeue();
 
@@ -36,6 +39,7 @@ public class AnimalPool : MonoBehaviour
         animal.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
         animal.Init(spawnPos);
         animal.animator.enabled = true;
+        activeAnimals.Add(animal);
 
         return animal;
     }
@@ -52,15 +56,40 @@ public class AnimalPool : MonoBehaviour
         }
 
         if (animal.TryGetComponent(out SimpleRagdollController ragdollController))
-        {
             ragdollController.DisableRagdoll();
-        }
 
         animal.IsActiveAI = false;
 
         animal.transform.position = poolGraveyardPosition;
         animal.gameObject.SetActive(false);
 
+        activeAnimals.Remove(animal);
         pool.Enqueue(animal);
+    }
+
+    public void ClearPoolForWorld(string worldName)
+    {
+        // Remove any active or pooled animals that belong to this world
+        foreach (Animal animal in activeAnimals.ToArray())
+        {
+            if (animal == null) continue;
+            if (animal.worldName == worldName)
+            {
+                Destroy(animal.gameObject);
+                activeAnimals.Remove(animal);
+            }
+        }
+
+        foreach (Animal animal in pool.ToArray())
+        {
+            if (animal == null) continue;
+            if (animal.worldName == worldName)
+            {
+                Destroy(animal.gameObject);
+                pool = new Queue<Animal>(pool.Where(a => a != animal));
+            }
+        }
+
+        Debug.Log($"Animal pool cleared for world: {worldName}");
     }
 }

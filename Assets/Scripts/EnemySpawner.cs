@@ -5,7 +5,7 @@ public class EnemySpawner : MonoBehaviour
 {
     private GameObject player;
     [SerializeField] private float spawnRadius = 20f;
-    [SerializeField] private float spawnInterval = 5f;
+    [SerializeField] private float[] spawnInterval = new float[2];
     private int maxEnemies;
 
     private float timer;
@@ -16,6 +16,10 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private DayNightCycle dayNightCycle;
     [SerializeField] private EnemyPool enemyPool;
 
+    [Header("Rare Enemy Chances")]
+    public float eliteSpawnChance = 0.007f; // 0.7% chance per spawn attempt
+    public float blightSpawnChance = 0.003f; // 0.3% chance per spawn attempt
+
     void Start()
     {
         if (dayNightCycle != null)
@@ -24,17 +28,16 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
-        if (dayNightCycle != null && !dayNightCycle.IsNight())
-            return;
+        if (dayNightCycle != null && !dayNightCycle.IsNight()) return;
 
-        if (dayNightCycle != null)
-            maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
+        maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
 
         timer += Time.deltaTime;
+        float randomSpawnInterval = Random.Range(spawnInterval[0], spawnInterval[1]);
 
-        if (timer >= spawnInterval && currentEnemyCount < maxEnemies)
+        if (timer >= randomSpawnInterval && currentEnemyCount < maxEnemies)
         {
             SpawnEnemy();
             timer = 0f;
@@ -50,24 +53,79 @@ public class EnemySpawner : MonoBehaviour
         if (Physics.Raycast(candidatePos + Vector3.up * 100f, Vector3.down, out RaycastHit enemyHit, 200f, groundLayer))
         {
             Vector3 spawnPos = enemyHit.point;
+            if (!VoxelGrid.Instance.IsWithinBorders(spawnPos)) return;
 
-            Vector3Int spawnPosInt = Vector3Int.RoundToInt(spawnPos);
-            if (VoxelGrid.Instance.IsOccupied(spawnPosInt)) return;
+            Vector3Int spawnPosInt = Utility.WorldToVoxelCoord(spawnPos);
+            if (!VoxelGrid.Instance.IsWalkable(spawnPosInt)) return;
 
             int day = dayNightCycle.GetCurrentDay();
             List<EnemyTier> availableTiers = enemyPool.GetAvailableTiers(day);
 
             if (availableTiers.Count == 0) return;
 
-            GameObject selectedPrefab = availableTiers[Random.Range(0, availableTiers.Count)].prefab;
+            GameObject selectedPrefab;
 
-            Enemy enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
+            // Decide if a rare enemy should spawn
+            float roll = Random.value;
+
+            if (roll < blightSpawnChance)
+                selectedPrefab = enemyPool.GetTierPrefab(Enemy.EnemyType.Blight, day);
+            else if (roll < eliteSpawnChance + blightSpawnChance)
+                selectedPrefab = enemyPool.GetTierPrefab(Enemy.EnemyType.Elite, day);
+            else
+                selectedPrefab = availableTiers[Random.Range(0, availableTiers.Count)].prefab; // Regular enemy
+
+            if (selectedPrefab == null) return;
+
+            // Spawn from pool (or instantiate if boss)
+            Enemy enemy;
+            if (selectedPrefab.TryGetComponent(out Enemy e) && e.enemyType == Enemy.EnemyType.Boss)
+            {
+                GameObject bossGO = Instantiate(selectedPrefab, spawnPos, Quaternion.identity);
+                enemy = bossGO.GetComponent<Enemy>();
+            }
+            else
+            {
+                enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
+            }
 
             if (enemy != null)
             {
                 enemy.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
                 currentEnemyCount++;
+
+                // If elite, spawn a few regular enemies nearby
+                if (enemy.enemyType == Enemy.EnemyType.Elite)
+                {
+                    EnemyTier enemyTier = enemyPool.GetTierByPrefab(selectedPrefab);
+
+                    if (enemyTier == null)
+                    {
+                        Debug.LogError($"Enemy tier for the prefab: {selectedPrefab.name} hasn't been assigned!");
+                        return;
+                    }
+
+                    SpawnEliteGroup(enemy.transform.position, enemyTier.regularsToSpawnWith);
+                }
             }
+        }
+    }
+
+    private void SpawnEliteGroup(Vector3 elitePos, List<GameObject> regularGroup)
+    {
+        if (regularGroup == null || regularGroup.Count == 0) return;
+
+        foreach (GameObject regularPrefab in regularGroup)
+        {
+            Vector3 offset = Random.insideUnitSphere * 3f; // Small random spread
+            Vector3 spawnPos = elitePos + offset;
+
+            Vector3Int spawnPosInt = Utility.WorldToVoxelCoord(spawnPos);
+            if (!VoxelGrid.Instance.IsWalkable(spawnPosInt)) continue;
+
+            Enemy enemy = enemyPool.GetEnemy(regularPrefab, spawnPos);
+            if (enemy != null)
+                currentEnemyCount++;
         }
     }
 
@@ -126,11 +184,22 @@ public class EnemySpawner : MonoBehaviour
                 GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabName);
                 if (prefab == null) continue;
 
-                Enemy enemy = enemyPool.GetEnemy(prefab, data.position).GetComponent<Enemy>();
-                if (enemy.TryGetComponent(out BreakableObject breakable))
+                Enemy enemy;
+                if (prefab.TryGetComponent(out Enemy e) && e.enemyType == Enemy.EnemyType.Boss)
                 {
-                    breakable.SetHealth(data.currentHealth);
+                    // Instantiate normally instead of using pool
+                    GameObject bossGO = Instantiate(prefab, data.position, Quaternion.identity);
+                    enemy = bossGO.GetComponent<Enemy>();
                 }
+                else
+                {
+                    // Use pool for regular enemies
+                    enemy = enemyPool.GetEnemy(prefab, data.position);
+                }
+
+                // Restore health
+                if (enemy.TryGetComponent(out BreakableObject breakable))
+                    breakable.SetHealth(data.currentHealth);
 
                 // Register with manager
                 EnemyManager.Instance.RegisterEnemy(enemy);

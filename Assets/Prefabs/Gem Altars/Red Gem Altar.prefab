@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 879441841723775137}
   - component: {fileID: 7476141706286532855}
   - component: {fileID: 3069174579264039271}
+  - component: {fileID: 4158553951804138446}
   m_Layer: 6
   m_Name: Red Gem
   m_TagString: Untagged
@@ -92,6 +93,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -113,10 +116,26 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4158553951804138446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7066910055137099994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 106e783c6d23dfb4da5b6747abbb27ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpinAndFloat
+  rotationSpeed: 20
+  floatAmplitude: 0.1
+  floatFrequency: 1.5
 --- !u!1 &7844660309763906660
 GameObject:
   m_ObjectHideFlags: 0
@@ -183,6 +202,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -204,6 +225,7 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -224,7 +246,7 @@ MonoBehaviour:
   requiredKey: {fileID: 11400000, guid: c1c6589e4d9c25141be6bff009cb86a6, type: 2}
   bossPrefab: {fileID: 6573277223635606369, guid: 77c4d5216ee3f22488cf47799055007f, type: 3}
   bossSpawnPoint: {fileID: 203801684336088658}
-  blessingAltarPrefab: {fileID: 0}
+  blessingAltarPrefab: {fileID: 6483958559380496520, guid: a802b45ced5da5b408f0c8e8649a5f94, type: 3}
 --- !u!64 &8020278775405899866
 MeshCollider:
   m_ObjectHideFlags: 0

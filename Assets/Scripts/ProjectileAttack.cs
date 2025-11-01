@@ -11,12 +11,17 @@ public class ProjectileAttack : MonoBehaviour, IRangedAttackBehavior
     {
         if (projectilePrefab == null || projectileSpawnPoint == null || target == null) return;
 
-        Vector3 direction = (target.position - projectileSpawnPoint.position).normalized;
+        Vector3 targetPoint = target.position;
+
+        if (target.TryGetComponent(out CharacterController controller))
+            targetPoint = target.position + controller.center;
+        else if (target.TryGetComponent(out Collider col))
+            targetPoint = col.bounds.center;
+        
+        Vector3 direction = (targetPoint - projectileSpawnPoint.position).normalized;
 
         GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, Quaternion.LookRotation(direction));
         if (projectile.TryGetComponent(out Projectile projectileScript))
-        {
-            projectileScript.SetTarget(target, damage);
-        }
+            projectileScript.SetTarget(attacker, target, damage);
     }
 }

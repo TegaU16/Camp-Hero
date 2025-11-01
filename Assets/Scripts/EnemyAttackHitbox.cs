@@ -13,10 +13,22 @@ public class EnemyAttackHitbox : MonoBehaviour
         enemyScript = GetComponentInParent<Enemy>();
     }
 
+    private void Start()
+    {
+        if (enemyScript != null && TryGetComponent(out BoxCollider box))
+        {
+            box.size = new Vector3(box.size.x, box.size.y, enemyScript.meleeAttackRange);
+            box.center = new Vector3(0, box.center.y, enemyScript.meleeAttackRange / 2f);
+        }
+    }
+
     // Called by animation event
     void PerformHit()
     {
-        ClearHits();
+        if (!GameManager.Instance.IsGameManagerReady()) return;
+        if (enemyScript == null) return;
+
+        alreadyHit.Clear();
 
         if (!TryGetComponent(out BoxCollider box)) return;
 
@@ -26,16 +38,11 @@ public class EnemyAttackHitbox : MonoBehaviour
         Collider[] hits = Physics.OverlapBox(boxCenter, boxHalfExtents, transform.rotation, targetableLayer);
 
         foreach (Collider hit in hits)
-        {
             ProcessHit(hit);
-        }
     }
 
     void ProcessHit(Collider other)
     {
-        if (GameManager.Instance.isPaused) return;
-        if (enemyScript == null) return;
-
         Targetable target = other.GetComponentInParent<Targetable>();
         if (target == null) return;
 
@@ -43,11 +50,5 @@ public class EnemyAttackHitbox : MonoBehaviour
 
         alreadyHit.Add(target);
         enemyScript.DealDamage();
-    }
-
-
-    public void ClearHits()
-    {
-        alreadyHit.Clear();
     }
 }

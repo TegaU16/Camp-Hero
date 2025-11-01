@@ -13002,7 +13002,7 @@ AnimationClip:
   m_HasGenericRootTransform: 1
   m_HasMotionFloatCurves: 1
   m_Events:
-  - time: 2.0833333
+  - time: 1.3333334
     functionName: RangedAttack
     data: 
     objectReferenceParameter: {fileID: 0}

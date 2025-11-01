@@ -9,6 +9,9 @@ public class DamagePopup : MonoBehaviour
     public float duration = 0.7f;
     public float fadeDuration = 0.4f;
 
+    public Color baseColor = Color.white;
+    public Color critColor = Color.yellow;
+
     private Vector3 initialPosition;
     private Vector3 floatDirection;
     private CanvasGroup canvasGroup;
@@ -16,7 +19,7 @@ public class DamagePopup : MonoBehaviour
     public void Setup(int damageAmount, bool crit)
     {
         damageText.text = damageAmount.ToString();
-        damageText.color = crit ? Color.yellow : new Color32(53, 230, 213, 255);
+        damageText.color = crit ? critColor : baseColor;
 
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)

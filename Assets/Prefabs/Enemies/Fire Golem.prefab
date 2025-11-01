@@ -921,11 +921,11 @@ MonoBehaviour:
   baseHealth: 400
   expDropped: 100
   drops:
-  - drop: {fileID: 11400000, guid: 8fcec0d8e898d2345be18f618e92b74d, type: 2}
+  - drop: {fileID: 11400000, guid: 8e768640c6ba9814fa50c16fbc306bba, type: 2}
     minValue: 1
     maxValue: 1
-    dropChance: 0.3
-  - drop: {fileID: 11400000, guid: 462467a1bb022ba4c9a085bdf5f7fc93, type: 2}
+    dropChance: 0.1
+  - drop: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
     minValue: 4
     maxValue: 10
     dropChance: 1
@@ -934,6 +934,7 @@ MonoBehaviour:
   objectLevel: 0
   savedObjectIndex: -1
   torsoBone: {fileID: 4621650800722827677}
+  bounceCooldown: 0.2
 --- !u!114 &5665800037854704043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -950,6 +951,7 @@ MonoBehaviour:
   - {fileID: 1135724457356376022}
   animator: {fileID: 4465363624190883282}
   agent: {fileID: 8515405239404360121}
+  proceduralAnimator: {fileID: 0}
 --- !u!65 &1135724457356376022
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -999,7 +1001,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 0
-  attackRange: 2
+  enemyType: 0
+  meleeAttackRange: 1.5
   rangedAttackRange: 10
   attackCooldown: 2
   damage: 40
@@ -1032,7 +1035,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stoppingDistance: 0.2
+  stoppingDistance: 0.05
   rotationSpeed: 720
   animator: {fileID: 4465363624190883282}
   speedParam: Speed

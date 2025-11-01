@@ -55,8 +55,7 @@ public class StructureManager : MonoBehaviour
                 float offsetZ = (float)(worldRng.NextDouble() - 0.5) * maxOffset;
 
                 Vector3 structureSpawnPos = basePosition + new Vector3(offsetX, 0, offsetZ);
-
-                
+                if (!VoxelGrid.Instance.IsWithinBorders(structureSpawnPos)) continue;
 
                 bool tooClose = false;
                 foreach (WorldStructure existingStructure in activeStructures)
@@ -77,6 +76,9 @@ public class StructureManager : MonoBehaviour
 
                 int targetChunkX = Mathf.FloorToInt(structureSpawnPos.x / (chunkSize * voxelSize));
                 int targetChunkZ = Mathf.FloorToInt(structureSpawnPos.z / (chunkSize * voxelSize));
+                targetChunkX = Mathf.Max(0, targetChunkX);
+                targetChunkZ = Mathf.Max(0, targetChunkZ);
+
                 Vector2Int chunkKey = new(targetChunkX, targetChunkZ);
 
                 VoxelChunk targetChunk = VoxelGrid.Instance.chunkMap[chunkKey];
@@ -173,8 +175,7 @@ public class StructureManager : MonoBehaviour
                 Vector3 worldPos = new(x * voxelSize, h + 10f, z * voxelSize);
                 if (Physics.Raycast(worldPos, Vector3.down, out RaycastHit hit, 20f, VoxelGrid.Instance.groundLayer))
                 {
-                    if (Vector3.Angle(hit.normal, Vector3.up) > maxSlope)
-                        return false;
+                    if (Vector3.Angle(hit.normal, Vector3.up) > maxSlope) return false;
                 }
             }
         }
@@ -184,13 +185,11 @@ public class StructureManager : MonoBehaviour
         float minH = sampledHeights.Min();
         float maxH = sampledHeights.Max();
 
-        if (maxH - minH > tolerance)
-            return false;
+        if (maxH - minH > tolerance) return false;
 
         foreach (float h in sampledHeights)
         {
-            if (Mathf.Abs(origin.y - h) > tolerance)
-                return false;
+            if (Mathf.Abs(origin.y - h) > tolerance) return false;
         }
 
         return true;

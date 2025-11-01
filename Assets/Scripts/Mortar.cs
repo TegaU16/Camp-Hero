@@ -25,9 +25,7 @@ public class Mortar : Defense
         Vector3 launchVelocity = initialXZVelocity + Vector3.up * initialYVelocity;
 
         if (rotatingPart != null)
-        {
             rotatingPart.rotation = Quaternion.LookRotation(launchVelocity) * Quaternion.Euler(rotationOffset);
-        }
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
         if (proj.TryGetComponent(out MortarProjectile mortarProj))
@@ -35,15 +33,14 @@ public class Mortar : Defense
             Collider projectileCollider = proj.GetComponent<Collider>();
             Collider[] mortarColliders = GetComponentsInChildren<Collider>();
 
-            foreach (var col in mortarColliders)
+            foreach (Collider col in mortarColliders)
             {
                 if (projectileCollider != null && col != null)
-                {
                     Physics.IgnoreCollision(projectileCollider, col);
-                }
             }
 
             mortarProj.SetTarget(currentTarget);
+            mortarProj.SetMortar(transform);
             mortarProj.Launch(currentTarget.position, damage);
         }
     }

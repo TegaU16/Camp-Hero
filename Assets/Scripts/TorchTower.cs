@@ -13,7 +13,7 @@ public class TorchTower : Defense
 
     protected override void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         fireCooldown -= Time.deltaTime;
 
@@ -67,15 +67,16 @@ public class TorchTower : Defense
                         breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal);
                         damageBuffer[target] -= wholeDamage;
                     }
+
+                    if (target.TryGetComponent(out Enemy enemy))
+                        enemy.OnAttacked(transform);
                 }
             }
         }
 
         // Apply cooldown only once per tick
         if (fireCooldown <= 0f)
-        {
             fireCooldown = 1f / fireRate;
-        }
     }
 
     private void CleanUpBeams()

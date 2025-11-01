@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class DayNightCycle : MonoBehaviour
 {
+    [SerializeField] private Material proceduralSkybox;
+
     [Range(0, 24)]
     [SerializeField] private float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
     [SerializeField] private float dayDurationInSeconds = 120f;
@@ -19,28 +21,32 @@ public class DayNightCycle : MonoBehaviour
     [SerializeField] private Gradient skyTint;
     [SerializeField] private AnimationCurve atmosphereThickness;
 
-    private Material skyboxMaterial;
+    [SerializeField] private Gradient zenithGradient;   // Zenith/top of sky
+    [SerializeField] private Gradient horizonGradient;
 
-    [SerializeField] private GameObject sunVisual;
     [SerializeField] private float sunDistance = 1000f;
 
-    [SerializeField] private GameObject moonVisual;
     [SerializeField] private float moonDistance = 1000f;
+
+    [SerializeField] private AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
 
     private GameObject player;
 
     [SerializeField] private DayTextUI dayTextUI;
 
+    [SerializeField] private EnemyPool enemyPool;
+
     void Start()
     {
-        skyboxMaterial = RenderSettings.skybox;
+        if (proceduralSkybox != null)
+            RenderSettings.skybox = proceduralSkybox;
     }
 
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
-        timeOfDay += (24 / dayDurationInSeconds) * Time.deltaTime;
+        timeOfDay += (24f / dayDurationInSeconds) * Time.deltaTime;
 
         if (timeOfDay >= 6f && !hasAdvancedDayToday)
         {
@@ -54,63 +60,56 @@ public class DayNightCycle : MonoBehaviour
             hasAdvancedDayToday = false;
         }
 
+        // Normalized time (0 = midnight, 0.5 = noon, 1 = next midnight)
         float normalizedTime = timeOfDay / 24f;
 
-        // Light intensity
-        float sunIntensity = lightIntensity.Evaluate(normalizedTime);
-        float moonIntensity = 1f - sunIntensity;
+        // Set sun and moon directions (already done above)
+        Quaternion sunRotation = Quaternion.Euler((timeOfDay - 6f) * 15f, 170f, 0);
+        Vector3 sunDirection = sunRotation * Vector3.forward;
+        Vector3 moonDirection = -sunDirection;
 
-        sun.intensity = Mathf.Max(0.01f, sunIntensity);
-        moon.intensity = Mathf.Max(0.01f, moonIntensity * 0.3f);
+        // Apply data to the shader
+        if (proceduralSkybox != null)
+        {
+            // Set time of day
+            proceduralSkybox.SetFloat("_Time_of_Day", normalizedTime);
+            
+            // Set zenith and horizon colors from gradients
+            Color zenithColor = zenithGradient.Evaluate(normalizedTime);
+            Color horizonColor = horizonGradient.Evaluate(normalizedTime);
 
-        sun.color = sunColor.Evaluate(normalizedTime);
-        moon.color = moonColor.Evaluate(normalizedTime);
+            proceduralSkybox.SetColor("_Zenith_Color", zenithColor);
+            proceduralSkybox.SetColor("_Horizon_Color", horizonColor);
 
-        // Skybox properties
-        skyboxMaterial.SetColor("_SkyTint", skyTint.Evaluate(normalizedTime));
-        skyboxMaterial.SetFloat("_AtmosphereThickness", atmosphereThickness.Evaluate(normalizedTime));
+            // Sun and moon
+            proceduralSkybox.SetVector("_Sun_Direction", sunDirection);
+            proceduralSkybox.SetVector("_Moon_Direction", moonDirection);
+            proceduralSkybox.SetColor("_Sun_Color", sunColor.Evaluate(normalizedTime));
+            proceduralSkybox.SetColor("_Moon_Color", moonColor.Evaluate(normalizedTime));
 
-        Color sunAmbient = sunColor.Evaluate(normalizedTime) * sun.intensity;
-        Color moonAmbient = moonColor.Evaluate(normalizedTime) * moon.intensity;
+            // Stars
+            float starIntensity = Mathf.Clamp01(starVisibilityCurve.Evaluate(normalizedTime));
+            proceduralSkybox.SetFloat("_Star_Intensity", starIntensity);
 
-        RenderSettings.ambientLight = (sunAmbient + moonAmbient) * 0.5f;
-
-        DynamicGI.UpdateEnvironment();
+            DynamicGI.UpdateEnvironment();
+        }
 
         if (player != null)
         {
             // Compute the pivot point (center of sky rotation) to be the player
             Vector3 center = player.transform.position;
 
-            // Calculate sun direction
-            Quaternion sunRotation = Quaternion.Euler((timeOfDay - 6f) * 15f, 170f, 0);
-            Vector3 sunDirection = sunRotation * Vector3.forward;
-
             // Sun position & rotation
             Vector3 sunPosition = center - sunDirection * sunDistance;
             sun.transform.position = sunPosition;
             sun.transform.LookAt(center); // Ensures the directional light is centered on the player
 
-            sunVisual.transform.position = sunPosition;
-            sunVisual.transform.LookAt(player.transform);
-            sunVisual.transform.Rotate(0f, 180f, 0f);
-
             // Moon direction is opposite the sun
-            Vector3 moonDirection = -sunDirection;
             Vector3 moonPosition = center - moonDirection * moonDistance;
 
             moon.transform.position = moonPosition;
             moon.transform.LookAt(center);
-
-            moonVisual.transform.position = moonPosition;
-            moonVisual.transform.LookAt(player.transform);
-            moonVisual.transform.Rotate(0f, 180f, 0f);
         }
-    }
-
-    public float GetSunlightIntensity()
-    {
-        return sun.intensity;
     }
 
     public void SetPlayer(GameObject player)
@@ -127,6 +126,9 @@ public class DayNightCycle : MonoBehaviour
 
         if (dayTextUI != null)
             dayTextUI.ShowDay(currentDay);
+
+        if (enemyPool != null)
+            enemyPool.AdjustPoolsForNewDay(currentDay);
     }
 
     public int GetCurrentDay()
@@ -144,7 +146,8 @@ public class DayNightCycle : MonoBehaviour
         DayNightSaveData data = new()
         {
             timeOfDay = this.timeOfDay,
-            currentDay = this.currentDay
+            currentDay = this.currentDay,
+            hasAdvancedDayToday = this.hasAdvancedDayToday
         };
 
         SaveSystem.SaveDayNight(GameManager.Instance.currentWorldName, data);
@@ -157,7 +160,15 @@ public class DayNightCycle : MonoBehaviour
         {
             timeOfDay = data.timeOfDay;
             currentDay = data.currentDay;
+            hasAdvancedDayToday = data.hasAdvancedDayToday;
         }
     }
 
+    public float GetElapsedTime()
+    {
+        int daysPassed = currentDay - 1;
+        float dayFraction = timeOfDay / 24f;
+
+        return daysPassed + dayFraction;
+    }
 }

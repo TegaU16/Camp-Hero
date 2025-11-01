@@ -31,7 +31,7 @@ public class BuildingManager : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         if (InventoryManager.Instance.IsExtensionOpen())
         {
@@ -69,14 +69,10 @@ public class BuildingManager : MonoBehaviour
             UpdateWallGhostAnchorPosition();
 
             if (currentGhost != null)
-            {
                 ShowGhostWall(currentGhost.transform.position);
-            }
 
             if (Input.GetMouseButtonDown(1) && currentGhost != null)
-            {
                 PlaceWall(currentGhost.transform.position);
-            }
         }
         else
         {
@@ -91,9 +87,7 @@ public class BuildingManager : MonoBehaviour
             UpdateGhostPosition();
 
             if (Input.GetMouseButtonDown(1))
-            {
                 PlaceObject();
-            }
         }
 
         if (Input.GetKeyDown(rotateBuildingKey))
@@ -131,13 +125,9 @@ public class BuildingManager : MonoBehaviour
             bool areaFree = IsAreaFree(currentGhost, snappedPosition);
 
             if (!areaFree)
-            {
                 SetGhostAlpha(0.2f);
-            }
             else
-            {
                 SetGhostAlpha(0.5f);
-            }
 
             ClearVisualIndicators();
 
@@ -163,9 +153,7 @@ public class BuildingManager : MonoBehaviour
             Vector3 snappedPosition = GetSnappedPosition(hit.point);
 
             if (currentGhost == null)
-            {
                 currentGhost = new GameObject("WallGhostAnchor");
-            }
 
             currentGhost.transform.position = snappedPosition;
 
@@ -180,16 +168,15 @@ public class BuildingManager : MonoBehaviour
         // Move bounds to where it would be instantiated
         bounds.center = intendedPosition + (bounds.center - prefab.transform.position);
 
-        Vector3Int min = VoxelGrid.Instance.WorldToVoxelCoord(bounds.min);
-        Vector3Int max = VoxelGrid.Instance.WorldToVoxelCoord(bounds.max);
+        Vector3Int min = Utility.WorldToVoxelCoord(bounds.min);
+        Vector3Int max = Utility.WorldToVoxelCoord(bounds.max);
 
         for (int x = min.x; x <= max.x; x++)
         {
             for (int z = min.z; z <= max.z; z++)
             {
                 Vector3Int voxelPos = new(x, 0, z);
-                if (!VoxelGrid.Instance.IsBuildable(voxelPos))
-                    return false;
+                if (!VoxelGrid.Instance.IsBuildable(voxelPos)) return false;
             }
         }
 
@@ -203,9 +190,7 @@ public class BuildingManager : MonoBehaviour
 
         Vector3 origin = new(snappedX, hitPoint.y + 10f, snappedZ);
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit groundHit, 20f, placementMask))
-        {
             return new Vector3(snappedX, groundHit.point.y, snappedZ);
-        }
 
         return new Vector3(snappedX, hitPoint.y, snappedZ);
     }
@@ -321,17 +306,14 @@ public class BuildingManager : MonoBehaviour
     {
         Collider[] colliders = ghost.GetComponentsInChildren<Collider>();
         foreach (Collider col in colliders)
-        {
             col.enabled = false;
-        }
     }
 
     private void ClearVisualIndicators()
     {
         foreach (GameObject indicator in visualIndicators)
-        {
             Destroy(indicator);
-        }
+
         visualIndicators.Clear();
     }
 
@@ -452,9 +434,7 @@ public class BuildingManager : MonoBehaviour
             Vector3 pos = anchor + gridSize * i * dir;
 
             if (Physics.Raycast(pos + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 5f, placementMask))
-            {
                 pos = hit.point;
-            }
 
             int chunkX = Mathf.FloorToInt(pos.x / VoxelGrid.Instance.chunkSize);
             int chunkZ = Mathf.FloorToInt(pos.z / VoxelGrid.Instance.chunkSize);

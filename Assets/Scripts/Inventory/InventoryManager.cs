@@ -69,7 +69,7 @@ public class InventoryManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         HandleSlotSelection();
         HandleInventoryToggle();
@@ -463,8 +463,12 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
-            if (mainInventory != null) mainInventory.SetActive(true);
-            if (craftingMenuUI != null) craftingMenuUI.SetActive(true);
+            if (mainInventory != null) 
+                mainInventory.SetActive(true);
+
+            if (craftingMenuUI != null) 
+                craftingMenuUI.SetActive(true);
+
             OnInventoryOpen();
         }
     }
@@ -518,6 +522,9 @@ public class InventoryManager : MonoBehaviour
         if (furnaceUI != null && furnaceUI.gameObject.activeSelf)
             furnaceUI.Close();
 
+        if (campfireMenuUI != null && campfireMenuUI.activeSelf)
+            PlayerStatsManager.Instance.CloseStatsMenu();
+
         for (int i = 0; i < inventoryExtensions.Count; i++)
         {
             if (inventoryExtensions[i] != null)
@@ -529,6 +536,9 @@ public class InventoryManager : MonoBehaviour
         GameManager.Instance.ToggleCameraFollow(true);
 
         ItemTooltipUI.Instance.HideTooltip();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     public bool IsInventoryFullForItem(Item item, int count = 1)

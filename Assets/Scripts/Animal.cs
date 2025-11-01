@@ -24,6 +24,8 @@ public class Animal : MonoBehaviour, ISimulatable
 
     private Coroutine wanderCoroutine;
 
+    [HideInInspector] public string worldName;
+
     // Movement state
     private Vector3Int currentGridPos;
     private Vector3 latestSpawnPos;
@@ -48,13 +50,13 @@ public class Animal : MonoBehaviour, ISimulatable
         currentGridPos = WorldToGrid(myTransform.position);
 
         if (!IsActiveAI)
-        {
             Init(myTransform.position);
-        }
     }
 
     void FixedUpdate()
     {
+        if (!GameManager.Instance.IsGameManagerReady()) return;
+
         if (!IsActiveAI)
         {
             Debug.LogWarning($"{name} is not active AI");
@@ -150,12 +152,16 @@ public class Animal : MonoBehaviour, ISimulatable
             wanderCoroutine = null;
         }
 
+        WorldSession.CurrentRunStats.animalsKilled++;
+
         Invoke(nameof(Despawn), 5f);
     }
 
     private void Despawn()
     {
-        if (breakableObject != null) breakableObject.DestroyObject();
+        if (breakableObject != null) 
+            breakableObject.DestroyObject();
+
         wanderCoroutine = null;
         AnimalPool.Instance.ReturnAnimal(this);
     }
@@ -167,16 +173,12 @@ public class Animal : MonoBehaviour, ISimulatable
         while (true)
         {
             Vector3Int targetGrid = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
-
             agent.CancelPath();
+
             if (agent.CanWalkDirectly(currentGridPos, targetGrid))
-            {
                 agent.SetDirectTarget(targetGrid);
-            }
             else
-            {
                 agent.RequestPath(targetGrid);
-            }
 
             while (agent.HasPath)
                 yield return null;
@@ -233,7 +235,7 @@ public class Animal : MonoBehaviour, ISimulatable
         target.x = Mathf.Clamp(target.x, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
         target.z = Mathf.Clamp(target.z, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
 
-        float height = VoxelGrid.Instance.GetHeightAt(target.x, target.z);
+        float height = Utility.GetHeightAt(target.x, target.z);
         target.y = Mathf.RoundToInt(height);
 
         return target;

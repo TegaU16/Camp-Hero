@@ -9,6 +9,7 @@ public class MortarProjectile : MonoBehaviour
 
     [SerializeField] float turnSpeed = 5f;
     Transform target;
+    Transform mortar;
 
     private Rigidbody rb;
     private int damage;
@@ -69,7 +70,7 @@ public class MortarProjectile : MonoBehaviour
         {
             Collider hit = hits[i];
 
-            if (hit.GetComponent<Enemy>() == null) continue;
+            if (!hit.TryGetComponent(out Enemy enemy)) continue;
 
             if (hit.TryGetComponent(out BreakableObject breakable))
             {
@@ -78,6 +79,8 @@ public class MortarProjectile : MonoBehaviour
 
                 breakable.TakeDamage(damage, false, hitPoint, hitNormal);
             }
+
+            enemy.OnAttacked(mortar);
         }
 
         if (explosionEffect != null)
@@ -89,5 +92,10 @@ public class MortarProjectile : MonoBehaviour
     public void SetTarget(Transform currentTarget)
     {
         target = currentTarget;
+    }
+
+    public void SetMortar(Transform currentMortar)
+    {
+        mortar = currentMortar;
     }
 }

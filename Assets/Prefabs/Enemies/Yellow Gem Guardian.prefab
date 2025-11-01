@@ -1465,9 +1465,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
   baseHealth: 900
-  expDropped: 1000
+  expDropped: 3500
   drops:
-  - drop: {fileID: 11400000, guid: af99af8194366044f8d09ba640b2d16c, type: 2}
+  - drop: {fileID: 11400000, guid: c2bb2fa177d41be4aba4ad5a441af59a, type: 2}
     minValue: 1
     maxValue: 1
     dropChance: 1
@@ -1476,6 +1476,7 @@ MonoBehaviour:
   objectLevel: 0
   savedObjectIndex: -1
   torsoBone: {fileID: 8679346673753960957}
+  bounceCooldown: 0.2
 --- !u!114 &289298211943809642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1491,6 +1492,7 @@ MonoBehaviour:
   collidersToIgnore: []
   animator: {fileID: 407705186051579314}
   agent: {fileID: 7511393704736100126}
+  proceduralAnimator: {fileID: 0}
 --- !u!65 &7079056010240785562
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1525,7 +1527,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 1
-  attackRange: 2
+  enemyType: 0
+  meleeAttackRange: 2
   rangedAttackRange: 10
   attackCooldown: 2
   damage: 10
@@ -1572,7 +1575,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stoppingDistance: 0.2
+  stoppingDistance: 0.05
   rotationSpeed: 720
   animator: {fileID: 407705186051579314}
   speedParam: Speed
@@ -1633,7 +1636,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a0a235112f67d4994e25e407c94667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnPrefab: {fileID: 0}
+  warningPrefab: {fileID: 3424625777266883120, guid: 47a3c8db59f380849bdf8c1797c66afa, type: 3}
+  damagePrefab: {fileID: 7116235930715329665, guid: 6e7382256762ccb4db1e2e9f2eeca79f, type: 3}
+  warningDuration: 1
+  damage: 75
 --- !u!114 &3415172584570525854
 MonoBehaviour:
   m_ObjectHideFlags: 0

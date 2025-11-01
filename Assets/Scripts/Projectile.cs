@@ -6,27 +6,27 @@ public class Projectile : MonoBehaviour
     public float homingStrength = 2f; // Lower = more dodgeable
     public float maxLifetime = 5f;
 
+    private Transform attacker;
     private Transform target;
     private int damage;
     private Vector3 currentDirection;
     private bool homing = true;
     private float lifetime;
 
-    public void SetTarget(Transform t, int dmg, bool useHoming = true)
+    public void SetTarget(Transform attacker, Transform t, int dmg, bool useHoming = true)
     {
+        this.attacker = attacker;
         target = t;
         damage = dmg;
         homing = useHoming;
 
         if (target != null)
-        {
             currentDirection = (target.position - transform.position).normalized;
-        }
     }
 
     void Update()
     {
-        if (GameManager.Instance.isPaused) return;
+        if (!GameManager.Instance.IsGameManagerReady()) return;
 
         lifetime += Time.deltaTime;
         if (lifetime >= maxLifetime)
@@ -44,9 +44,7 @@ public class Projectile : MonoBehaviour
         Vector3 toTarget = (target.position - transform.position).normalized;
 
         if (homing)
-        {
             currentDirection = Vector3.RotateTowards(currentDirection, toTarget, homingStrength * Time.deltaTime, 0f);
-        }
 
         float distanceThisFrame = speed * Time.deltaTime;
 
@@ -78,7 +76,7 @@ public class Projectile : MonoBehaviour
         {
             if (targetable.TryGetComponent(out Health targetHealth))
             {
-                targetHealth.TakeDamage(damage);
+                targetHealth.TakeDamage(damage, attacker);
 
                 if (target.TryGetComponent(out Rigidbody rb))
                 {
@@ -86,14 +84,12 @@ public class Projectile : MonoBehaviour
                     rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
                 }
             }
-            else if (target.TryGetComponent(out BreakableObject breakable))
-            {
-                breakable.TakeDamage(damage, false, hitPoint, hitNormal);
-            }
         }
-        else if (target.TryGetComponent(out BreakableObject breakable))
+
+        if (target.TryGetComponent(out BreakableObject breakable) && target.TryGetComponent(out Enemy enemy))
         {
             breakable.TakeDamage(damage, false, hitPoint, hitNormal);
+            enemy.OnAttacked(attacker);
         }
 
         Destroy(gameObject);

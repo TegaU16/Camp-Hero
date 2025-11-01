@@ -20,7 +20,8 @@ public class Item : ScriptableObject
     public GameObject buildingGhost;
     public Vector2Int buildingSize = new(1, 1);
 
-    [Header("For Melee")]
+    [Header("Combat")]
+    public AttackSet attackSet;
     public float attackDistance = 3f;
     public float[] attackDamage = new float[2];
     public float critChance = 2f;
