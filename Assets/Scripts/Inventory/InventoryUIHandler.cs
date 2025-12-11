@@ -1,73 +1,77 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventoryUIHandler : MonoBehaviour
+namespace Game.Inventory
 {
-    public List<InventorySlot> inventorySlots;
-    public RectTransform deleteSlot;
-
-    private void Update()
+    public class InventoryUIHandler : MonoBehaviour
     {
-        if (!InventoryManager.Instance.mainInventory.activeSelf) return;
+        public List<InventorySlot> inventorySlots;
+        public RectTransform deleteSlot;
 
-        if (Input.GetMouseButtonDown(0))
-            HandleClick(true);
-
-        if (Input.GetMouseButtonDown(1))
-            HandleClick(false);
-    }
-
-    private void HandleClick(bool isLeft)
-    {
-        if (InventoryManager.InventoryUI == null)
-            return;
-
-        Vector2 mousePosition = Input.mousePosition;
-
-        if (RectTransformUtility.RectangleContainsScreenPoint(deleteSlot, mousePosition))
+        private void Update()
         {
-            if (InventoryItem.selectedItem != null)
-                DropSelectedItem();
-            return;
+            if (!InventoryManager.Instance.mainInventory.activeSelf) return;
+
+            if (Input.GetMouseButtonDown(0))
+                HandleClick(true);
+
+            if (Input.GetMouseButtonDown(1))
+                HandleClick(false);
         }
 
-        foreach (InventorySlot slot in GetAllSlots())
+        private void HandleClick(bool isLeft)
         {
-            if (slot != null && RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
+            if (InventoryManager.InventoryUI == null) return;
+
+            Vector2 mousePosition = Input.mousePosition;
+
+            if (RectTransformUtility.RectangleContainsScreenPoint(deleteSlot, mousePosition))
             {
-                if (isLeft)
-                    slot.HandleLeftClick();
-                else
-                    slot.HandleRightClick();
+                if (InventoryItem.selectedItem != null)
+                    DropSelectedItem();
+
                 return;
             }
+
+            foreach (InventorySlot slot in GetAllSlots())
+            {
+                if (slot != null && RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
+                {
+                    if (isLeft)
+                        slot.HandleLeftClick();
+                    else
+                        slot.HandleRightClick();
+                    return;
+                }
+            }
         }
-    }
 
-    private IEnumerable<InventorySlot> GetAllSlots()
-    {
-        // Always include main inventory
-        foreach (InventorySlot slot in inventorySlots)
-            yield return slot;
-
-        // Include chest slots if chest is open
-        if (InventoryManager.Instance.activeChest != null)
+        private IEnumerable<InventorySlot> GetAllSlots()
         {
-            foreach (InventorySlot slot in InventoryManager.Instance.activeChest.inventorySlots)
+            // Always include main inventory
+            foreach (InventorySlot slot in inventorySlots)
                 yield return slot;
+
+            // Include chest slots if chest is open
+            if (InventoryManager.Instance.activeChest != null)
+            {
+                foreach (InventorySlot slot in InventoryManager.Instance.activeChest.inventorySlots)
+                    yield return slot;
+            }
+
+            // Include furnace slots if furnace is open
+            if (InventoryManager.Instance.activeFurnace != null)
+            {
+                foreach (InventorySlot slot in InventoryManager.Instance.activeFurnace.inventorySlots)
+                    yield return slot;
+            }
         }
 
-        // Include furnace slots if furnace is open
-        if (InventoryManager.Instance.activeFurnace != null)
+        private void DropSelectedItem()
         {
-            foreach (InventorySlot slot in InventoryManager.Instance.activeFurnace.inventorySlots)
-                yield return slot;
+            InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
+            Destroy(InventoryItem.selectedItem.gameObject);
         }
-    }
-
-    private void DropSelectedItem()
-    {
-        InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
-        Destroy(InventoryItem.selectedItem.gameObject);
     }
 }
+

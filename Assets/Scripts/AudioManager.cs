@@ -52,13 +52,17 @@ public class AudioManager : MonoBehaviour
         // Build dictionaries
         musicCategoryDict = new Dictionary<string, List<AudioClip>>();
         foreach (MusicCategory category in musicCategories)
+        {
             if (category != null && !string.IsNullOrEmpty(category.name))
                 musicCategoryDict[category.name] = category.clips ?? new List<AudioClip>();
+        }
 
         sfxDict = new Dictionary<string, AudioClip>();
         foreach (AudioClip clip in sfxClips)
+        {
             if (clip != null && !sfxDict.ContainsKey(clip.name))
                 sfxDict[clip.name] = clip;
+        }
 
         // Subscribe to scene changes
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -77,6 +81,8 @@ public class AudioManager : MonoBehaviour
             go.SetActive(false);
             sfxPool.Enqueue(src);
         }
+
+        musicSource.volume = 1f;
     }
 
     void OnDestroy()
@@ -116,6 +122,9 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
 
+        float waitTime = Random.Range(0f, 5f);
+        yield return new WaitForSeconds(waitTime);
+
         musicSource.clip = newClip;
         musicSource.loop = loop;
         musicSource.Play();
@@ -126,8 +135,6 @@ public class AudioManager : MonoBehaviour
             musicSource.volume = Mathf.Lerp(0f, startVolume, t / musicFadeDuration);
             yield return null;
         }
-
-        musicSource.volume = startVolume;
     }
 
     public void StopMusic()
@@ -140,7 +147,7 @@ public class AudioManager : MonoBehaviour
 
     // === SFX FUNCTIONS ===
 
-    public void PlaySFX(string clipName, float volume = 1f, float pitch = 1f, Vector3? position = null)
+    public void PlaySFX(string clipName, float pitch = 1f, Vector3? position = null)
     {
         if (!sfxDict.TryGetValue(clipName, out AudioClip clip))
         {
@@ -148,16 +155,16 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        PlaySFX(clip, volume, pitch, position); // reuse the clip overload
+        PlaySFX(clip, pitch, position); // reuse the clip overload
     }
 
-    public void PlaySFX(AudioClip clip, float volume = 1f, float pitch = 1f, Vector3? position = null)
+    public void PlaySFX(AudioClip clip, float pitch = 1f, Vector3? position = null)
     {
         if (clip == null) return;
 
         AudioSource src = GetPooledSource();
         src.transform.position = position ?? Vector3.zero;
-        src.volume = volume;
+
         src.pitch = pitch;
         src.clip = clip;
         src.Play();
@@ -171,7 +178,7 @@ public class AudioManager : MonoBehaviour
     {
         switch (scene.name)
         {
-            case "MainMenu":
+            case "MainMenuScene":
                 PlayMusicCategory("MainMenu");
                 break;
             case "GameScene":

@@ -1,0 +1,4 @@
+repository "Camp Hero/Camp Hero@11270321525591@cloud"
+  path "/"
+    br "/main"
+    co "/main"

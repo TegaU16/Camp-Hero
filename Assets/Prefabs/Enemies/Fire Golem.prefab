@@ -919,7 +919,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
   baseHealth: 400
-  expDropped: 100
+  expDropped: 200
   drops:
   - drop: {fileID: 11400000, guid: 8e768640c6ba9814fa50c16fbc306bba, type: 2}
     minValue: 1
@@ -932,7 +932,6 @@ MonoBehaviour:
   objectType: 2
   entityType: 0
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 4621650800722827677}
   bounceCooldown: 0.2
 --- !u!114 &5665800037854704043
@@ -1035,7 +1034,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stoppingDistance: 0.05
   rotationSpeed: 720
   animator: {fileID: 4465363624190883282}
   speedParam: Speed

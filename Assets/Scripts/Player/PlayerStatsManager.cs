@@ -1,266 +1,361 @@
 using System.Collections.Generic;
+using Game.Level;
+using Game.Upgrades;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static PlayerStats;
+using static Game.Players.PlayerStats;
 
-public class PlayerStatsManager : MonoBehaviour
+namespace Game.Players
 {
-    public static PlayerStatsManager Instance;
-
-    public GameObject campfireStatsMenu;
-    public GameObject playerSkillsSelectorMenu;
-    public GameObject playerSkillMenu;
-
-    [SerializeField] private TextMeshProUGUI availablePointsText;
-    [SerializeField] private TextMeshProUGUI availableGoldenPointsText;
-    [SerializeField] private TextMeshProUGUI levelText;
-    public PlayerStats stats = new();
-    private Player player;
-
-    [Header("Add Stat Button Settings")]
-    public GameObject addStatButtonObj;
-    public Sprite activeSprite;
-    public Sprite inactiveSprite;
-    private Image addStatButtonImg;
-    private Button addStatButton;
-
-    private Stat selectedStat;
-
-    private void Awake()
+    public class PlayerStatsManager : MonoBehaviour
     {
-        Instance = this;
-    }
-
-    private void Start()
-    {
-        availablePointsText.text = stats.availablePoints.ToString();
-
-        addStatButtonImg = addStatButtonObj.GetComponent<Image>();
-        addStatButton = addStatButtonObj.GetComponent<Button>();
-    }
-
-    public void AllocatePoint()
-    {
-        if (stats.availablePoints <= 0) return;
-
-        UpgradeStat(selectedStat);
-
-        stats.availablePoints--;
-        UpdateAvailablePoints();
-
-        if (player != null)
-            player.UpdateVitals();
-    }
-
-    public void AddPoints(int regularPoints, int goldenPoints)
-    {
-        stats.availablePoints += regularPoints;
-        stats.goldenPoints += goldenPoints;
-
-        UpdateAvailablePoints();
-    }
-
-    public void UpdateAvailablePoints()
-    {
-        availablePointsText.text = $"<color=#22DC61>{stats.availablePoints}</color>";
-        availableGoldenPointsText.text = $"<color=#EEEE2C>{stats.goldenPoints}</color>";
-
-        addStatButtonImg.sprite = stats.availablePoints > 0 ? activeSprite : inactiveSprite;
-        addStatButton.interactable = stats.availablePoints > 0;
-    }
-
-    public void SetPlayer(GameObject playerObj)
-    {
-        if (playerObj.TryGetComponent(out Player playerScript))
-            player = playerScript;
-    }
-
-    public void UpgradeStat(Stat stat, int pointsToAdd = 1)
-    {
-        stat.Value += pointsToAdd;
-        stat.Value = Mathf.Clamp(stat.Value, 0, stat.MaxValue - 1);
-
-        bool isMaxed = stat.Value == stat.MaxValue - 1;
-
-        levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {stat.Value + 1}";
-        stat.OuterLevelText.text = $"{stat.Value + 1}/{stat.MaxValue}";
-    }
-
-    public void ToggleCampfireStatsMenu(bool open)
-    {
-        if (campfireStatsMenu != null)
-            campfireStatsMenu.SetActive(open);
-    }
-
-    public void TogglePlayerSkillsSelectorMenu(bool open)
-    {
-        if (playerSkillsSelectorMenu != null)
-            playerSkillsSelectorMenu.SetActive(open);
-    }
-
-    public void CloseStatsMenu()
-    {
-        ToggleCampfireStatsMenu(false);
-        TogglePlayerSkillsSelectorMenu(false);
-    }
-
-    public void TogglePlayerSkillMenu(string statName)
-    {
-        if (playerSkillMenu == null) return;
-
-        if (string.IsNullOrEmpty(statName))
+        public IEnumerable<Stat> AllStats
         {
-            playerSkillMenu.SetActive(false);
-            return;
-        }
-
-        switch (statName.ToLower())
-        {
-            case "strength":
-                UpdateSkillMenu(stats.strength);
-                break;
-            case "vitality":
-                UpdateSkillMenu(stats.vitality);
-                break;
-            case "endurance":
-                UpdateSkillMenu(stats.endurance);
-                break;
-            case "stamina":
-                UpdateSkillMenu(stats.stamina);
-                break;
-            case "luck":
-                UpdateSkillMenu(stats.luck);
-                break;
-            case "speed":
-                UpdateSkillMenu(stats.speed);
-                break;
-            default:
-                Debug.LogWarning("Invalid stat name");
-                return;
-        }
-
-        playerSkillMenu.SetActive(true);
-    }
-
-    private void UpdateSkillMenu(Stat stat)
-    {
-        selectedStat = stat;
-        bool isMaxed = stat.Value == stat.MaxValue - 1;
-
-        levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {stat.Value + 1}";
-        RefreshUpgradeUI(selectedStat);
-    }
-
-    public void PurchaseUpgrade(StatUpgrade upgrade)
-    {
-        if (upgrade.purchased) return;
-
-        if (stats.goldenPoints < upgrade.Cost) return;
-
-        stats.goldenPoints -= upgrade.Cost;
-        upgrade.purchased = true;
-        UpdateAvailablePoints();
-
-        if (upgrade.effect != null && player != null)
-        {
-            if (upgrade.effect is PassiveUpgradeEffect)
-                upgrade.effect.OnUnlocked(player);
-            else
-                player.UnlockActiveAbility(upgrade.effect);
-        }
-
-        // Refresh UI
-        RefreshUpgradeUI(selectedStat);
-    }
-
-    private void RefreshUpgradeUI(Stat stat)
-    {
-        foreach (StatUpgrade upgrade in stat.upgrades)
-        {
-            if (upgrade.upgradeButtonObj == null) continue;
-
-            upgrade.upgradeButtonObj.SetActive(true);
-
-            Button button = upgrade.upgradeButtonObj.GetComponent<Button>();
-            TextMeshProUGUI costText = upgrade.upgradeButtonObj.GetComponentInChildren<TextMeshProUGUI>();
-            costText.text = upgrade.purchased ? "Purchased" : $"{upgrade.UpgradeName} - {upgrade.Cost} GP";
-
-            button.interactable = !upgrade.purchased && stats.goldenPoints >= upgrade.Cost;
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => PurchaseUpgrade(upgrade));
-        }
-
-        // Hide all other stat upgrades (not the selected stat)
-        HideNonSelectedUpgrades(stat);
-    }
-
-    private void HideNonSelectedUpgrades(Stat selected)
-    {
-        Stat[] allStats = new[] { stats.strength, stats.vitality, stats.endurance, stats.stamina, stats.luck, stats.speed };
-
-        foreach (Stat s in allStats)
-        {
-            if (s.Equals(selected)) continue;
-
-            foreach (StatUpgrade upgrade in s.upgrades)
+            get
             {
-                if (upgrade.upgradeButtonObj != null)
-                    upgrade.upgradeButtonObj.SetActive(false);
+                yield return stats.strength;
+                yield return stats.vitality;
+                yield return stats.endurance;
+                yield return stats.stamina;
+                yield return stats.luck;
+                yield return stats.speed;
             }
         }
-    }
 
-    public void LoadPlayerUpgrades(List<string> unlockedUpgrades)
-    {
-        SetUnlockedUpgradesForStat(stats.strength, unlockedUpgrades);
-        SetUnlockedUpgradesForStat(stats.vitality, unlockedUpgrades);
-        SetUnlockedUpgradesForStat(stats.endurance, unlockedUpgrades);
-        SetUnlockedUpgradesForStat(stats.stamina, unlockedUpgrades);
-        SetUnlockedUpgradesForStat(stats.luck, unlockedUpgrades);
-        SetUnlockedUpgradesForStat(stats.speed, unlockedUpgrades);
-    }
+        public static PlayerStatsManager Instance;
 
-    private void SetUnlockedUpgradesForStat(Stat stat, List<string> unlockedUpgrades)
-    {
-        foreach (StatUpgrade upgrade in stat.upgrades)
+        [Header("Menu References")]
+        public GameObject campfireStatsMenu;
+        public GameObject playerSkillsSelectorMenu;
+        public GameObject playerSkillMenu;
+
+        [Header("Skill Menu UI")]
+        public GameObject skillLabel;
+        public TextMeshProUGUI availablePointsText;
+        public TextMeshProUGUI playerAvailableGoldenPointsText;
+        public TextMeshProUGUI campfireAvailableGoldenPointsText;
+        public TextMeshProUGUI levelText;
+
+        [Header("Player Stats")]
+        public PlayerStats stats;
+        private Player player;
+
+        [Header("Add Stat Button Settings")]
+        public GameObject addStatButtonObj;
+        public Sprite activeSprite;
+        public Sprite inactiveSprite;
+        private Image addStatButtonImg;
+        private Button addStatButton;
+
+        [Header("Skills List Menu")]
+        public GameObject skillsListMenu;
+
+        private Stat selectedStat;
+
+        private void Awake()
         {
-            if (!unlockedUpgrades.Contains(upgrade.UpgradeName)) continue;
-            if (upgrade.effect == null || player == null) continue;
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
+        }
 
+        private void Start()
+        {
+            addStatButtonImg = addStatButtonObj.GetComponent<Image>();
+            addStatButton = addStatButtonObj.GetComponent<Button>();
+
+            foreach (Stat stat in AllStats)
+                UpdateStatOuterUI(stat);
+
+            CloseStatsMenu();
+        }
+
+        public void AllocatePoint()
+        {
+            if (stats.availablePoints <= 0) return;
+            if (selectedStat.Value >= selectedStat.MaxValue) return;
+
+            UpgradeStat(selectedStat);
+
+            stats.availablePoints--;
+            UpdateAvailablePoints();
+
+            if (player != null)
+                player.UpdateVitals();
+        }
+
+        public void AddPoints(int regularPoints, int goldenPoints)
+        {
+            stats.availablePoints += regularPoints;
+            stats.goldenPoints += goldenPoints;
+        }
+
+        public void UpdateAvailablePoints()
+        {
+            availablePointsText.text = $"<color=#22DC61>{stats.availablePoints}</color>";
+            playerAvailableGoldenPointsText.text = $"<color=#EEEE2C>{stats.goldenPoints}</color>";
+            campfireAvailableGoldenPointsText.text = $"<color=#EEEE2C>{stats.goldenPoints}</color>";
+
+            addStatButtonImg.sprite = stats.availablePoints > 0 ? activeSprite : inactiveSprite;
+            addStatButton.interactable = stats.availablePoints > 0;
+
+            if (selectedStat != null)
+            {
+                bool isMaxed = selectedStat.Value == selectedStat.MaxValue;
+                levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {selectedStat.Value + 1}";
+            }
+        }
+
+        public void SetPlayer(GameObject playerObj)
+        {
+            if (playerObj.TryGetComponent(out Player playerScript))
+                player = playerScript;
+        }
+
+        public void UpgradeStat(Stat stat, int pointsToAdd = 1)
+        {
+            if ((stat.Value + pointsToAdd) > stat.MaxValue)
+                pointsToAdd = stat.MaxValue - stat.Value;
+
+            stat.Value += pointsToAdd;
+
+            UpdateStatOuterUI(stat);
+        }
+
+        public void UpdateStatOuterUI(Stat stat)
+        {
+            stat.OuterLevelText.text = $"{stat.Value + 1}/{stat.MaxValue + 1}";
+        }
+
+        public void ToggleCampfireStatsMenu(bool open)
+        {
+            if (open)
+                RefreshUpgradeUI(stats.campfireUpgrades, true);
+
+            if (campfireStatsMenu != null)
+                campfireStatsMenu.SetActive(open);
+        }
+
+        public void TogglePlayerSkillsSelectorMenu(bool open)
+        {
+            if (playerSkillsSelectorMenu != null)
+                playerSkillsSelectorMenu.SetActive(open);
+        }
+
+        public void CloseStatsMenu()
+        {
+            UpgradeTooltipMenu.Instance.HideInstant();
+            ToggleCampfireStatsMenu(false);
+            TogglePlayerSkillsSelectorMenu(false);
+            TogglePlayerSkillMenu(null);
+        }
+
+        public void TogglePlayerSkillMenu(string statName)
+        {
+            if (playerSkillMenu == null) return;
+
+            if (string.IsNullOrEmpty(statName))
+            {
+                playerSkillMenu.SetActive(false);
+                return;
+            }
+
+            switch (statName.ToLower())
+            {
+                case "strength":
+                    UpdateSkillMenu(stats.strength);
+                    break;
+                case "vitality":
+                    UpdateSkillMenu(stats.vitality);
+                    break;
+                case "endurance":
+                    UpdateSkillMenu(stats.endurance);
+                    break;
+                case "stamina":
+                    UpdateSkillMenu(stats.stamina);
+                    break;
+                case "luck":
+                    UpdateSkillMenu(stats.luck);
+                    break;
+                case "speed":
+                    UpdateSkillMenu(stats.speed);
+                    break;
+                default:
+                    Debug.LogWarning("Invalid stat name");
+                    return;
+            }
+
+            ToggleCampfireStatsMenu(false);
+            TogglePlayerSkillsSelectorMenu(false);
+            playerSkillMenu.SetActive(true);
+        }
+
+        private void UpdateSkillMenu(Stat stat)
+        {
+            selectedStat = stat;
+            bool isMaxed = stat.Value == stat.MaxValue;
+
+            if (skillLabel != null)
+            {
+                Image skillIcon = skillLabel.transform.Find("Skill Icon").GetComponent<Image>();
+                skillIcon.sprite = selectedStat.Icon;
+
+                TextMeshProUGUI skillName = skillLabel.transform.Find("Skill Name").GetComponent<TextMeshProUGUI>();
+                skillName.text = selectedStat.Name;
+            }
+
+            levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {stat.Value + 1}";
+            RefreshUpgradeUI(selectedStat.upgrades);
+            HideNonSelectedUpgrades(selectedStat);
+        }
+
+        public void PurchaseUpgrade<T>(UpgradeBase<T> upgrade) where T : UpgradeEffect
+        {
+            if (upgrade.purchased) return;
+
+            if (stats.goldenPoints < upgrade.Cost) return;
+
+            if (upgrade is CampfireUpgrade campfireUpgrade &&
+                LevelManager.Instance.GetLevel() < campfireUpgrade.LevelRequirement) return;
+
+            stats.goldenPoints -= upgrade.Cost;
             upgrade.purchased = true;
 
-            if (upgrade.effect is PassiveUpgradeEffect)
+            if (upgrade.effect != null && player != null)
                 upgrade.effect.OnUnlocked(player);
-            else
-                player.UnlockActiveAbility(upgrade.effect);
+
+            // Refresh UI
+            if (playerSkillMenu.activeSelf)
+            {
+                RefreshUpgradeUI(selectedStat.upgrades);
+                HideNonSelectedUpgrades(selectedStat);
+            }
+            else if (campfireStatsMenu.activeSelf)
+            {
+                RefreshUpgradeUI(stats.campfireUpgrades, true);
+            }
         }
-    }
 
-    public List<string> GetPlayerUpgrades()
-    {
-        List<string> upgrades = new();
-
-        upgrades.AddRange(GetUpgradesForStat(stats.strength));
-        upgrades.AddRange(GetUpgradesForStat(stats.vitality));
-        upgrades.AddRange(GetUpgradesForStat(stats.endurance));
-        upgrades.AddRange(GetUpgradesForStat(stats.stamina));
-        upgrades.AddRange(GetUpgradesForStat(stats.luck));
-        upgrades.AddRange(GetUpgradesForStat(stats.speed));
-
-        return upgrades;
-    }
-
-    private List<string> GetUpgradesForStat(Stat stat)
-    {
-        List<string> upgrades = new();
-
-        foreach (StatUpgrade upgrade in stat.upgrades)
+        private void RefreshUpgradeUI<T>(IEnumerable<UpgradeBase<T>> upgrades, bool showLevelRequirement = false)
+        where T : UpgradeEffect
         {
-            if (upgrade.purchased)
-                upgrades.Add(upgrade.UpgradeName);
+            foreach (UpgradeBase<T> upgrade in upgrades)
+            {
+                if (upgrade.upgradeButtonObj == null) continue;
+
+                GameObject buttonObj = upgrade.upgradeButtonObj;
+                buttonObj.SetActive(true);
+
+                if (!buttonObj.TryGetComponent(out EventTrigger eventTrigger))
+                    eventTrigger = buttonObj.AddComponent<EventTrigger>();
+
+                eventTrigger.triggers.Clear();
+
+                // Show tooltip on hover
+                AddEvent(eventTrigger, EventTriggerType.PointerEnter, (e) =>
+                {
+                    RectTransform buttonRect = buttonObj.GetComponent<RectTransform>();
+                    Canvas canvas = UpgradeTooltipMenu.Instance.GetComponentInParent<Canvas>();
+                    RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+
+                    // Convert button position to canvas local space
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        canvasRect,
+                        buttonRect.position,
+                        canvas.worldCamera,
+                        out Vector2 localPos
+                    );
+
+                    // Send localPos directly
+                    UpgradeTooltipMenu.Instance.ShowUpgrade(upgrade, localPos, showLevelRequirement);
+                });
+
+                // Hide tooltip when not hovering over the button nor tooltip
+                AddEvent(eventTrigger, EventTriggerType.PointerExit, (e) =>
+                {
+                    UpgradeTooltipMenu.Instance.TryHide();
+                });
+            }
+
+            UpdateAvailablePoints();
         }
 
-        return upgrades;
+        private void AddEvent(EventTrigger trigger, EventTriggerType type, System.Action<BaseEventData> callback)
+        {
+            EventTrigger.Entry entry = new() { eventID = type };
+            entry.callback.AddListener(callback.Invoke);
+            trigger.triggers.Add(entry);
+        }
+
+        private void HideNonSelectedUpgrades(Stat selected)
+        {
+            Stat[] allStats = new[] { stats.strength, stats.vitality, stats.endurance, stats.stamina, stats.luck, stats.speed };
+
+            foreach (Stat s in allStats)
+            {
+                if (s.Equals(selected)) continue;
+
+                foreach (StatUpgrade upgrade in s.upgrades)
+                {
+                    if (upgrade.upgradeButtonObj != null)
+                        upgrade.upgradeButtonObj.SetActive(false);
+                }
+            }
+        }
+
+        public void LoadPlayerUpgrades(HashSet<string> unlockedUpgrades)
+        {
+            foreach (Stat stat in AllStats)
+                SetUnlockedUpgradesForStat(stat, unlockedUpgrades);
+        }
+
+        private void SetUnlockedUpgradesForStat(Stat stat, HashSet<string> unlockedUpgrades)
+        {
+            foreach (StatUpgrade upgrade in stat.upgrades)
+            {
+                if (!unlockedUpgrades.Contains(upgrade.UpgradeName)) continue;
+                if (upgrade.effect == null || player == null) continue;
+
+                upgrade.purchased = true;
+                upgrade.effect.OnUnlocked(player);
+            }
+        }
+
+        public HashSet<string> GetPlayerUpgrades()
+        {
+            HashSet<string> upgrades = new();
+
+            foreach (Stat stat in AllStats)
+                upgrades.UnionWith(GetUpgradesForStat(stat));
+
+            return upgrades;
+        }
+
+        private HashSet<string> GetUpgradesForStat(Stat stat)
+        {
+            HashSet<string> upgrades = new();
+
+            foreach (StatUpgrade upgrade in stat.upgrades)
+            {
+                if (upgrade.purchased)
+                    upgrades.Add(upgrade.UpgradeName);
+            }
+
+            return upgrades;
+        }
+
+        public void AddSkill(GameObject skillPrefab)
+        {
+            if (skillPrefab == null) return;
+
+            if (!skillsListMenu.activeSelf)
+                skillsListMenu.SetActive(true);
+
+            Instantiate(skillPrefab, skillsListMenu.transform);
+        }
     }
+
 }

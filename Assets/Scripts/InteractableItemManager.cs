@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Game;
+using Game.Players;
 using UnityEngine;
 
 public class InteractableItemManager : MonoBehaviour
@@ -23,14 +25,14 @@ public class InteractableItemManager : MonoBehaviour
     private float mergeTimer = 0f;
     private float groundCheckTimer = 0f;
 
+    private PlayerInteractor playerInteractor;
+
     void Awake()
     {
-        if (Instance != null)
-        {
+        if (Instance == null)
+            Instance = this;
+        else
             Destroy(gameObject);
-            return;
-        }
-        Instance = this;
     }
 
     public void Register(InteractableItem item)
@@ -70,6 +72,9 @@ public class InteractableItemManager : MonoBehaviour
             {
                 mergeIndex = 0;
                 CleanupList(); // cleanup after a full pass
+
+                if (playerInteractor != null)
+                    playerInteractor.RefreshInteractable();
             }
         }
 
@@ -111,7 +116,17 @@ public class InteractableItemManager : MonoBehaviour
         {
             if (item == null) continue;
             if (!item.gameObject.activeInHierarchy) continue;
+
             item.TryMergeNearby();
         }
+
+        
+    }
+
+    public void SetPlayer(GameObject player)
+    {
+        if (player == null) return;
+
+        playerInteractor = player.GetComponent<PlayerInteractor>();
     }
 }

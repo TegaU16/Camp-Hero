@@ -506,6 +506,7 @@ MonoBehaviour:
   waitTimeMin: 4
   waitTimeMax: 10
   gravity: -9.8
+  worldName: 
 --- !u!114 &4014674798180960077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -529,8 +530,8 @@ MonoBehaviour:
   objectType: 2
   entityType: 0
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 1399286290419760869}
+  bounceCooldown: 0.2
 --- !u!114 &-1926795156638496978
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -546,6 +547,7 @@ MonoBehaviour:
   collidersToIgnore: []
   animator: {fileID: 8655663043393885058}
   agent: {fileID: -1633701019147389246}
+  proceduralAnimator: {fileID: 0}
 --- !u!114 &-1633701019147389246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -558,7 +560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stoppingDistance: 0.1
   rotationSpeed: 720
   animator: {fileID: 0}
   speedParam: Speed
@@ -585,7 +586,7 @@ CharacterController:
   m_Radius: 0.4
   m_SlopeLimit: 45
   m_StepOffset: 0.4
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.02
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.5, z: 0.1}
 --- !u!114 &1879773668602083914

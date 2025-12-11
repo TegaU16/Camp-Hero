@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(CanvasGroup))]
 public class DayTextUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI dayText;

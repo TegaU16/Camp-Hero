@@ -181,9 +181,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
   itemCount: 0
-  mergeDistance: 2
   maxItemCount: 100
-  savedObjectIndex: 0
+  CurrentCell: {x: 0, y: 0}
 --- !u!114 &6903374666322359355
 MonoBehaviour:
   m_ObjectHideFlags: 0

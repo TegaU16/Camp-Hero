@@ -139,8 +139,8 @@ MonoBehaviour:
   objectType: 0
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!114 &3026535064496475885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,9 +154,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chestName: Chest
-  maxSlots: 16
+  maxSlots: 28
   isOpen: 0
   items: []
+  inventorySlots: []
 --- !u!114 &-8589214019905026932
 MonoBehaviour:
   m_ObjectHideFlags: 0

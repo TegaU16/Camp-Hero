@@ -47,6 +47,9 @@ TagManager:
   - name: Damage Popup
     uniqueID: 1780660667
     locked: 0
+  - name: Level Up Popup
+    uniqueID: 2877169307
+    locked: 0
   m_RenderingLayers:
   - Default
   - Light Layer 1

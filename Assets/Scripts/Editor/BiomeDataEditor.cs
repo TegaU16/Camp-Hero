@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using Game.Terrain;
 
 [CustomEditor(typeof(BiomeData))]
 public class BiomeDataEditor : Editor

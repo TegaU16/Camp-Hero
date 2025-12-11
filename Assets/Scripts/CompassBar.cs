@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class CompassBar : MonoBehaviour
 {
     public RectTransform bar;
-    private Transform cameraTransform;
+    private Camera mainCam;
 
     public RectTransform northMarker;
     public RectTransform eastMarker;
@@ -22,14 +22,14 @@ public class CompassBar : MonoBehaviour
     void Start()
     {
         barWidth = bar.rect.width;
-        cameraTransform = Camera.main.transform;
+        mainCam = Camera.main;
     }
 
     void Update()
     {
-        if (Camera.main == null || bar == null) return;
+        if (mainCam == null || bar == null) return;
 
-        Vector3 forward = cameraTransform.forward;
+        Vector3 forward = mainCam.transform.forward;
         forward.y = 0;
 
         float cameraAngle = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
@@ -38,7 +38,7 @@ public class CompassBar : MonoBehaviour
         MoveCampfireIcon(cameraAngle);
     }
 
-    void MoveCardinalMarkers(float cameraAngle)
+    private void MoveCardinalMarkers(float cameraAngle)
     {
         SetMarkerPosition(northMarker, cameraAngle, 0);
         SetMarkerPosition(eastMarker, cameraAngle, 90);
@@ -46,11 +46,11 @@ public class CompassBar : MonoBehaviour
         SetMarkerPosition(westMarker, cameraAngle, 270);
     }
 
-    void MoveCampfireIcon(float cameraAngle)
+    private void MoveCampfireIcon(float cameraAngle)
     {
-        if (campfireTransform == null || campfireIcon == null || cameraTransform == null) return;
+        if (campfireTransform == null || campfireIcon == null) return;
 
-        Vector3 toCampfire = campfireTransform.position - cameraTransform.position;
+        Vector3 toCampfire = campfireTransform.position - mainCam.transform.position;
         toCampfire.y = 0;
 
         if (toCampfire.sqrMagnitude < 0.01f) return; // avoid NaN
@@ -71,7 +71,7 @@ public class CompassBar : MonoBehaviour
         SetAlpha(campfireIcon, alpha);
     }
 
-    void SetMarkerPosition(RectTransform marker, float cameraAngle, float markerAngle)
+    private void SetMarkerPosition(RectTransform marker, float cameraAngle, float markerAngle)
     {
         float angleDiff = Mathf.DeltaAngle(cameraAngle, markerAngle);
         float markerPosition = (angleDiff / visibleFOV) * barWidth;
@@ -90,7 +90,7 @@ public class CompassBar : MonoBehaviour
         SetAlpha(marker, alpha);
     }
 
-    void SetAlpha(RectTransform marker, float alpha)
+    private void SetAlpha(RectTransform marker, float alpha)
     {
         if (marker.TryGetComponent(out CanvasGroup group))
         {
@@ -110,17 +110,9 @@ public class CompassBar : MonoBehaviour
         }
     }
 
-    public void SetPlayer(GameObject playerObj)
-    {
-        if (playerObj != null)
-        {
-            Camera cam = playerObj.GetComponentInChildren<Camera>();
-            if (cam != null) cameraTransform = cam.transform;
-        }
-    }
-
     public void SetCampfireTransform(GameObject campfire)
     {
-        if (campfire != null) campfireTransform = campfire.transform;
+        if (campfire != null) 
+            campfireTransform = campfire.transform;
     }
 }

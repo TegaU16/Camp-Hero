@@ -110,9 +110,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chestName: Crate
-  maxSlots: 8
+  maxSlots: 14
   isOpen: 0
   items: []
+  inventorySlots: []
 --- !u!65 &5533347837397351334
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -157,8 +158,8 @@ MonoBehaviour:
   objectType: 0
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!114 &918358421896733505
 MonoBehaviour:
   m_ObjectHideFlags: 0

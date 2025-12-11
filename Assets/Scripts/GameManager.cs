@@ -1,566 +1,546 @@
 ﻿using System.Collections;
 using System.Linq;
-using TMPro;
+using Game.AI.Animals;
+using Game.AI.Enemies;
+using Game.Crafting;
+using Game.Food;
+using Game.Inventory;
+using Game.Level;
+using Game.Players;
+using Game.Quests;
+using Game.Saving;
+using Game.Smelting;
+using Game.Terrain;
+using Game.Terrain.Structures;
+using Game.Terrain.Structures.Trials;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Worlds;
 
-public class GameManager : MonoBehaviour
+namespace Game
 {
-    public static GameManager Instance;
-
-    [Header("Prefabs")]
-    public GameObject playerPrefab;
-    public GameObject campFire;
-    public GameObject animalSystemGameObject;
-
-    [HideInInspector] public GameObject playerInstance;
-    [HideInInspector] public GameObject campFireInstance;
-
-    [Header("UI")]
-    public KeyCode togglePauseKey = KeyCode.Escape;
-    public GameObject pauseMenuUI;
-    public GameObject gameOverMenuUI;
-    public GameObject winMenuUI;
-    public GameObject darkBackground;
-    public GameObject retryConfirmMenuUI;
-
-    [Header("Managers")]
-    public InventoryManager inventoryManager;
-    public DayNightCycle dayNightCycle;
-    public EnemySpawner enemySpawner;
-    public AnimalSpawner animalSpawner;
-    public PlayerStatsManager playerStatsManager;
-    public CompassBar compassBar;
-    public FoodManager foodManager;
-    public CameraControlToggle cameraControlToggle;
-
-    [HideInInspector] public string currentWorldName;
-    [HideInInspector] public string currentSeed;
-
-    public bool IsLoading { get; private set; }
-    public bool IsGameOver { get; private set; }
-    public bool IsPaused { get; private set; }
-
-    private PlayerSaveData pendingPlayerData;
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if (Instance == null) 
-            Instance = this;
-        else 
-            Destroy(gameObject);
-    }
+        private static readonly WaitForSeconds _waitForSeconds0_1 = new(0.1f);
+        public static GameManager Instance;
 
-    private void Start()
-    {
-        LoadGame();
-    }
+        [Header("Prefabs")]
+        public GameObject playerPrefab;
+        public GameObject campFire;
+        public GameObject animalSystemGameObject;
 
-    private void Update()
-    {
-        if (IsGameOver) return;
+        [HideInInspector] public GameObject playerInstance;
+        [HideInInspector] public GameObject campFireInstance;
 
-        if (Input.GetKeyDown(togglePauseKey))
+        [Header("UI")]
+        public KeyCode togglePauseKey = KeyCode.Escape;
+        public GameObject pauseMenuUI;
+        public GameObject gameOverMenuUI;
+        public GameObject darkBackground;
+        public GameObject savingWorldMenuUI;
+        public GameObject settingsMenuUI;
+
+        [Header("References")]
+        public CompassBar compassBar;
+
+        public bool IsLoading { get; private set; }
+        public bool IsGameOver { get; private set; }
+        public bool IsPaused { get; private set; }
+
+        private PlayerSaveData pendingPlayerData;
+
+        private void Awake()
         {
-            if (InventoryManager.Instance.JustClosedExtension)
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
+        }
+
+        private void Start()
+        {
+            LoadGame();
+        }
+
+        private void Update()
+        {
+            if (IsGameOver) return;
+
+            if (Input.GetKeyDown(togglePauseKey))
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                InventoryManager.Instance.JustClosedExtension = false;
-                return;
+                if (InventoryManager.Instance.JustClosedExtension)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                    InventoryManager.Instance.JustClosedExtension = false;
+                    return;
+                }
+
+                if (IsPaused)
+                    ResumeGame();
+                else
+                    PauseGame();
             }
-
-            if (IsPaused) 
-                ResumeGame();
-            else 
-                PauseGame();
         }
-    }
 
-    private void OnApplicationQuit() => SaveGame(true);
-    private void OnApplicationPause(bool pause) { if (pause) SaveGame(); }
+        private void OnApplicationQuit() => SaveGame(true);
+        private void OnApplicationPause(bool pause) { if (pause) SaveGame(); }
 
-    // ----------------- WORLD -----------------
-    private IEnumerator GenerateTerrainPhase()
-    {
-        WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
-
-        if (metadata != null)
+        // ----------------- PLAYER -----------------
+        public void SpawnPlayer(Vector3 position, PlayerSaveData data = null)
         {
-            // ✅ Normal case — both new or existing worlds
-            currentWorldName = metadata.worldName;
-            currentSeed = metadata.seed;
-            metadata.lastPlayedDate = System.DateTime.Now.ToString();
+            Vector3 rayStart = position + Vector3.up * 100f;
+            Vector3 spawnPos = position;
 
-            metadata.worldStats ??= new RunStats();
-            WorldSession.CurrentRunStats = metadata.worldStats;
+            LayerMask groundMask = LayerMask.GetMask("Ground");
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 200f, groundMask))
+                spawnPos = hit.point + Vector3.up * 0.2f;
+            else
+                spawnPos.y = 3f;
 
-            SaveSystem.SaveWorldMeta(metadata);
+            playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+            if (!playerInstance.TryGetComponent(out Player _)) return;
+
+            HookSystems(playerInstance);
+
+            if (data != null)
+                pendingPlayerData = data;
         }
-        else
+
+        public void OnUIBound()
         {
-            // ⚠️ Fallback — metadata missing or corrupt
-            Debug.LogWarning($"[GenerateTerrainPhase] No metadata found for world '{currentWorldName}'. Creating default metadata.");
-
-            // Assign defaults
-            if (string.IsNullOrEmpty(currentSeed))
-                currentSeed = System.Guid.NewGuid().ToString(); // random but consistent string
-
-            metadata = new WorldMetaData
+            if (pendingPlayerData != null && playerInstance.TryGetComponent(out Player player))
             {
-                worldName = currentWorldName,
-                seed = currentSeed,
-                createdDate = System.DateTime.Now.ToString(),
-                lastPlayedDate = System.DateTime.Now.ToString(),
-                difficulty = DifficultyManager.Instance.GetDifficulty(),
-                worldStats = new RunStats()
-            };
-
-            SaveSystem.SaveWorldMeta(metadata);
-
-            WorldSession.CurrentRunStats = new RunStats();
-            WorldSession.CurrentRunStats.ResetStats();
+                ApplyPlayerLoadedData(player, pendingPlayerData);
+                pendingPlayerData = null;
+            }
         }
 
-        int seed = ConsistentHash(currentSeed);
-        Random.InitState(seed);
-        VoxelGrid.Instance.SetWorld(seed, currentWorldName);
-
-        while (!VoxelGrid.Instance.worldGenerated) yield return null;
-    }
-
-    private IEnumerator SpawnEntitiesPhase(System.Action<float> onProgress)
-    {
-        float progress;
-
-        // Try load player save first
-        PlayerSaveData playerData = SaveSystem.LoadPlayer(currentWorldName);
-
-        if (playerData != null)
-            SpawnPlayer(playerData.position, playerData);
-        else
-            SpawnPlayer(VoxelGrid.Instance.GetDefaultSpawnPosition());
-
-        progress = 0.5f;
-        onProgress?.Invoke(progress);
-
-        compassBar.SetCampfireTransform(campFireInstance);
-        animalSystemGameObject.SetActive(true);
-
-        progress = 1f;
-        onProgress?.Invoke(progress);
-        yield return null;
-    }
-
-    private IEnumerator LoadNPCsPhase(System.Action<float> onProgress)
-    {
-        yield return new WaitUntil(() => VoxelGrid.Instance.worldGenerated);
-        yield return null;
-
-        // Enemy & animal spawns (count as final part of systems)
-        enemySpawner.LoadAllEnemies();
-        animalSpawner.LoadAllAnimals();
-
-        onProgress?.Invoke(1f); // signal progress complete
-        yield return null; // ensure UI updates
-    }
-
-    // ----------------- PLAYER -----------------
-    private void SpawnPlayer(Vector3 position, PlayerSaveData data = null)
-    {
-        Vector3 rayStart = position + Vector3.up * 10f;
-        Vector3 spawnPos = position;
-
-        LayerMask groundMask = LayerMask.GetMask("Ground");
-        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 50f, groundMask))
+        private void ApplyPlayerLoadedData(Player player, PlayerSaveData data)
         {
-            spawnPos = hit.point + Vector3.up * 0.2f;
-        }
-        else
-        {
-            Debug.LogWarning("[SpawnPlayer] Failed to find ground under spawn position. Using default Y=3.");
-            spawnPos.y = 3f;
-        }
+            PlayerStats stats = PlayerStatsManager.Instance.stats;
+            stats.strength.Value = data.attributes.strength;
+            stats.vitality.Value = data.attributes.vitality;
+            stats.endurance.Value = data.attributes.endurance;
+            stats.stamina.Value = data.attributes.stamina;
+            stats.luck.Value = data.attributes.luck;
 
-        playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-        if (!playerInstance.TryGetComponent(out Player _)) return;
+            player.health.maxHealth = data.maxHealth;
+            player.health.SetHealth(data.currentHealth);
 
-        HookSystems(playerInstance);
+            player.staminaBar.maxStamina = data.maxStamina;
+            player.staminaBar.SetNewStamina((int)data.currentStamina);
 
-        if (data != null)
-            pendingPlayerData = data;
-    }
+            player.transform.position = data.position;
 
-    private void OnUIBound()
-    {
-        if (pendingPlayerData != null && playerInstance.TryGetComponent(out Player player))
-        {
-            ApplyPlayerLoadedData(player, pendingPlayerData);
-            pendingPlayerData = null;
-        }
-    }
+            InventoryManager.Instance.AddSavedPlayerItems(data.inventory.savedItems);
+            InventoryManager.Instance.LoadDiscoveredItems(data.inventory.discoveredItems);
+            InventoryManager.Instance.EquipSelectedItem();
 
-    private static void ApplyPlayerLoadedData(Player player, PlayerSaveData data)
-    {
-        PlayerStats stats = PlayerStatsManager.Instance.stats;
-        stats.strength.Value = data.attributes.strength;
-        stats.vitality.Value = data.attributes.vitality;
-        stats.endurance.Value = data.attributes.endurance;
-        stats.stamina.Value = data.attributes.stamina;
-        stats.luck.Value = data.attributes.luck;
+            PlayerStatsManager.Instance.stats.availablePoints = data.attributes.availablePoints;
+            PlayerStatsManager.Instance.stats.goldenPoints = data.attributes.goldenPoints;
+            PlayerStatsManager.Instance.UpdateAvailablePoints();
+            PlayerStatsManager.Instance.LoadPlayerUpgrades(data.attributes.unlockedUpgrades);
 
-        player.health.maxHealth = data.maxHealth;
-        player.health.SetHealth(data.currentHealth);
+            foreach (PlayerStats.Stat stat in PlayerStatsManager.Instance.AllStats)
+                PlayerStatsManager.Instance.UpdateStatOuterUI(stat);
 
-        player.staminaBar.maxStamina = data.maxStamina;
-        player.staminaBar.SetNewStamina((int)data.currentStamina);
-
-        player.transform.position = data.position;
-
-        InventoryManager.Instance.AddSavedPlayerItems(data.inventory);
-        InventoryManager.Instance.EquipSelectedItem();
-
-        PlayerStatsManager.Instance.stats.availablePoints = data.attributes.availablePoints;
-        PlayerStatsManager.Instance.stats.goldenPoints = data.attributes.goldenPoints;
-        PlayerStatsManager.Instance.UpdateAvailablePoints();
-        PlayerStatsManager.Instance.LoadPlayerUpgrades(data.attributes.unlockedUpgrades);
-
-        LevelManager.Instance.SetLevelData(data.levelData);
-
-        player.UpdateVitals();
-    }
-
-    private void BindPlayerUI(Player player)
-    {
-        if (player != null)
-        {
-            player.BindUI(
-                UIManager.Instance.GetHealthBar("Player"),
-                UIManager.Instance.GetStaminaBar()
-            );
-
-            if (player.healthBar != null)
-                player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
-
-            if (player.staminaBar != null)
-                player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
+            LevelManager.Instance.SetLevelData(data.levelData);
 
             player.UpdateVitals();
         }
-    }
 
-    public void RespawnPlayer(Player player)
-    {
-        StartCoroutine(RespawnPlayerCoroutine(player));
-    }
-
-    private IEnumerator RespawnPlayerCoroutine(Player player)
-    {
-        if (player == null)
+        public void BindPlayerUI(Player player)
         {
-            Debug.LogWarning("[Respawn] Player instance is null!");
-            yield break;
-        }
-
-        // Wait until the terrain is generated
-        while (!VoxelGrid.Instance.worldGenerated)
-            yield return null;
-
-        if (campFireInstance == null)
-        {
-            Debug.LogWarning("[Respawn] No campfire found to respawn at.");
-            yield break;
-        }
-
-        Vector3 campfirePosition = campFireInstance.transform.position;
-        Vector3 respawnOffset = new(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
-        Vector3 respawnPosition = campfirePosition + respawnOffset;
-
-        if (player.TryGetComponent(out CharacterController controller))
-        {
-            controller.enabled = false;
-            player.transform.position = respawnPosition;
-            controller.enabled = true;
-        }
-        else
-        {
-            player.transform.position = respawnPosition;
-        }
-
-        player.health.SetHealth(player.health.maxHealth);
-        player.staminaBar.SetNewStamina((int)player.staminaBar.maxStamina);
-
-        BindPlayerUI(player);
-    }
-
-    private void HookSystems(GameObject playerInstance)
-    {
-        inventoryManager.SetPlayer(playerInstance);
-        dayNightCycle.SetPlayer(playerInstance);
-        enemySpawner.SetPlayer(playerInstance);
-        playerStatsManager.SetPlayer(playerInstance);
-        compassBar.SetPlayer(playerInstance);
-        foodManager.SetPlayer(playerInstance);
-
-        CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
-        if (cinemachineCamera != null && playerInstance.TryGetComponent(out Player player))
-        {
-            cinemachineCamera.Follow = player.cameraTarget;
-            cinemachineCamera.LookAt = player.cameraTarget;
-        }
-    }
-
-    // ----------------- CAMPFIRE -----------------
-    public void SetCampfire(GameObject campfireObj, CampfireSaveData campfireData = null)
-    {
-        campFireInstance = campfireObj;
-        
-        if (campFireInstance.TryGetComponent(out Campfire campfire))
-        {
-            campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
-
-            int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
-
-            if (campfire.health.healthBar != null)
-                campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
-        }
-    }
-
-    // ----------------- SAVE / LOAD -----------------
-    public void SaveGame(bool exit = false)
-    {
-        if (string.IsNullOrEmpty(currentWorldName)) return;
-        if (playerInstance == null) return;
-
-        if (playerInstance.TryGetComponent(out Player player))
-            player.SavePlayer();
-
-        VoxelGrid.Instance.SaveAllChunks(currentWorldName);
-
-        CraftingManager.Instance.SaveCraftingProgress();
-        FurnaceManager.Instance.SaveSmeltingProgress();
-
-        dayNightCycle.SaveDayNight();
-
-        if (exit)
-        {
-            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+            if (player != null)
             {
-                if (trialAltar != null && trialAltar.IsWaveInProgress())
-                    trialAltar.FailTrial();
+                player.BindUI(
+                    UIManager.Instance.GetHealthBar("Player"),
+                    UIManager.Instance.GetStaminaBar()
+                );
+
+                if (player.healthBar != null)
+                    player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
+
+                if (player.staminaBar != null)
+                    player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
+
+                player.UpdateVitals();
             }
         }
 
-        enemySpawner.SaveAllEnemies();
-        animalSpawner.SaveAllAnimals();
-
-        WorldMetaData metadata = SaveSystem.LoadWorldMeta(currentWorldName);
-        if (metadata != null)
+        public IEnumerator RespawnPlayer(Player player)
         {
-            metadata.lastPlayedDate = System.DateTime.Now.ToString();
-            SaveSystem.SaveWorldMeta(metadata);
-        }
-    }
-
-    public void LoadGame()
-    {
-        if (IsLoading) return;
-        IsLoading = true;
-
-        currentWorldName = WorldSession.CurrentWorldName;
-        currentSeed = WorldSession.CurrentSeed;
-
-        if (string.IsNullOrEmpty(currentWorldName))
-        {
-            currentWorldName = "New World";
-            currentSeed = "12345";
-        }
-
-        WorldSession.CurrentRunStats ??= new RunStats();
-
-        // Start full load routine
-        StartCoroutine(LoadGameRoutine());
-    }
-
-    private IEnumerator LoadGameRoutine()
-    {
-        // 1. Wait until UIManager and bars are ready
-        yield return StartCoroutine(WaitForUI());
-        LoadingScreenUI.Instance.SetProgress(0f);
-
-        // 2. Terrain generation (0%–70%)
-        VoxelGrid.Instance.OnProgress = p => LoadingScreenUI.Instance.SetProgressRange(p, 0f, 0.7f);
-        yield return StartCoroutine(GenerateTerrainPhase());
-        VoxelGrid.Instance.OnProgress = null;
-
-        // 3. Spawning (70%–80%)
-        yield return StartCoroutine(SpawnEntitiesPhase(p => LoadingScreenUI.Instance.SetProgressRange(p, 0.7f, 0.8f)));
-
-        // 4. Bind UI (80%–85%)
-        yield return StartCoroutine(BindUIAndApplySaves());
-
-        // 5. Systems (85%–95%)
-        yield return StartCoroutine(LoadNPCsPhase(p => LoadingScreenUI.Instance.SetProgressRange(p, 0.85f, 0.95f)));
-
-        // 6. Finalization (95%–100%)
-        LoadingScreenUI.Instance.SetProgress(1f);
-        yield return null;
-        yield return new WaitForSeconds(0.1f);
-
-        IsLoading = false;
-        LoadingScreenUI.Instance.Hide();
-    }
-
-    private IEnumerator BindUIAndApplySaves()
-    {
-        // Wait until player & campfire exist
-        float waitTime = 0f;
-        while (playerInstance == null || campFireInstance == null)
-        {
-            if (waitTime > 5f) // 5 seconds fallback
+            if (player == null)
             {
-                Debug.LogWarning("[BindUIAndApplySaves] Timeout waiting for player/campfire.");
-                break;
+                Debug.LogWarning("[Respawn] Player instance is null!");
+                yield break;
             }
-            waitTime += Time.deltaTime;
+
+            // Wait until the terrain is generated
+            while (!VoxelGrid.Instance.worldGenerated)
+                yield return null;
+
+            if (campFireInstance == null)
+            {
+                Debug.LogWarning("[Respawn] No campfire found to respawn at.");
+                yield break;
+            }
+
+            Vector3 campfirePosition = campFireInstance.transform.position;
+            Vector3 respawnOffset = new(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
+            Vector3 respawnPosition = campfirePosition + respawnOffset;
+
+            if (player.TryGetComponent(out CharacterController controller))
+            {
+                controller.enabled = false;
+                player.transform.position = respawnPosition;
+                controller.enabled = true;
+            }
+            else
+            {
+                player.transform.position = respawnPosition;
+            }
+
+            player.health.SetHealth(player.health.maxHealth);
+            player.staminaBar.SetNewStamina((int)player.staminaBar.maxStamina);
+
+            BindPlayerUI(player);
+        }
+
+        private void HookSystems(GameObject playerInstance)
+        {
+            InventoryManager.Instance.SetPlayer(playerInstance);
+            DayNightCycle.Instance.SetPlayer(playerInstance);
+            EnemySpawner.Instance.SetPlayer(playerInstance);
+            PlayerStatsManager.Instance.SetPlayer(playerInstance);
+            FoodManager.Instance.SetPlayer(playerInstance);
+            InteractableItemManager.Instance.SetPlayer(playerInstance);
+            VoxelGrid.Instance.SetPlayer(playerInstance);
+
+            CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+            if (cinemachineCamera != null && playerInstance.TryGetComponent(out Player player))
+            {
+                if (player.cameraTarget == null)
+                {
+                    Debug.LogWarning("Camera target not yet initialized");
+                    return;
+                }
+
+                cinemachineCamera.Follow = player.cameraTarget;
+                cinemachineCamera.LookAt = player.cameraTarget;
+            }
+        }
+
+        // ----------------- CAMPFIRE -----------------
+        public void SetCampfire(GameObject campfireObj, CampfireSaveData campfireData = null)
+        {
+            campFireInstance = campfireObj;
+
+            if (campFireInstance.TryGetComponent(out Campfire campfire))
+            {
+                campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
+
+                int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
+
+                if (campfire.health.healthBar != null)
+                    campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
+            }
+        }
+
+        // ----------------- SAVE / LOAD -----------------
+        public void SaveGame(bool exit = false)
+        {
+            if (string.IsNullOrEmpty(WorldSession.CurrentWorldName)) return;
+            if (playerInstance == null) return;
+
+            if (playerInstance.TryGetComponent(out Player player))
+                player.SavePlayer();
+
+            VoxelGrid.Instance.SaveAllChunks(WorldSession.CurrentWorldName);
+
+            QuestManager.Instance.SaveQuestData();
+
+            CraftingManager.Instance.SaveCraftingProgress();
+            FurnaceManager.Instance.SaveSmeltingProgress();
+
+            DayNightCycle.Instance.SaveDayNight();
+
+            if (exit)
+            {
+                foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+                {
+                    if (trialAltar != null && trialAltar.IsWaveInProgress())
+                        trialAltar.FailTrial();
+                }
+            }
+
+            EnemySpawner.Instance.SaveAllEnemies();
+            AnimalSpawner.Instance.SaveAllAnimals();
+
+            WorldMetaData metadata = SaveSystem.LoadWorldMeta(WorldSession.CurrentWorldName);
+            if (metadata != null)
+            {
+                metadata.lastPlayedDate = System.DateTime.Now.ToString();
+                SaveSystem.SaveWorldMeta(metadata);
+            }
+        }
+
+        public void LoadGame()
+        {
+            if (IsLoading) return;
+            IsLoading = true;
+
+            if (string.IsNullOrEmpty(WorldSession.CurrentWorldName))
+            {
+                WorldSession.CurrentWorldName = "New World";
+                WorldSession.CurrentSeed = "12345";
+            }
+
+            WorldSession.CurrentRunStats ??= new RunStats();
+
+            // Start full load routine
+            StartCoroutine(LoadGameRoutine());
+        }
+
+        private IEnumerator LoadGameRoutine()
+        {
+            // 1. Wait until UIManager and bars are ready
+            yield return StartCoroutine(WaitForUI());
+
+            LoadingScreenUI.Instance.SetProgress(0f);
+
+            // 2. Terrain generation
+            VoxelGrid.Instance.OnProgress = p =>
+            {
+                LoadingScreenUI.Instance.SetProgressRange(p, 0f, 0.7f);
+            };
+            yield return StartCoroutine(GenerateTerrainPhase());
+            VoxelGrid.Instance.OnProgress = null;
+
+            // 3. Spawning
+            yield return StartCoroutine(SpawnEntitiesPhase(p =>
+            {
+                LoadingScreenUI.Instance.SetProgressRange(p, 0.7f, 0.8f);
+            }));
+
+            // 4. Bind UI
+            yield return StartCoroutine(BindUIAndApplySaves());
+
+            // 5. NPC loading
+            yield return StartCoroutine(LoadNPCsPhase(p =>
+            {
+                LoadingScreenUI.Instance.SetProgressRange(p, 0.85f, 0.95f);
+            }));
+
+            // 6. Finalization
+            LoadingScreenUI.Instance.SetProgress(1f);
+
+            yield return null;
+            yield return _waitForSeconds0_1;
+
+            IsLoading = false;
+            LoadingScreenUI.Instance.Hide();
+        }
+
+        private IEnumerator GenerateTerrainPhase()
+        {
+            string worldName = WorldSession.CurrentWorldName;
+            string worldSeed = WorldSession.CurrentSeed;
+
+            WorldMetaData meta = SaveSystem.LoadWorldMeta(worldName);
+
+            if (meta != null)
+            {
+                worldName = meta.worldName;
+                worldSeed = meta.seed;
+                meta.lastPlayedDate = System.DateTime.Now.ToString();
+                meta.worldStats ??= new RunStats();
+                WorldSession.CurrentRunStats = meta.worldStats;
+                SaveSystem.SaveWorldMeta(meta);
+            }
+            else
+            {
+                Debug.LogWarning("[GenerateTerrainPhase] Metadata not found. Creating new.");
+
+                if (string.IsNullOrEmpty(worldSeed))
+                    worldSeed = System.Guid.NewGuid().ToString();
+
+                meta = new WorldMetaData
+                {
+                    worldName = worldName,
+                    seed = worldSeed,
+                    createdDate = System.DateTime.Now.ToString(),
+                    lastPlayedDate = System.DateTime.Now.ToString(),
+                    difficulty = DifficultyManager.Instance.GetDifficulty(),
+                    worldStats = new RunStats()
+                };
+
+                SaveSystem.SaveWorldMeta(meta);
+
+                WorldSession.CurrentRunStats = new RunStats();
+                WorldSession.CurrentRunStats.ResetStats();
+            }
+
+            int seed = Utility.ConsistentHash(worldSeed);
+            Random.InitState(seed);
+
+            VoxelGrid.Instance.SetWorld(seed, worldName);
+
+            while (!VoxelGrid.Instance.worldGenerated)
+                yield return null;
+        }
+
+        private IEnumerator SpawnEntitiesPhase(System.Action<float> onProgress)
+        {
+            PlayerSaveData data = SaveSystem.LoadPlayer(WorldSession.CurrentWorldName);
+
+            if (data != null)
+                SpawnPlayer(data.position, data);
+            else
+                SpawnPlayer(VoxelGrid.Instance.GetDefaultSpawnPosition());
+
+            onProgress(0.5f);
+
+            compassBar.SetCampfireTransform(campFireInstance);
+            animalSystemGameObject.SetActive(true);
+
+            onProgress(1f);
             yield return null;
         }
 
-        Player player = playerInstance.GetComponent<Player>();
-        BindPlayerUI(player);
+        private IEnumerator BindUIAndApplySaves()
+        {
+            float timer = 0f;
+            while (playerInstance == null || campFireInstance == null)
+            {
+                if (timer > 5f)
+                {
+                    Debug.LogWarning("[BindUIAndApplySaves] Timeout waiting for objects.");
+                    break;
+                }
+                timer += Time.deltaTime;
+                yield return null;
+            }
 
-        // --- Load systems that depend on world/player ---
-        CraftingManager.Instance.LoadCraftingProgress();
-        FurnaceManager.Instance.LoadSmeltingProgress();
-        dayNightCycle.LoadDayNight();
+            BindPlayerUI(playerInstance.GetComponent<Player>());
 
-        OnUIBound();
-    }
+            QuestManager.Instance.LoadQuestData();
+            CraftingManager.Instance.LoadCraftingProgress();
+            FurnaceManager.Instance.LoadSmeltingProgress();
+            DayNightCycle.Instance.LoadDayNight();
 
-    private IEnumerator WaitForUI()
-    {
-        while (!UIManager.Instance.IsInitialized)
+            OnUIBound();
+        }
+
+        private IEnumerator LoadNPCsPhase(System.Action<float> onProgress)
+        {
+            yield return new WaitUntil(() => VoxelGrid.Instance.worldGenerated);
+
+            EnemySpawner.Instance.LoadAllEnemies();
+            AnimalSpawner.Instance.LoadAllAnimals();
+
+            onProgress(1f);
             yield return null;
-    }
-
-    // ----------------- UTILS -----------------
-    public void ToggleCameraFollow(bool enabled) 
-    { 
-        if (cameraControlToggle != null) 
-            cameraControlToggle.SetCameraControl(enabled); 
-    }
-
-    public static int ConsistentHash(string input)
-    {
-        unchecked
-        {
-            int hash = 23;
-            foreach (char c in input) 
-                hash = hash * 31 + c;
-
-            return hash;
         }
-    }
 
-    // ----------------- UI -----------------
-    public void GameOver()
-    {
-        Time.timeScale = 0f;
-
-        WorldSession.CurrentRunStats.daysSurvived = dayNightCycle.GetElapsedTime();
-        WorldSession.CurrentRunStats.totalExpGained = LevelManager.Instance.GetTotalExp();
-
-        GameOverUI.Instance.DisplayStats(WorldSession.CurrentRunStats);
-
-        gameOverMenuUI.SetActive(true);
-        darkBackground.SetActive(true);
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
-        Utility.DisableButtonsOutside(gameOverMenuUI.transform, buttonsInScene, true);
-
-        IsGameOver = true;
-        UpdateWorldState(WorldState.Failed);
-    }
-
-    public void WinGame()
-    {
-        Time.timeScale = 0f;
-
-        if (winMenuUI.transform.Find("Score Text").TryGetComponent(out TextMeshProUGUI scoreText))
-            scoreText.text = $"Score\n{LevelManager.Instance.GetTotalExp()}";
-
-        winMenuUI.SetActive(true);
-        darkBackground.SetActive(true);
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
-        Utility.DisableButtonsOutside(winMenuUI.transform, buttonsInScene, true);
-
-        IsGameOver = true;
-        UpdateWorldState(WorldState.Won);
-    }
-
-    public void ReturnToMainMenu()
-    {
-        Time.timeScale = 1f;
-        SaveGame(true);
-        SceneLoader.Instance.LoadScene("MainMenuScene");
-    }
-
-    public void PauseGame()
-    {
-        pauseMenuUI.SetActive(true);
-        darkBackground.SetActive(true);
-        Time.timeScale = 0f;
-        IsPaused = true;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    public void ResumeGame()
-    {
-        pauseMenuUI.SetActive(false);
-        darkBackground.SetActive(false);
-        Time.timeScale = 1f;
-        IsPaused = false;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    public void QuitGame()
-    {
-        Time.timeScale = 1f;
-        SceneLoader.Instance.LoadScene("MainMenuScene");
-    }
-
-    private void UpdateWorldState(WorldState newState)
-    {
-        if (string.IsNullOrEmpty(currentWorldName)) return;
-
-        WorldMetaData meta = SaveSystem.LoadWorldMeta(currentWorldName);
-        if (meta != null)
+        private IEnumerator WaitForUI()
         {
-            meta.worldState = newState;
-            meta.lastPlayedDate = System.DateTime.Now.ToString();
-            SaveSystem.SaveWorldMeta(meta);
+            while (!UIManager.Instance.IsInitialized)
+                yield return null;
         }
-    }
 
-    public void ToggleRetryConfirm(bool open)
-    {
-        retryConfirmMenuUI.SetActive(open);
+        // ----------------- UI -----------------
+        public void GameOver(bool win)
+        {
+            Time.timeScale = 0f;
 
-        Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
-        Utility.DisableButtonsOutside(retryConfirmMenuUI.transform, buttonsInScene, open);
-    }
+            WorldSession.CurrentRunStats.daysSurvived = DayNightCycle.Instance.GetElapsedTime();
+            WorldSession.CurrentRunStats.totalExpGained = LevelManager.Instance.GetTotalExp();
 
-    public bool IsGameManagerReady()
-    {
-        return !IsGameOver && !IsPaused && !IsLoading;
+            GameOverUI.Instance.DisplayStats(WorldSession.CurrentRunStats);
+
+            gameOverMenuUI.SetActive(true);
+            darkBackground.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
+            Utility.DisableButtonsOutside(gameOverMenuUI.transform, buttonsInScene, true);
+
+            IsGameOver = true;
+            if (win)
+                UpdateWorldState(WorldState.Won);
+            else
+                UpdateWorldState(WorldState.Failed);
+        }
+
+        public void ReturnToMainMenu()
+        {
+            Time.timeScale = 1f;
+            SaveGame(true);
+
+            StartCoroutine(ShowSavingWorldMenu(3f));
+        }
+
+        private IEnumerator ShowSavingWorldMenu(float duration)
+        {
+            if (savingWorldMenuUI != null)
+                savingWorldMenuUI.SetActive(true);
+
+            yield return new WaitForSeconds(duration);
+
+            SceneLoader.Instance.LoadScene("MainMenuScene");
+        }
+
+        public void PauseGame()
+        {
+            pauseMenuUI.SetActive(true);
+            darkBackground.SetActive(true);
+            Time.timeScale = 0f;
+            IsPaused = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        public void ResumeGame()
+        {
+            pauseMenuUI.SetActive(false);
+            darkBackground.SetActive(false);
+            Time.timeScale = 1f;
+            IsPaused = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
+        public void QuitGame()
+        {
+            Time.timeScale = 1f;
+            SceneLoader.Instance.LoadScene("MainMenuScene");
+        }
+
+        private void UpdateWorldState(WorldState newState)
+        {
+            if (string.IsNullOrEmpty(WorldSession.CurrentWorldName)) return;
+
+            WorldMetaData meta = SaveSystem.LoadWorldMeta(WorldSession.CurrentWorldName);
+            if (meta != null)
+            {
+                meta.worldState = newState;
+                meta.lastPlayedDate = System.DateTime.Now.ToString();
+                SaveSystem.SaveWorldMeta(meta);
+            }
+        }
+
+        public bool IsGameManagerReady()
+        {
+            return !IsGameOver && !IsPaused && !IsLoading;
+        }
+
+        public void OpenSettingsMenu()
+        {
+            settingsMenuUI.SetActive(true);
+        }
     }
 }

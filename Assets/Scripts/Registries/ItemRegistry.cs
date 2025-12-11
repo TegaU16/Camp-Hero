@@ -1,33 +1,47 @@
 using System.Collections.Generic;
+using Game.Inventory;
 using UnityEngine;
 
-public class ItemRegistry : MonoBehaviour
+namespace Game.Registries
 {
-    public Item[] allItems;
-
-    private static Dictionary<string, Item> itemDict;
-
-    private void Awake()
+    public class ItemRegistry : MonoBehaviour
     {
-        if (itemDict != null && itemDict.Count > 0) return;
+        public Item[] allItems;
 
-        itemDict = new Dictionary<string, Item>();
+        private static Dictionary<string, Item> itemDict;
 
-        foreach (Item item in allItems)
+        private void Awake()
         {
-            if (item != null && !itemDict.ContainsKey(item.name))
+            if (itemDict != null && itemDict.Count > 0) return;
+
+            itemDict = new Dictionary<string, Item>();
+
+            foreach (Item item in allItems)
             {
-                itemDict[item.name] = item;
+                if (item != null && !itemDict.ContainsKey(item.name))
+                    itemDict[item.name] = item;
             }
         }
-    }
 
-    public static Item GetItemByName(string name)
-    {
-        if (itemDict != null && itemDict.TryGetValue(name, out Item item))
-            return item;
+        public static Item GetItemByName(string name)
+        {
+            if (itemDict != null && itemDict.TryGetValue(name, out Item item)) return item;
 
-        Debug.LogWarning($"Item not found: {name}");
-        return null;
+            Debug.LogWarning($"Item not found: {name}");
+            return null;
+        }
+
+        public static List<Item> GetItemsByName(List<string> names)
+        {
+            List<Item> items = new();
+            foreach (string name in names)
+            {
+                Item item = GetItemByName(name);
+                if (item != null)
+                    items.Add(item);
+            }
+
+            return items;
+        }
     }
 }

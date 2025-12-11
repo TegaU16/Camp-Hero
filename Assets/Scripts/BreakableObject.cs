@@ -1,4 +1,13 @@
 using System.Collections;
+using Game.AI.Animals;
+using Game.AI.Enemies;
+using Game.Inventory;
+using Game.Level;
+using Game.Registries;
+using Game.Saving;
+using Game.Smelting;
+using Game.Storage;
+using Game.Terrain;
 using UnityEngine;
 
 public class BreakableObject : MonoBehaviour, ISaveableObject
@@ -37,7 +46,6 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
     public bool DestroyedByEnemy { get; set; }
 
     [HideInInspector] public VoxelChunk owningChunk;
-    [HideInInspector] public int savedObjectIndex = -1;
 
     [SerializeField] private Transform torsoBone;
 
@@ -45,8 +53,11 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
     [SerializeField] private float bounceCooldown = 0.2f;
     private Coroutine activeBounce;
 
-    public delegate void EnemyKilledDelegate(Enemy enemy, int damageDealt, int damageRequired, BreakableObject breakableObject);
+    public delegate void EnemyKilledDelegate(Enemy enemy, int damageDealt, int damageRequired);
     public event EnemyKilledDelegate OnEnemyKilled;
+
+    public delegate void BossHealthChangeDelegate(int newCurrentHealth);
+    public event BossHealthChangeDelegate OnBossHealthChange;
 
     private void OnEnable()
     {
@@ -76,7 +87,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     public void TakeDamage(int damage, bool crit, Vector3 hitPoint = default, Vector3 hitNormal = default, bool fromEnemy = false)
     {
-        if (isDestroyed) return;
+        if (isDestroyed || health <= 0) return;
 
         ShowDamagePopup(damage, crit, hitPoint);
 
@@ -84,12 +95,15 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         health -= damage;
         health = Mathf.Max(health, 0);
 
+        if (TryGetComponent(out Enemy enemy) && enemy.enemyType == Enemy.EnemyType.Boss)
+            OnBossHealthChange?.Invoke(health);
+
         if (health == 0)
         {
-            if (TryGetComponent(out Enemy enemy))
+            if (enemy != null)
             {
                 enemy.Die();
-                OnEnemyKilled?.Invoke(enemy, damage, damageRequired, this);
+                OnEnemyKilled?.Invoke(enemy, damage, damageRequired);
                 return;
             }
 
@@ -105,7 +119,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         else
         {
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
-            if (hitEffectManager != null && hitNormal != Vector3.zero)
+            if (hitEffectManager != null && hitNormal != default)
                 hitEffectManager.SpawnSparks(hitPoint, hitNormal);
 
             if (entityType == EntityType.Static)
@@ -134,7 +148,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         popupInstance.transform.Rotate(0, 180f, 0); // because LookAt faces the back of the object
 
         if (popupInstance.TryGetComponent(out DamagePopup popup))
-            popup.Setup(damage, crit);
+            popup.Setup(damage, crit, transform);
     }
 
     public void DestroyObject()
@@ -155,7 +169,8 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
                 }
             }
 
-            LevelManager.Instance.AddExp(expDropped);
+            float expGain = expDropped * DifficultyManager.Instance.GetExpMultiplier();
+            LevelManager.Instance.AddExp((int)expGain);
         }
 
         // Drop items in furnace slots
@@ -194,24 +209,17 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
         if (TryGetComponent(out WallSegment wall))
         {
-            BuildingManager buildingManager = FindAnyObjectByType<BuildingManager>();
-            if (buildingManager != null)
-            {
-                Vector3 wallPos = wall.transform.position;
-                Vector3Int wallPosInt = buildingManager.WorldToGrid(wallPos);
-                buildingManager.DestroyWall(wallPosInt);
-            }
+            Vector3 wallPos = wall.transform.position;
+            Vector3Int wallPosInt = BuildingManager.Instance.WorldToGrid(wallPos);
+            BuildingManager.Instance.DestroyWall(wallPosInt);
         }
 
         if (entityType == EntityType.Static)
         {
-            if (owningChunk != null && savedObjectIndex >= 0 && savedObjectIndex < owningChunk.savedObjects.Count)
-            {
-                VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, savedObjectIndex);
-                owningChunk.isDirty = true;
-            }
+            VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, gameObject);
+            owningChunk.isDirty = true;
 
-            VoxelGrid.Instance.MarkAreaOccupied(gameObject, false);
+            VoxelGrid.Instance.MarkVoxelArea(gameObject, occupy: false, walkable: true);
             Destroy(gameObject);
         }
     }
@@ -278,6 +286,8 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         isDestroyed = false;
         ApplyDifficultyScaling(true);
     }
+
+    public int GetMaxHealth() => maxHealth;
 
     public int GetHealth() => health;
 

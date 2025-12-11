@@ -1,19 +1,19 @@
 fileFormatVersion: 2
 guid: 2b5c0aeef1248ba4aa842bded21755b6
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: palette
+      name: Iron Node Mat
     second: {fileID: 2100000, guid: d2523e0f5676d424d88ff2fe084ee4a3, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Iron Node
-    second: {fileID: 2800000, guid: 03980e00fafeb4446bb7586cb4c23109, type: 3}
+    second: {fileID: 2800000, guid: ac23316345682cf43bb0ba0311746a34, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -66,6 +66,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -78,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

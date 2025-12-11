@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Game.Storage;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -92,9 +93,7 @@ public class LootTableEditor : Editor
             else
             {
                 foreach (StoredItem item in loot)
-                {
                     Debug.Log($"{item.item.name} x{item.count}");
-                }
             }
         }
     }

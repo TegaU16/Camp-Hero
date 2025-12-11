@@ -16,8 +16,9 @@ MonoBehaviour:
   description: Move far and quickly in the direction the player is facing
   cost: 1
   cooldown: 2
-  staminaCost: 20
-  activationKey: 0
+  staminaCost: 15
+  activationKey: 122
+  skillImagePrefab: {fileID: 2975865213208599642, guid: c1c7390b6d0ef294b85b7ef94dae9623, type: 3}
   isOnCooldown: 0
   dashForce: 20
   dashDuration: 0.2
@@ -45,4 +46,4 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  dashEffect: {fileID: 0}
+  dashStreakPrefab: {fileID: 6441971390562665597, guid: a5470c61dfbca074686d99cc44934ab7, type: 3}

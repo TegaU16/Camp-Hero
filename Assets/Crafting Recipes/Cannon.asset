@@ -20,6 +20,7 @@ MonoBehaviour:
     count: 3
   - requiredItem: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
     count: 5
+  category: 3
   itemsRequiredToUnlock:
   - {fileID: 11400000, guid: c375c4a60ab98ac4c928e887782ba7a4, type: 2}
   - {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}

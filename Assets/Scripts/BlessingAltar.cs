@@ -1,3 +1,4 @@
+using Game.Players;
 using UnityEngine;
 
 public class BlessingAltar : MonoBehaviour, IInteractable

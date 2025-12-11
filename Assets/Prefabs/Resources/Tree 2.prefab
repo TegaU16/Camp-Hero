@@ -108,7 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
   baseHealth: 50
-  expDropped: 10
+  expDropped: 20
   drops:
   - drop: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
     minValue: 4
@@ -121,8 +121,8 @@ MonoBehaviour:
   objectType: 0
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!64 &3145887461584378645
 MeshCollider:
   m_ObjectHideFlags: 0

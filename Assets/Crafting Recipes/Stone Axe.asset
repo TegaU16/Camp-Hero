@@ -18,6 +18,7 @@ MonoBehaviour:
     count: 10
   - requiredItem: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
     count: 10
+  category: 1
   itemsRequiredToUnlock:
   - {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
   - {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Game.AI;
 using UnityEngine;
 
 public class SimpleRagdollController : MonoBehaviour
@@ -20,11 +21,11 @@ public class SimpleRagdollController : MonoBehaviour
         allRigidbodies = GetComponentsInChildren<Rigidbody>();
         allColliders = GetComponentsInChildren<Collider>();
 
-        Collider mainCollider = GetComponent<Collider>();
-        allColliders = System.Array.FindAll(allColliders, col => col != mainCollider);
+        if (TryGetComponent(out Collider mainCollider))
+            allColliders = System.Array.FindAll(allColliders, col => col != mainCollider);
 
-        Rigidbody rootRigidbody = GetComponent<Rigidbody>();
-        allRigidbodies = System.Array.FindAll(allRigidbodies, rb => rb != rootRigidbody);
+        if (TryGetComponent(out Rigidbody rootRigidbody))
+            allRigidbodies = System.Array.FindAll(allRigidbodies, rb => rb != rootRigidbody);
 
         DisableRagdoll();
     }

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class CameraControlToggle : MonoBehaviour
 {
+    public static CameraControlToggle Instance;
+
     public CinemachineCamera cinemachineCamera;
 
     private CinemachineOrbitalFollow orbitalFollow;
@@ -10,6 +12,14 @@ public class CameraControlToggle : MonoBehaviour
 
     private float lockedHorizontalValue;
     private float lockedVerticalValue;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     void Start()
     {
@@ -39,6 +49,5 @@ public class CameraControlToggle : MonoBehaviour
             lockedHorizontalValue = orbitalFollow.HorizontalAxis.Value;
             lockedVerticalValue = orbitalFollow.VerticalAxis.Value;
         }
-        // No need to restore anything — values will be updated automatically by Cinemachine
     }
 }

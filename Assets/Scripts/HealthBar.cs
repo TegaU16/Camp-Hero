@@ -13,7 +13,6 @@ public class HealthBar : MonoBehaviour
 
     [SerializeField] private HealthBarID id;
 
-    private int maxHealth;
     private int currentHealth;
 
     private void Awake()
@@ -23,7 +22,6 @@ public class HealthBar : MonoBehaviour
 
     public void Initialize(int maxHealth, int currentHealth)
     {
-        this.maxHealth = maxHealth;
         this.currentHealth = currentHealth;
 
         slider.maxValue = maxHealth;

@@ -17,6 +17,7 @@ MonoBehaviour:
   cost: 2
   cooldown: 5
   staminaCost: 0
-  activationKey: 0
+  activationKey: 99
+  skillImagePrefab: {fileID: 8106759857703112396, guid: f3230d9a4074a8a4ab27587d26bc141c, type: 3}
   isOnCooldown: 0
-  minStaminaRequired: 0
+  minStaminaRequired: 10

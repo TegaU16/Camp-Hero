@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Chunky Crit
   m_EditorClassIdentifier: Assembly-CSharp::ChunkyCritUpgrade
   upgradeName: Chunky Crit
-  description: Crits have a small chance to be chunky, dealing 20x damage
+  description: <color=#FFFF50>Crits</color> have a small chance to be <color=#AF4F20>chunky</color>,
+    dealing <color=#FF7F00>20x</color> damage
   cost: 2
   chunkyMultiplier: 20
   chance: 0.1

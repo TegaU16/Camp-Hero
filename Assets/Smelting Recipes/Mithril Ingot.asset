@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultItem: {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
   requiredItem: {fileID: 11400000, guid: 21f82903bd5dbd24184cddde17965e58, type: 2}
-  itemsRequiredToUnlock: []
+  category: 1

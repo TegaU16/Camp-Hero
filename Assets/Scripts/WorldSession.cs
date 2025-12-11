@@ -1,14 +1,17 @@
-public static class WorldSession
+namespace Worlds
 {
-    public static string CurrentWorldName;
-    public static string CurrentSeed;
+    public static class WorldSession
+    {
+        public static string CurrentWorldName;
+        public static string CurrentSeed;
 
-    public static RunStats CurrentRunStats;
-}
+        public static RunStats CurrentRunStats;
+    }
 
-public enum WorldState
-{
-    Active,
-    Failed,
-    Won
+    public enum WorldState
+    {
+        Active,
+        Failed,
+        Won
+    }
 }

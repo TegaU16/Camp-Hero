@@ -1,20 +1,26 @@
 using System.Collections.Generic;
+using Game.Inventory;
+using Game.Players;
+using Game.Quests;
+using Game.Registries;
+using Game.Saving;
+using Game.Terrain;
 using UnityEngine;
 
 public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Item item;
-    [HideInInspector] public int itemCount;
+    [HideInInspector] public int itemCount = 1;
 
     private bool isInteracted = false;
     private bool canPickup = true;
+    private bool isMerging = false;
 
     public int maxItemCount = 100;
 
     private Rigidbody rb;
 
     [HideInInspector] public VoxelChunk owningChunk;
-    [HideInInspector] public int savedObjectIndex;
 
     [HideInInspector] public Vector2Int CurrentCell;
 
@@ -22,10 +28,9 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-
-        if (rb != null)
+        if (TryGetComponent(out Rigidbody rigidBody))
         {
+            rb = rigidBody;
             rb.linearDamping = 2f;
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         }
@@ -74,47 +79,63 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         if (isInteracted || !canPickup) return;
         isInteracted = true;
 
-        bool toDestroy = false;
 
         bool added = InventoryManager.Instance.AddItem(item, itemCount);
-        if (added) toDestroy = true;
-        else itemCount = InventoryManager.Instance.LastRemainingCount;
+        if (added)
+        {
+            foreach (Quest quest in QuestManager.Instance.GetActiveQuests())
+                quest.OnItemCollected(item);
+        }
+
+        itemCount = InventoryManager.Instance.LastRemainingCount;
 
         InventoryManager.Instance.EquipSelectedItem();
 
-        if (toDestroy)
+        if (added)
             DestroyInteractableItem(this);
     }
 
     public void TryMergeNearby()
     {
         if (rb == null) return;
+        if (isMerging) return;
+
+        isMerging = true;
 
         mergeBuffer.Clear();
 
         foreach (InteractableItem other in ItemGrid.GetNearby(transform.position))
         {
-            if (other == this || other.rb == null || other.item.itemName != item.itemName) continue;
+            if (other == this || other.rb == null || other.item.itemName != item.itemName || other.isMerging) continue;
 
             int totalItemCount = itemCount + other.itemCount;
 
             if (totalItemCount <= maxItemCount)
             {
                 itemCount = totalItemCount;
+                other.isMerging = true;   // mark so it won't be processed
                 mergeBuffer.Add(other);
             }
             else
             {
                 int transferable = maxItemCount - itemCount;
-                itemCount += transferable;
-                other.itemCount -= transferable;
+                if (transferable > 0)
+                {
+                    itemCount += transferable;
+                    other.itemCount -= transferable;
+                }
             }
 
             if (itemCount >= maxItemCount) break;
         }
 
         foreach (InteractableItem merged in mergeBuffer)
+        {
+            merged.gameObject.SetActive(false); // triggers OnDisable -> unregister
             DestroyInteractableItem(merged);
+        }
+
+        isMerging = false;
     }
 
     private void DestroyInteractableItem(InteractableItem interactable)
@@ -124,11 +145,8 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         if (interactor != null && interactor.CurrentInteractable == interactable.GetComponent<IInteractable>())
             interactor.ClearInteractable();
 
-        if (interactable.owningChunk != null && interactable.savedObjectIndex >= 0 && interactable.savedObjectIndex < interactable.owningChunk.savedObjects.Count)
-        {
-            VoxelGrid.Instance.RemoveObjectFromChunk(interactable.owningChunk, interactable.savedObjectIndex);
-            interactable.owningChunk.isDirty = true;
-        }
+        VoxelGrid.Instance.RemoveObjectFromChunk(interactable.owningChunk, interactable.gameObject);
+        interactable.owningChunk.isDirty = true;
 
         Destroy(interactable.gameObject);
     }

@@ -201,6 +201,7 @@ MonoBehaviour:
   rotationSpeed: 10
   firePoint: {fileID: 8834070817164444102}
   projectilePrefab: {fileID: 309557753819694897, guid: d51470ba7fe6be3428772ed8778327b2, type: 3}
+  shotSound: {fileID: 8300000, guid: d0dfe73fa36c421449dcf883d584b189, type: 3}
   rotatingPart: {fileID: 184011206052206276}
 --- !u!114 &310294678028782270
 MonoBehaviour:
@@ -238,8 +239,8 @@ MonoBehaviour:
   objectType: 1
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!114 &8686198394884331861
 MonoBehaviour:
   m_ObjectHideFlags: 0

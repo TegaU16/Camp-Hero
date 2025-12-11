@@ -1,64 +1,110 @@
+﻿using System.Collections;
+using Game;
+using Game.AI.Enemies;
+using Game.Saving;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using Worlds;
 
 public class DayNightCycle : MonoBehaviour
 {
-    [SerializeField] private Material proceduralSkybox;
+    public static DayNightCycle Instance;
 
-    [Range(0, 24)]
-    [SerializeField] private float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
-    [SerializeField] private float dayDurationInSeconds = 120f;
-    private int currentDay = 0;
+    [Header("Time Settings")]
+    public float dayDurationInSeconds = 120f;
+
+    [Range(0, 24)] public float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
+    [Range(0, 24)] public float nightStart = 18f;
+    [Range(0, 24)] public float nightEnd = 6f;
+
+    private int currentDay = 1;
     private bool hasAdvancedDayToday = false;
 
-    [SerializeField] private Light sun;
-    [SerializeField] private Light moon;
+    [Header("Sky Settings")]
+    public Material proceduralSkybox;
 
-    [SerializeField] private Gradient sunColor;
-    [SerializeField] private AnimationCurve lightIntensity;
+    public Light sun;
+    public Light moon;
 
-    [SerializeField] private Gradient moonColor;
+    public AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+    public AnimationCurve atmosphereThickness;
 
-    [SerializeField] private Gradient skyTint;
-    [SerializeField] private AnimationCurve atmosphereThickness;
+    public Gradient sunColor;
+    public Gradient moonColor;
+    public Gradient skyTint;
+    public Gradient zenithGradient;   // Zenith/top of sky
+    public Gradient horizonGradient;
 
-    [SerializeField] private Gradient zenithGradient;   // Zenith/top of sky
-    [SerializeField] private Gradient horizonGradient;
-
-    [SerializeField] private float sunDistance = 1000f;
-
-    [SerializeField] private float moonDistance = 1000f;
-
-    [SerializeField] private AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+    public float sunDistance = 1000f;
+    public float moonDistance = 1000f;
 
     private GameObject player;
 
-    [SerializeField] private DayTextUI dayTextUI;
+    [Header("UI")]
+    public Image sunMoonIcon;
+    public Sprite sunIcon;
+    public Sprite moonIcon;
+    public TextMeshProUGUI dayCountText;
+    public TextMeshProUGUI timeOfDayText;
+    private bool isNight;
 
-    [SerializeField] private EnemyPool enemyPool;
+    [Header("References")]
+    public DayTextUI dayTextUI;
+    public EnemyPool enemyPool;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     void Start()
     {
         if (proceduralSkybox != null)
             RenderSettings.skybox = proceduralSkybox;
+
+        isNight = IsNight();
+        UpdateDayUI();
+        StartCoroutine(ShowDayTextAfterDelay(3f));
     }
 
     void Update()
     {
         if (!GameManager.Instance.IsGameManagerReady()) return;
+        if (sun == null || moon == null) return;
 
+        // Update time
         timeOfDay += (24f / dayDurationInSeconds) * Time.deltaTime;
 
-        if (timeOfDay >= 6f && !hasAdvancedDayToday)
+        if (timeOfDay >= 24f)
+            timeOfDay -= 24f;
+
+        int hours = (int)timeOfDay;
+        int minutes = Mathf.RoundToInt((timeOfDay - hours) * 60);
+        timeOfDayText.text = $"{(int)timeOfDay}:{minutes:00}";
+
+        bool nightNow = IsNight();
+
+        // Detect transition
+        if (nightNow != isNight)
         {
-            AdvanceDay();
-            hasAdvancedDayToday = true;
+            isNight = nightNow;
+            UpdateDayNightIcon();
+
+            // Day advancing logic (only when entering daytime)
+            if (!nightNow && timeOfDay >= nightEnd && !hasAdvancedDayToday)
+            {
+                AdvanceDay();
+                hasAdvancedDayToday = true;
+            }
         }
 
-        if (timeOfDay >= 24f)
-        {
-            timeOfDay = 0f;
+        // Reset the day advance lock at midnight
+        if (nightNow && timeOfDay < nightEnd)
             hasAdvancedDayToday = false;
-        }
 
         // Normalized time (0 = midnight, 0.5 = noon, 1 = next midnight)
         float normalizedTime = timeOfDay / 24f;
@@ -129,6 +175,23 @@ public class DayNightCycle : MonoBehaviour
 
         if (enemyPool != null)
             enemyPool.AdjustPoolsForNewDay(currentDay);
+
+        UpdateDayUI();
+    }
+
+    private void UpdateDayUI()
+    {
+        if (dayCountText != null)
+            dayCountText.text = currentDay.ToString();
+
+        UpdateDayNightIcon();
+    }
+
+    private IEnumerator ShowDayTextAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (dayTextUI != null)
+            dayTextUI.ShowDay(currentDay);
     }
 
     public int GetCurrentDay()
@@ -138,7 +201,17 @@ public class DayNightCycle : MonoBehaviour
 
     public bool IsNight()
     {
-        return timeOfDay >= 18f || timeOfDay <= 6f;
+        // Night spans past midnight (18 → 6)
+        if (nightStart > nightEnd)
+            return timeOfDay >= nightStart || timeOfDay < nightEnd;
+
+        // Night does NOT span midnight
+        return timeOfDay >= nightStart && timeOfDay < nightEnd;
+    }
+
+    private void UpdateDayNightIcon()
+    {
+        sunMoonIcon.sprite = isNight ? moonIcon : sunIcon;
     }
 
     public void SaveDayNight()
@@ -150,18 +223,20 @@ public class DayNightCycle : MonoBehaviour
             hasAdvancedDayToday = this.hasAdvancedDayToday
         };
 
-        SaveSystem.SaveDayNight(GameManager.Instance.currentWorldName, data);
+        SaveSystem.SaveDayNight(WorldSession.CurrentWorldName, data);
     }
 
     public void LoadDayNight()
     {
-        DayNightSaveData data = SaveSystem.LoadDayNight(GameManager.Instance.currentWorldName);
+        DayNightSaveData data = SaveSystem.LoadDayNight(WorldSession.CurrentWorldName);
         if (data != null)
         {
             timeOfDay = data.timeOfDay;
             currentDay = data.currentDay;
             hasAdvancedDayToday = data.hasAdvancedDayToday;
         }
+
+        UpdateDayUI();
     }
 
     public float GetElapsedTime()

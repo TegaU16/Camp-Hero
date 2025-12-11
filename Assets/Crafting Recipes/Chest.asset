@@ -18,5 +18,6 @@ MonoBehaviour:
     count: 20
   - requiredItem: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
     count: 5
+  category: 2
   itemsRequiredToUnlock:
   - {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}

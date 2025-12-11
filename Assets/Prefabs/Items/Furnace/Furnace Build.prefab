@@ -134,8 +134,22 @@ MonoBehaviour:
     maxFuel: 100
     currentFuel: 0
     fuelUseRate: 1
-  smeltProgress: 0
+  inputData:
+    itemName: 
+    count: 0
+  outputData:
+    itemName: 
+    count: 0
+  fuelData:
+    itemName: 
+    count: 0
+  furnaceSlots: []
+  inputSlot: {fileID: 0}
+  outputSlot: {fileID: 0}
+  fuelSlot: {fileID: 0}
+  inventorySlots: []
   selectedItem: {fileID: 0}
+  smeltProgress: 0
   smeltDuration: 5
 --- !u!114 &3792563602136904646
 MonoBehaviour:
@@ -160,8 +174,8 @@ MonoBehaviour:
   objectType: 1
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!114 &761336235559654763
 MonoBehaviour:
   m_ObjectHideFlags: 0

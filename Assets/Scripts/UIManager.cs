@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 
     private readonly Dictionary<string, HealthBar> healthBars = new();
     private StaminaBar staminaBar;
+    private ShieldBar shieldBar;
 
     public bool IsInitialized { get; private set; }
 
@@ -18,29 +19,37 @@ public class UIManager : MonoBehaviour
             Instance = this;
     }
 
-    public void RegisterHealthBar(string id, HealthBar hb)
+    public void RegisterHealthBar(string id, HealthBar healthBar)
     {
-        healthBars[id] = hb;
+        healthBars[id] = healthBar;
         CheckReady();
     }
 
-    public void RegisterStaminaBar(StaminaBar sb)
+    public void RegisterStaminaBar(StaminaBar staminaBar)
     {
-        staminaBar = sb;
+        this.staminaBar = staminaBar;
+        CheckReady();
+    }
+
+    public void RegisterShieldBar(ShieldBar shieldBar)
+    {
+        this.shieldBar = shieldBar;
         CheckReady();
     }
 
     private void CheckReady()
     {
-        if (healthBars.ContainsKey("Player") && staminaBar != null)
+        if (healthBars.ContainsKey("Player") && staminaBar != null && shieldBar != null)
             IsInitialized = true;
     }
 
     public HealthBar GetHealthBar(string id)
     {
-        healthBars.TryGetValue(id, out HealthBar hb);
-        return hb;
+        healthBars.TryGetValue(id, out HealthBar healthBar);
+        return healthBar;
     }
 
     public StaminaBar GetStaminaBar() => staminaBar;
+
+    public ShieldBar GetShieldBar() => shieldBar;
 }

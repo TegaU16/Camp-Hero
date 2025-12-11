@@ -59,9 +59,7 @@ public class OneWayBarrier : MonoBehaviour
         // - When colliding from INSIDE, allow a brief pass-through
         // - When colliding from OUTSIDE, keep solid
         if (allowInsideToExitOnly && isInsideTrigger)
-        {
             TryAllowPass(other);
-        }
     }
 
     void OnTriggerExit(Collider other)
@@ -79,7 +77,8 @@ public class OneWayBarrier : MonoBehaviour
         CharacterController cc = other.GetComponentInParent<CharacterController>();
         if (cc != null)
         {
-            if (!cc.TryGetComponent(out OneWayLayerPass layerPass)) cc.gameObject.AddComponent<OneWayLayerPass>();
+            if (!cc.TryGetComponent(out OneWayLayerPass layerPass)) 
+                cc.gameObject.AddComponent<OneWayLayerPass>();
 
             layerPass.AllowPassTemporarily();
             return;

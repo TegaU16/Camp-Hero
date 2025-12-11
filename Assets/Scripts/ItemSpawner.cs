@@ -1,3 +1,7 @@
+using Game.Inventory;
+using Game.Registries;
+using Game.Saving;
+using Game.Terrain;
 using UnityEngine;
 
 public static class ItemSpawner
@@ -46,26 +50,26 @@ public static class ItemSpawner
         }
 
         spawnedObject.transform.parent = chunk.chunkObject.transform;
+
         chunk.objects.Add(spawnedObject);
 
         PrefabID prefabID = spawnedObject.GetComponent<PrefabID>();
         string prefabKey = prefabID.prefabKey;
         GameObject objectPrefab = PrefabRegistry.GetPrefabByKey(prefabKey);
 
-        SpawnedObjectData data = new(position, spawnedObject, objectPrefab);
-        chunk.savedObjects.Add(data);
-        chunk.savedObjectPositions.Add(position);
-
-        int savedIndex = chunk.savedObjects.Count - 1;
-
         if (spawnedObject.TryGetComponent(out InteractableItem interactable))
         {
             interactable.item = item;
             interactable.itemCount = itemCount;
             interactable.owningChunk = chunk;
-            interactable.savedObjectIndex = savedIndex;
             interactable.EnablePickupAfterDelay(0.25f);
         }
+
+        SpawnedObjectData data = new(position, spawnedObject, objectPrefab)
+        {
+            instance = spawnedObject
+        };
+        Utility.AddObjectDataToChunk(data, position, chunk);
 
         return spawnedObject;
     }

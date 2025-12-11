@@ -1,6 +1,9 @@
-﻿using UnityEngine;
+﻿using Game.Terrain;
+using UnityEngine;
 
 [DisallowMultipleComponent]
+[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Animator))]
 public class ProceduralAnimator : MonoBehaviour
 {
     [Header("Biped Bones")]
@@ -26,13 +29,15 @@ public class ProceduralAnimator : MonoBehaviour
     public float blendSpeed = 5f;
 
     [Header("Footstep Settings")]
-    public string[] footstepClips = { "Footstep_Grass_1", "Footstep_Grass_2", "Footstep_Grass_3" };
-    public float footstepVolume = 0.6f;
     public float footstepPitchVariance = 0.1f;
     public float stepTriggerThreshold = 0.95f; // when to fire a step (phase-based)
 
+    [Header("Footstep Clips")]
+    public AudioClip[] grassClips;
+    public AudioClip[] woodClips;
+    public AudioClip[] stoneClips;
+
     private bool leftStepPlayed;
-    private bool rightStepPlayed;
 
     private float walkCycle;
     private float movementSpeed;
@@ -56,6 +61,7 @@ public class ProceduralAnimator : MonoBehaviour
     private float proceduralWeight = 1f;
     private bool isAttacking;
 
+    private CharacterController characterController;
     private Animator animator;
     private bool additiveMode;
 
@@ -65,6 +71,7 @@ public class ProceduralAnimator : MonoBehaviour
 
     void Start()
     {
+        characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         additiveMode = animator && animator.enabled;
 
@@ -162,17 +169,6 @@ public class ProceduralAnimator : MonoBehaviour
             {
                 leftStepPlayed = false;
             }
-
-            // Right foot down
-            if (rightPhase > stepTriggerThreshold && !rightStepPlayed)
-            {
-                PlayFootstep();
-                rightStepPlayed = true;
-            }
-            else if (rightPhase < 0f)
-            {
-                rightStepPlayed = false;
-            }
         }
 
         // === APPLY PROCEDURAL MOTION ===
@@ -234,14 +230,32 @@ public class ProceduralAnimator : MonoBehaviour
 
     private void PlayFootstep()
     {
-        if (footstepClips == null || footstepClips.Length == 0) return;
-        if (AudioManager.Instance == null) return;
-        if (!GetComponent<Player>().controller.isGrounded) return;
+        if (!characterController.isGrounded) return;
 
-        string clipName = footstepClips[Random.Range(0, footstepClips.Length)];
-        float pitch = 1f + Random.Range(-footstepPitchVariance, footstepPitchVariance);
+        // Raycast down to detect surface
+        if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.2f))
+        {
+            SurfaceType surface = hit.collider.GetComponent<SurfaceType>();
 
-        AudioManager.Instance.PlaySFX(clipName, footstepVolume, pitch, transform.position);
+            AudioClip[] clips = null;
+
+            if (surface != null)
+            {
+                switch (surface.surfaceType)
+                {
+                    case SurfaceType.Type.Grass: clips = grassClips; break;
+                    case SurfaceType.Type.Wood: clips = woodClips; break;
+                    case SurfaceType.Type.Stone: clips = stoneClips; break;
+                }
+            }
+
+            if (clips == null || clips.Length == 0) return;
+
+            AudioClip clip = clips[Random.Range(0, clips.Length)];
+            float pitch = 1f + Random.Range(-footstepPitchVariance, footstepPitchVariance);
+
+            AudioManager.Instance.PlaySFX(clip, pitch, transform.position);
+        }
     }
 
     public void SetProceduralOverrides(bool legs, bool arms, bool torso)

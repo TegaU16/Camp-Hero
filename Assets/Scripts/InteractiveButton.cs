@@ -4,6 +4,8 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(Button))]
+[RequireComponent(typeof(Image))]
 public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("References")]
@@ -15,6 +17,7 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private bool isPressed = false;
 
     [HideInInspector] public bool isActive;
+    private readonly string clickSound = "click-sound-432501 (mp3cut.net)";
 
     void Start()
     {
@@ -39,7 +42,7 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isSelected || isPressed) return;
+        if (!GetComponent<Button>().interactable || isPressed) return;
 
         SetVisualState(visualProfile.hoverSprite, visualProfile.hoverTextColor, visualProfile.hoverOutlineColor, visualProfile.hoverUnderlayColor);
     }
@@ -55,6 +58,8 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         isPressed = true;
         UpdateVisualState();
+
+        AudioManager.Instance.PlaySFX(clickSound);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -86,7 +91,7 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
             {
                 buttonText.color = textColor;
 
-                // Update outline color
+                // Update outline colour
                 buttonText.outlineColor = outlineColor;
                 buttonText.outlineWidth = outlineColor.a > 0 ? 0.2f : 0f;
 

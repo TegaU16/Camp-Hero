@@ -1,143 +1,149 @@
+using Game.Inventory;
+using Game.Registries;
+using Game.Saving;
 using UnityEngine;
 
-public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
+namespace Game.Food
 {
-    public Transform plantSpawnPoint;
-    private GameObject currentPlantInstance;
-
-    [HideInInspector] public PlantData plantedData;
-    [HideInInspector] public float growthTimer;
-    [HideInInspector] public int currentStage = -1;
-    [HideInInspector] public bool isPlanted;
-
-    private Item selectedItem;
-
-    public void Plant()
+    public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
     {
-        selectedItem = InventoryManager.Instance.GetSelectedItem(false);
-        if (selectedItem == null || selectedItem.plantData == null) return;
+        public Transform plantSpawnPoint;
+        private GameObject currentPlantInstance;
 
-        plantedData = selectedItem.plantData;
-        growthTimer = plantedData.totalGrowthTime; // countdown starts at total time
-        currentStage = -1;
-        isPlanted = true;
+        [HideInInspector] public PlantData plantedData;
+        [HideInInspector] public float growthTimer;
+        [HideInInspector] public int currentStage = -1;
+        [HideInInspector] public bool isPlanted;
 
-        InventoryManager.Instance.UseSelectedItem();
-        UpdateVisual();
-    }
+        private Item selectedItem;
 
-    void Update()
-    {
-        if (!isPlanted || plantedData == null) return;
-
-        if (!IsFullyGrown())
+        public void Plant()
         {
-            growthTimer -= Time.deltaTime; // countdown
-            growthTimer = Mathf.Max(growthTimer, 0f);
-        }
+            selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+            if (selectedItem == null || selectedItem.plantData == null) return;
 
-        int stageCount = plantedData.growthStages.Length;
-        float normalizedProgress = 1f - (growthTimer / plantedData.totalGrowthTime);
-        int newStage = Mathf.FloorToInt(normalizedProgress * stageCount);
-        newStage = Mathf.Clamp(newStage, 0, stageCount - 1);
+            plantedData = selectedItem.plantData;
+            growthTimer = plantedData.totalGrowthTime; // countdown starts at total time
+            currentStage = -1;
+            isPlanted = true;
 
-        if (newStage != currentStage)
-        {
-            currentStage = newStage;
+            InventoryManager.Instance.UseSelectedItem();
             UpdateVisual();
         }
-    }
 
-    void UpdateVisual()
-    {
-        if (currentPlantInstance != null)
+        void Update()
+        {
+            if (!isPlanted || plantedData == null) return;
+
+            if (!IsFullyGrown())
+            {
+                growthTimer -= Time.deltaTime; // countdown
+                growthTimer = Mathf.Max(growthTimer, 0f);
+            }
+
+            int stageCount = plantedData.growthStages.Length;
+            float normalizedProgress = 1f - (growthTimer / plantedData.totalGrowthTime);
+            int newStage = Mathf.FloorToInt(normalizedProgress * stageCount);
+            newStage = Mathf.Clamp(newStage, 0, stageCount - 1);
+
+            if (newStage != currentStage)
+            {
+                currentStage = newStage;
+                UpdateVisual();
+            }
+        }
+
+        void UpdateVisual()
+        {
+            if (currentPlantInstance != null)
+                Destroy(currentPlantInstance);
+
+            if (currentStage >= 0 && plantedData.growthStages.Length > currentStage)
+                currentPlantInstance = Instantiate(plantedData.growthStages[currentStage], plantSpawnPoint.position, Quaternion.identity, plantSpawnPoint);
+        }
+
+        private bool IsFullyGrown() => isPlanted && growthTimer <= 0f;
+
+        private void Harvest()
+        {
+            if (!IsFullyGrown()) return;
+            if (InventoryManager.Instance.IsInventoryFullForItem(plantedData.plant, plantedData.harvestAmount)) return;
+
             Destroy(currentPlantInstance);
 
-        if (currentStage >= 0 && plantedData.growthStages.Length > currentStage)
-            currentPlantInstance = Instantiate(plantedData.growthStages[currentStage], plantSpawnPoint.position, Quaternion.identity, plantSpawnPoint);
-    }
+            InventoryManager.Instance.AddItem(plantedData.plant, plantedData.harvestAmount);
 
-    private bool IsFullyGrown() => isPlanted && growthTimer <= 0f;
-
-    private void Harvest()
-    {
-        if (!IsFullyGrown()) return;
-        if (InventoryManager.Instance.IsInventoryFullForItem(plantedData.plant, plantedData.harvestAmount)) return;
-
-        Destroy(currentPlantInstance);
-
-        InventoryManager.Instance.AddItem(plantedData.plant, plantedData.harvestAmount);
-
-        plantedData = null;
-        isPlanted = false;
-        growthTimer = 0f;
-        currentStage = -1;
-    }
-
-    public void Interact()
-    {
-        if (!isPlanted)
-            Plant();
-        else if (IsFullyGrown())
-            Harvest();
-    }
-
-    public string GetInteractText()
-    {
-        if (!isPlanted) return "Sow Seed";
-
-        if (IsFullyGrown()) return "Harvest";
-
-        int totalSeconds = Mathf.CeilToInt(growthTimer);
-        if (totalSeconds < 60)
-        {
-            return $"{totalSeconds}";
-        }
-        else
-        {
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            return $"{minutes}:{seconds:D2}";
-        }
-    }
-
-
-    public Transform GetTransform() => transform;
-
-    public string SaveState()
-    {
-        FarmPlotData data = new()
-        {
-            plantName = plantedData != null ? plantedData.plant.itemName : null,
-            growthTimer = growthTimer,
-            currentStage = currentStage,
-            isPlanted = isPlanted
-        };
-
-        return JsonUtility.ToJson(data);
-    }
-
-    public void LoadState(string json)
-    {
-        FarmPlotData data = JsonUtility.FromJson<FarmPlotData>(json);
-
-        if (string.IsNullOrEmpty(data.plantName))
-        {
             plantedData = null;
             isPlanted = false;
             growthTimer = 0f;
             currentStage = -1;
-            if (currentPlantInstance != null)
-                Destroy(currentPlantInstance);
         }
-        else
-        {
-            plantedData = PlantRegistry.GetPlantByKey(data.plantName);
-            growthTimer = data.growthTimer;
-            currentStage = data.currentStage;
-            isPlanted = data.isPlanted;
 
-            UpdateVisual();
+        public void Interact()
+        {
+            if (!isPlanted)
+                Plant();
+            else if (IsFullyGrown())
+                Harvest();
+        }
+
+        public string GetInteractText()
+        {
+            if (!isPlanted) return "Sow Seed";
+
+            if (IsFullyGrown()) return "Harvest";
+
+            int totalSeconds = Mathf.CeilToInt(growthTimer);
+            if (totalSeconds < 60)
+            {
+                return $"{totalSeconds}";
+            }
+            else
+            {
+                int minutes = totalSeconds / 60;
+                int seconds = totalSeconds % 60;
+                return $"{minutes}:{seconds:D2}";
+            }
+        }
+
+
+        public Transform GetTransform() => transform;
+
+        public string SaveState()
+        {
+            FarmPlotData data = new()
+            {
+                plantName = plantedData != null ? plantedData.plant.itemName : null,
+                growthTimer = growthTimer,
+                currentStage = currentStage,
+                isPlanted = isPlanted
+            };
+
+            return JsonUtility.ToJson(data);
+        }
+
+        public void LoadState(string json)
+        {
+            FarmPlotData data = JsonUtility.FromJson<FarmPlotData>(json);
+
+            if (string.IsNullOrEmpty(data.plantName))
+            {
+                plantedData = null;
+                isPlanted = false;
+                growthTimer = 0f;
+                currentStage = -1;
+                if (currentPlantInstance != null)
+                    Destroy(currentPlantInstance);
+            }
+            else
+            {
+                plantedData = PlantRegistry.GetPlantByKey(data.plantName);
+                growthTimer = data.growthTimer;
+                currentStage = data.currentStage;
+                isPlanted = data.isPlanted;
+
+                UpdateVisual();
+            }
         }
     }
 }

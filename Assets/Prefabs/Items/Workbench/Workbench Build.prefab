@@ -150,8 +150,8 @@ MonoBehaviour:
   objectType: 0
   entityType: 1
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 0}
+  bounceCooldown: 0.2
 --- !u!114 &-4241556883927576744
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,16 +13,18 @@ MonoBehaviour:
   m_Name: Ground Slam
   m_EditorClassIdentifier: Assembly-CSharp::GroundSlamUpgrade
   upgradeName: Ground Slam
-  description: 
+  description: Slam the ground with overwhelming power, dealing massive damage and
+    <color=#9FDFE5>stunning</color> enemies around you
   cost: 2
   cooldown: 45
   staminaCost: 20
-  activationKey: 0
+  activationKey: 120
+  skillImagePrefab: {fileID: 4643298529219022040, guid: f6fd9f93f7ea2ea4ab743b1d3f3f86a2, type: 3}
   isOnCooldown: 0
   damage: 50
   radius: 5
   stun: {fileID: 11400000, guid: b65ada11cf8c62c47b7c9fa9b8802239, type: 2}
-  slamAnimationName: GroundSlam
+  slamAnimationTrigger: Ground Slam
   enemyLayer:
     serializedVersion: 2
     m_Bits: 128

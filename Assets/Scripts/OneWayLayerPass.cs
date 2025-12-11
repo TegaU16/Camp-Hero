@@ -10,10 +10,15 @@ public class OneWayLayerPass : MonoBehaviour
 
     public void AllowPassTemporarily()
     {
-        if (revertCo != null) StopCoroutine(revertCo);
+        if (revertCo != null)
+            StopCoroutine(revertCo);
+
         originalLayer = gameObject.layer;
+
         int ptLayer = LayerMask.NameToLayer(passthroughLayerName);
-        if (ptLayer >= 0) gameObject.layer = ptLayer;
+        if (ptLayer >= 0) 
+            gameObject.layer = ptLayer;
+
         revertCo = StartCoroutine(Revert());
     }
 

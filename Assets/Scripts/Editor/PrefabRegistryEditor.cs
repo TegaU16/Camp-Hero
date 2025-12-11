@@ -1,3 +1,4 @@
+using Game.Registries;
 using UnityEditor;
 
 [CustomEditor(typeof(PrefabRegistry))]

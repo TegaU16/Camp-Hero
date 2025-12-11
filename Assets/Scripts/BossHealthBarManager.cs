@@ -1,0 +1,83 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class BossHealthBarManager : MonoBehaviour
+{
+    public static BossHealthBarManager Instance;
+
+    private readonly List<BossHealthBar> bossHealthBars = new();
+
+    public GameObject healthBarPrefab;
+    public GameObject healthBarsParent;
+
+    public float baseWidth = 600f; // width of a single boss bar
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+    public void SpawnBossHealthBar(GameObject enemy)
+    {
+        if (enemy == null) return;
+
+        GameObject bossHealthBarInstance = Instantiate(healthBarPrefab, healthBarsParent.transform);
+        if (bossHealthBarInstance != null && bossHealthBarInstance.TryGetComponent(out BossHealthBar bossHealthBar))
+            RegisterHealthBar(bossHealthBar, enemy);
+    }
+
+    private void RegisterHealthBar(BossHealthBar healthBar, GameObject enemy)
+    {
+        if (healthBar == null || enemy == null) return;
+
+        if (!bossHealthBars.Contains(healthBar))
+        {
+            healthBar.Setup(enemy);
+            bossHealthBars.Add(healthBar);
+            UpdateHealthBarSizes();
+        }
+    }
+
+    public void UnRegisterHealthBar(BossHealthBar healthBar)
+    {
+        if (healthBar == null) return;
+
+        if (bossHealthBars.Contains(healthBar))
+        {
+            bossHealthBars.Remove(healthBar);
+            Destroy(healthBar.gameObject);
+            UpdateHealthBarSizes();
+        }
+    }
+
+    private void UpdateHealthBarSizes()
+    {
+        if (bossHealthBars.Count == 0) return;
+
+        float resizedWidth = baseWidth / bossHealthBars.Count;
+
+        foreach (BossHealthBar bar in bossHealthBars)
+        {
+            if (bar == null) continue;
+
+            if (bar.TryGetComponent(out LayoutElement layout))
+            {
+                layout.minWidth = resizedWidth;
+                layout.preferredWidth = resizedWidth;
+                layout.flexibleWidth = 0f; // do NOT stretch, keep exact pixels
+            }
+        }
+    }
+
+    public void ClearHealthBars()
+    {
+        foreach (BossHealthBar healthBar in bossHealthBars)
+            Destroy(healthBar.gameObject);
+
+        bossHealthBars.Clear();
+    }
+}

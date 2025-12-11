@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Name: Ice Crystal Shard
+  m_EditorClassIdentifier: Assembly-CSharp::Item
+  itemTypes: 1
+  actionType: 0
+  maxStack: 20
+  icon: {fileID: 21300000, guid: fe2298a82c57fd043b58286efb536e95, type: 3}
+  itemName: Ice Crystal Shard
+  equippedPrefab: {fileID: 7423836066518595543, guid: f64bac7732c658f4887b22cb0c84ab80, type: 3}
+  itemDrop: {fileID: 7838755196610609500, guid: c2c7a09f0945ad74a9520e1acf7f45c6, type: 3}
+  buildingGhost: {fileID: 0}
+  buildingSize: {x: 1, y: 1}
+  attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
+  attackDistance: 3
+  attackDamage:
+  - 0
+  - 0
+  critChance: 2
+  critFactor: 2
+  toolLevel: 0
+  toolType: 3
+  foodValue: 0
+  plantData: {fileID: 0}
+  fuelValue: 0
+  smeltRate: 0.01
+  output: {fileID: 0}
+  outputCount: 1

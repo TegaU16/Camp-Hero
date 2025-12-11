@@ -1,193 +1,248 @@
 using System.Collections.Generic;
+using Game.Storage;
+using Game.Terrain.Structures;
 using UnityEngine;
+using Worlds;
 
-[System.Serializable]
-public class PlayerSaveData
+namespace Game.Saving
 {
-    public Vector3 position;
-    public int maxHealth;
-    public int currentHealth;
-    public float maxStamina;
-    public float currentStamina;
-    public PlayerAttributesData attributes;
-    public List<ItemData> inventory;
-    public LevelData levelData;
-}
-
-[System.Serializable]
-public class AnimalSaveData
-{
-    public string prefabID;
-    public Vector3 position;
-    public int currentHealth;
-}
-
-[System.Serializable]
-public class WorldAnimalData
-{
-    public List<AnimalSaveData> animals = new();
-}
-
-[System.Serializable]
-public class EnemySaveData
-{
-    public string prefabName;
-    public Vector3 position;
-    public int currentHealth;
-}
-
-[System.Serializable]
-public class WorldEnemyData
-{
-    public List<EnemySaveData> enemies = new();
-}
-
-[System.Serializable]
-public class WorldMetaData
-{
-    public string worldName;
-    public string seed;
-    public string createdDate;
-    public string lastPlayedDate;
-    public Difficulty difficulty;
-    public WorldState worldState = WorldState.Active;
-    public RunStats worldStats;
-}
-
-[System.Serializable]
-public class ChunkSaveData
-{
-    public Vector3 chunkPosition;
-    public List<SpawnedObjectData> spawnedObjects;
-    public bool hasNaturalObjects;
-    public bool hasKeyStructure;
-
-    public List<string> furnaceStates = new();
-    public List<string> storageStates = new();
-}
-
-[System.Serializable]
-public class SpawnedObjectData
-{
-    public Vector3 position;
-    public string prefabID;
-    public string savedStateJson;
-
-    public SpawnedObjectData(Vector3 pos, GameObject instanceObj, GameObject prefabObj)
+    [System.Serializable]
+    public class PlayerSaveData
     {
-        position = pos;
-
-        prefabID = prefabObj.GetComponent<PrefabID>().prefabKey;
-
-        if (instanceObj != null && instanceObj.TryGetComponent(out ISaveableObject saveable))
-            savedStateJson = saveable.SaveState();
-        else
-            savedStateJson = null;
+        public Vector3 position;
+        public int maxHealth;
+        public int currentHealth;
+        public float maxStamina;
+        public float currentStamina;
+        public PlayerAttributesData attributes;
+        public InventorySaveData inventory;
+        public LevelData levelData;
     }
 
-    public SpawnedObjectData() { }
-}
+    [System.Serializable]
+    public class InventorySaveData
+    {
+        public List<ItemData> savedItems;
+        public List<string> discoveredItems;
+    }
 
-[System.Serializable]
-public class InteractableItemData
-{
-    public string itemName;
-    public int count;
-}
+    [System.Serializable]
+    public class AnimalSaveData
+    {
+        public string prefabID;
+        public Vector3 position;
+        public int currentHealth;
+    }
 
-[System.Serializable]
-public class ItemData
-{
-    public string itemName;
-    public int count;
-    public int position;
-}
+    [System.Serializable]
+    public class WorldAnimalData
+    {
+        public List<AnimalSaveData> animals = new();
+    }
 
-[System.Serializable]
-public class PlayerAttributesData
-{
-    public int strength;
-    public int vitality;
-    public int endurance;
-    public int stamina;
-    public int luck;
+    [System.Serializable]
+    public class EnemySaveData
+    {
+        public string prefabName;
+        public Vector3 position;
+        public int currentHealth;
+    }
 
-    public int availablePoints;
-    public int goldenPoints;
+    [System.Serializable]
+    public class WorldEnemyData
+    {
+        public List<EnemySaveData> enemies = new();
+    }
 
-    public List<string> unlockedUpgrades = new();
-}
+    [System.Serializable]
+    public class WorldMetaData
+    {
+        public string worldName;
+        public string seed;
+        public string createdDate;
+        public string lastPlayedDate;
+        public Difficulty difficulty;
+        public WorldState worldState = WorldState.Active;
+        public RunStats worldStats;
+    }
 
-[System.Serializable]
-public class LevelData
-{
-    public int level;
-    public int maxExp;
-    public int currentExp;
-}
+    [System.Serializable]
+    public class ChunkSaveData
+    {
+        public Vector3 chunkPosition;
+        public List<SpawnedObjectData> spawnedObjects;
+        public bool hasNaturalObjects;
+        public bool hasKeyStructure;
 
-[System.Serializable]
-public class TrialAltarSaveData
-{
-    public int currentWave;
-    public bool trialCompleted;
-    public bool keyAvailable;
-}
+        public List<string> furnaceStates = new();
+        public List<string> storageStates = new();
+    }
 
-[System.Serializable]
-public class GemAltarSaveData
-{
-    public bool bossDefeated;
-    public bool isActivated;
-}
+    [System.Serializable]
+    public class SpawnedObjectData
+    {
+        public Vector3 position;
+        public string prefabID;
+        public string savedStateJson;
 
-[System.Serializable]
-public class CraftingSaveData
-{
-    public List<string> unlockedRecipeIDs = new(); // result item names
-}
+        [System.NonSerialized] public GameObject instance;
 
-[System.Serializable]
-public class SmeltingSaveData
-{
-    public List<string> unlockedRecipeIDs = new(); // result item names
-}
+        public WorldStructure structureRef;
+        public int structurePartIndex;
 
-[System.Serializable]
-public class DayNightSaveData
-{
-    public float timeOfDay;
-    public int currentDay;
-    public bool hasAdvancedDayToday;
-}
+        public SpawnedObjectData(Vector3 pos, GameObject instanceObj, GameObject prefabObj)
+        {
+            position = pos;
+            prefabID = prefabObj.GetComponent<PrefabID>().prefabKey;
+            savedStateJson = null;
+            instance = instanceObj;
+            structureRef = null;
+            structurePartIndex = -1;
+        }
 
-[System.Serializable]
-public class CampfireSaveData
-{
-    public int currentHealth;
-    public List<GemColor> unlockedGems;
-}
+        public void SaveState(GameObject instanceObj)
+        {
+            if (instanceObj == null)
+            {
+                savedStateJson = null;
+                return;
+            }
 
-[System.Serializable]
-public class BreakableObjectData
-{
-    public int currentHealth;
-}
+            StorageUnit storage = instanceObj.GetComponentInChildren<StorageUnit>();
 
-[System.Serializable]
-public class FarmPlotData
-{
-    public string plantName;
-    public float growthTimer;
-    public int currentStage;
-    public bool isPlanted;
-}
+            if (storage != null)
+            {
+                savedStateJson = storage.SaveState();
+                return;
+            }
 
-[System.Serializable]
-public class FurnaceSaveData
-{
-    public string inputJson;
-    public string outputJson;
-    public string fuelDataJson;
-    public float currentFuel;
+            ISaveableObject saveable = instanceObj.GetComponentInChildren<ISaveableObject>();
+            // fallback for non-storage objects
+            savedStateJson = saveable?.SaveState();
+        }
+    }
+
+    [System.Serializable]
+    public class InteractableItemData
+    {
+        public string itemName;
+        public int count;
+    }
+
+    [System.Serializable]
+    public class ItemData
+    {
+        public string itemName;
+        public int count;
+        public int position;
+    }
+
+    [System.Serializable]
+    public class PlayerAttributesData
+    {
+        public int strength;
+        public int vitality;
+        public int endurance;
+        public int stamina;
+        public int luck;
+
+        public int availablePoints;
+        public int goldenPoints;
+
+        public HashSet<string> unlockedUpgrades = new();
+    }
+
+    [System.Serializable]
+    public class LevelData
+    {
+        public int level;
+        public int maxExp;
+        public int currentExp;
+    }
+
+    [System.Serializable]
+    public class TrialAltarSaveData
+    {
+        public int currentWave;
+        public bool trialCompleted;
+        public bool keyAvailable;
+    }
+
+    [System.Serializable]
+    public class GemAltarSaveData
+    {
+        public bool bossDefeated;
+        public bool isActivated;
+    }
+
+    [System.Serializable]
+    public class CraftingSaveData
+    {
+        public List<string> unlockedRecipeIDs = new(); // result item names
+        public List<string> craftedBeforeIDs = new();
+    }
+
+    [System.Serializable]
+    public class SmeltingSaveData
+    {
+        public List<string> unlockedRecipeIDs = new(); // result item names
+        public List<string> smeltedBeforeIDs = new();
+    }
+
+    [System.Serializable]
+    public class DayNightSaveData
+    {
+        public float timeOfDay;
+        public int currentDay;
+        public bool hasAdvancedDayToday;
+    }
+
+    [System.Serializable]
+    public class CampfireSaveData
+    {
+        public int currentHealth;
+        public List<GemColor> unlockedGems;
+    }
+
+    [System.Serializable]
+    public class BreakableObjectData
+    {
+        public int currentHealth;
+    }
+
+    [System.Serializable]
+    public class FarmPlotData
+    {
+        public string plantName;
+        public float growthTimer;
+        public int currentStage;
+        public bool isPlanted;
+    }
+
+    [System.Serializable]
+    public class FurnaceSaveData
+    {
+        public string inputJson;
+        public string outputJson;
+        public string fuelDataJson;
+        public float currentFuel;
+    }
+
+    [System.Serializable]
+    public class WorldQuestSaveData
+    {
+        public List<QuestSaveData> questSaveDatas = new();
+        public bool hasOpenedTrialMenu;
+    }
+
+    [System.Serializable]
+    public class QuestSaveData
+    {
+        public string questID;
+        public string questTitle;
+        public bool isCompleted;
+        public List<string> requiredItems;
+        public int requiredCount;
+        public int currentCount;
+    }
 }

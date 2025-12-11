@@ -52,6 +52,7 @@ public class SettingsManager : MonoBehaviour
             string json = PlayerPrefs.GetString(SettingsKey);
             currentSettings = JsonUtility.FromJson<GameSettingsData>(json);
         }
+
         ApplySettings();
     }
 }

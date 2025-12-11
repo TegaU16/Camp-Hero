@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using Game.AI.Enemies;
 
 [CustomEditor(typeof(EnemyPool))]
 public class EnemyPoolEditor : Editor

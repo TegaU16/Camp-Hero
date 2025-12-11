@@ -1,97 +1,101 @@
+using Game.AI.Enemies;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour
+namespace Game.Defenses
 {
-    public float speed = 20f;
-    public float homingStrength = 2f; // Lower = more dodgeable
-    public float maxLifetime = 5f;
-
-    private Transform attacker;
-    private Transform target;
-    private int damage;
-    private Vector3 currentDirection;
-    private bool homing = true;
-    private float lifetime;
-
-    public void SetTarget(Transform attacker, Transform t, int dmg, bool useHoming = true)
+    public class Projectile : MonoBehaviour
     {
-        this.attacker = attacker;
-        target = t;
-        damage = dmg;
-        homing = useHoming;
+        public float speed = 20f;
+        public float homingStrength = 2f; // Lower = more dodgeable
+        public float maxLifetime = 5f;
 
-        if (target != null)
-            currentDirection = (target.position - transform.position).normalized;
-    }
+        private Transform attacker;
+        private Transform target;
+        private int damage;
+        private Vector3 currentDirection;
+        private bool homing = true;
+        private float lifetime;
 
-    void Update()
-    {
-        if (!GameManager.Instance.IsGameManagerReady()) return;
-
-        lifetime += Time.deltaTime;
-        if (lifetime >= maxLifetime)
+        public void SetTarget(Transform attacker, Transform t, int dmg, bool useHoming = true)
         {
-            Destroy(gameObject);
-            return;
+            this.attacker = attacker;
+            target = t;
+            damage = dmg;
+            homing = useHoming;
+
+            if (target != null)
+                currentDirection = (target.position - transform.position).normalized;
         }
 
-        if (target == null)
+        void Update()
         {
-            Destroy(gameObject);
-            return;
-        }
+            if (!GameManager.Instance.IsGameManagerReady()) return;
 
-        Vector3 toTarget = (target.position - transform.position).normalized;
-
-        if (homing)
-            currentDirection = Vector3.RotateTowards(currentDirection, toTarget, homingStrength * Time.deltaTime, 0f);
-
-        float distanceThisFrame = speed * Time.deltaTime;
-
-        if (Vector3.Distance(transform.position, target.position) <= distanceThisFrame)
-        {
-            HitTarget();
-            return;
-        }
-
-        transform.Translate(currentDirection * distanceThisFrame, Space.World);
-        transform.rotation = Quaternion.LookRotation(currentDirection);
-    }
-
-    void HitTarget()
-    {
-        Vector3 hitPoint;
-        Vector3 hitNormal;
-
-        if (target.TryGetComponent(out Collider collider))
-            hitPoint = collider.ClosestPoint(transform.position);
-        else if (target.TryGetComponent(out CharacterController controller))
-            hitPoint = controller.ClosestPoint(transform.position);
-        else
-            return;
-
-        hitNormal = (hitPoint - transform.position).normalized;
-
-        if (target.TryGetComponent(out Targetable targetable))
-        {
-            if (targetable.TryGetComponent(out Health targetHealth))
+            lifetime += Time.deltaTime;
+            if (lifetime >= maxLifetime)
             {
-                targetHealth.TakeDamage(damage, attacker);
+                Destroy(gameObject);
+                return;
+            }
 
-                if (target.TryGetComponent(out Rigidbody rb))
+            if (target == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Vector3 toTarget = (target.position - transform.position).normalized;
+
+            if (homing)
+                currentDirection = Vector3.RotateTowards(currentDirection, toTarget, homingStrength * Time.deltaTime, 0f);
+
+            float distanceThisFrame = speed * Time.deltaTime;
+
+            if (Vector3.Distance(transform.position, target.position) <= distanceThisFrame)
+            {
+                HitTarget();
+                return;
+            }
+
+            transform.Translate(currentDirection * distanceThisFrame, Space.World);
+            transform.rotation = Quaternion.LookRotation(currentDirection);
+        }
+
+        void HitTarget()
+        {
+            Vector3 hitPoint;
+            Vector3 hitNormal;
+
+            if (target.TryGetComponent(out Collider collider))
+                hitPoint = collider.ClosestPoint(transform.position);
+            else if (target.TryGetComponent(out CharacterController controller))
+                hitPoint = controller.ClosestPoint(transform.position);
+            else
+                return;
+
+            hitNormal = (hitPoint - transform.position).normalized;
+
+            if (target.TryGetComponent(out Targetable targetable))
+            {
+                if (targetable.TryGetComponent(out Health targetHealth))
                 {
-                    Vector3 knockbackDir = (target.position - transform.position).normalized;
-                    rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
+                    targetHealth.TakeDamage(damage, attacker);
+
+                    if (target.TryGetComponent(out Rigidbody rb))
+                    {
+                        Vector3 knockbackDir = (target.position - transform.position).normalized;
+                        rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
+                    }
                 }
             }
-        }
 
-        if (target.TryGetComponent(out BreakableObject breakable) && target.TryGetComponent(out Enemy enemy))
-        {
-            breakable.TakeDamage(damage, false, hitPoint, hitNormal);
-            enemy.OnAttacked(attacker);
-        }
+            if (target.TryGetComponent(out BreakableObject breakable) && target.TryGetComponent(out Enemy enemy))
+            {
+                breakable.TakeDamage(damage, false, hitPoint, hitNormal);
+                enemy.OnAttacked(attacker);
+            }
 
-        Destroy(gameObject);
+            Destroy(gameObject);
+        }
     }
 }

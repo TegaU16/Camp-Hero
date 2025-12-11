@@ -1,4 +1,7 @@
 using System.Collections;
+using Game.AI.Enemies;
+using Game.Players;
+using Game.Terrain.Structures;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -6,6 +9,7 @@ public class Health : MonoBehaviour
     public int maxHealth = 100;
     private int currentHealth;
     private bool isDead = false;
+    [HideInInspector] public bool isImmune = false;
 
     [Header("Shield Settings")]
     public int maxShield = 50;
@@ -14,6 +18,7 @@ public class Health : MonoBehaviour
     public float shieldRegenDelay = 3f; // seconds before regen starts
     private Coroutine regenRoutine;
     private bool canRegen = true;
+    public bool canHaveShield;
     [HideInInspector] public bool shieldActive;
 
     [HideInInspector] public HealthBar healthBar;
@@ -42,7 +47,7 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(int amount, Transform attacker = null)
     {
-        if (isDead) return;
+        if (isDead || isImmune) return;
 
         if (TryGetComponent(out Player player) && attacker != null)
         {
@@ -148,7 +153,11 @@ public class Health : MonoBehaviour
 
     public void UpdateShieldBarVisibility()
     {
-        if (shieldBar != null)
-            shieldBar.gameObject.SetActive(shieldActive);
+        if (!canHaveShield) return;
+
+        if (shieldBar == null)
+            shieldBar = UIManager.Instance.GetShieldBar();
+
+        shieldBar.gameObject.SetActive(shieldActive);
     }
 }
