@@ -51,11 +51,8 @@ public class Health : MonoBehaviour
 
         if (TryGetComponent(out Player player) && attacker != null)
         {
-            if (attacker.TryGetComponent(out Enemy enemy))
-            {
-                if (enemy.TryGetComponent(out BreakableObject breakable))
-                    OnHit?.Invoke(amount, breakable);
-            }
+            if (attacker.TryGetComponent(out Enemy enemy) && enemy.TryGetComponent(out BreakableObject breakable))
+                OnHit?.Invoke(amount, breakable);
 
             if (OnPreDamage != null)
                 amount = OnPreDamage.Invoke(amount);
@@ -91,12 +88,14 @@ public class Health : MonoBehaviour
             regenRoutine = StartCoroutine(ShieldRegenBuffer());
         }
 
-        if (currentHealth <= 0) Die();
+        if (currentHealth <= 0)
+            Die();
     }
 
     public void AddHealth(int amount)
     {
         if (isDead) return;
+
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         if (healthBar != null)
             healthBar.SetHealth(currentHealth);
@@ -112,7 +111,7 @@ public class Health : MonoBehaviour
     public int GetHealth() => currentHealth;
     public int GetShield() => currentShield;
 
-    void Die()
+    private void Die()
     {
         if (isDead) return;
         isDead = true;
@@ -120,8 +119,8 @@ public class Health : MonoBehaviour
         if (TryGetComponent(out Campfire campfire))
             campfire.Die();
 
-        if (TryGetComponent(out Player player))
-            player.Die();
+        if (TryGetComponent(out PlayerDeath playerDeath))
+            playerDeath.Die();
     }
 
     public void ResetHealth(int maxHealth)

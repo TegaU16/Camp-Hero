@@ -13,10 +13,7 @@ namespace Game.Smelting
 
         [HideInInspector] public bool hasBeenSmeltedBefore;
 
-        public bool ShouldUnlock(List<Item> discoveredItems)
-        {
-            return discoveredItems.Contains(requiredItem);
-        }
+        public bool ShouldUnlock(List<Item> discoveredItems) => discoveredItems.Contains(requiredItem);
     }
 
     public enum SmeltingCategory

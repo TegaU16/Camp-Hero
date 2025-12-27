@@ -118,7 +118,6 @@ namespace Game.Players
             if (!uiBound) return;
             if (controller == null || !controller.enabled || cam == null) return;
 
-
             bool isGrounded = controller.isGrounded;
             Vector3 direction = new Vector3(horizontalInput, 0f, verticalInput).normalized;
 
@@ -161,7 +160,6 @@ namespace Game.Players
                     buffer += Time.fixedDeltaTime;
                 }
             }
-
             else
             {
                 if (proceduralAnimator != null)
@@ -239,36 +237,6 @@ namespace Game.Players
             }
 
             uiBound = true;
-        }
-
-        public void Die()
-        {
-            if (controller != null)
-                controller.enabled = false;
-
-            if (ragdollController != null)
-                ragdollController.EnableRagdoll();
-            else
-                Debug.LogWarning("No SimpleRagdollController found!");
-
-            InventoryManager.Instance.ResetExtensions();
-            InventoryManager.Instance.DropAllItems();
-
-            InteractableItemManager.Instance.ForceMergeAll();
-
-            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
-            {
-                if (trialAltar != null && trialAltar.IsWaveInProgress())
-                    trialAltar.FailTrial();
-            }
-
-            Invoke(nameof(Despawn), 5f);
-        }
-
-        private void Despawn()
-        {
-            ragdollController.DisableRagdoll();
-            StartCoroutine(GameManager.Instance.RespawnPlayer(this));
         }
 
         public void RegisterActiveUpgrade(ActiveUpgradeEffect upgrade)

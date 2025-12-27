@@ -35,23 +35,20 @@ public static class ItemGrid
 
     public static void Unregister(InteractableItem item)
     {
-        if (grid.TryGetValue(item.CurrentCell, out List<InteractableItem> list))
-        {
-            list.Remove(item);
-            if (list.Count == 0)
-                grid.Remove(item.CurrentCell);
-        }
+        if (!grid.TryGetValue(item.CurrentCell, out List<InteractableItem> list)) return;
+
+        list.Remove(item);
+        if (list.Count == 0)
+            grid.Remove(item.CurrentCell);
     }
 
     public static void UpdateItemCell(InteractableItem item)
     {
         Vector2Int newCell = GetCell(item.transform.position);
+        if (newCell == item.CurrentCell) return;
 
-        if (newCell != item.CurrentCell)
-        {
-            Unregister(item);
-            Register(item);
-        }
+        Unregister(item);
+        Register(item);
     }
 
     public static IEnumerable<InteractableItem> GetNearby(Vector3 pos)

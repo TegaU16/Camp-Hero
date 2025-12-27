@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Game.Players;
+using Game.StatusEffects;
 using Game.Terrain.Structures.Trials;
 using UnityEngine;
 using Worlds;
@@ -44,7 +47,7 @@ namespace Game.AI.Enemies
 
         [Header("Combat References")]
         public Sprite enemyIcon;
-        public BreakableObject breakableObject;
+        private BreakableObject breakableObject;
         [SerializeField] private List<MonoBehaviour> rangedAttackScripts = new();
 
         private IRangedAttackBehavior currentRangedAttack;
@@ -52,11 +55,12 @@ namespace Game.AI.Enemies
 
         // -------------------- MOVEMENT --------------------
         [Header("Movement")]
-        public float moveSpeed = 3.5f;
+        [SerializeField] private float moveSpeed = 3.5f;
         private float cachedMoveSpeed;
-        private Vector3 knockbackVelocity = Vector3.zero;
         private float verticalVelocity = 0f;
         [SerializeField] private float gravity = -9.8f;
+        private Vector3 knockbackVelocity = Vector3.zero;
+        [SerializeField] private float knockbackDuration = 5f;
 
         private Vector3 latestSpawnPos;
         private bool justSpawned;
@@ -70,6 +74,7 @@ namespace Game.AI.Enemies
         [SerializeField] private float minTargetMovementThreshold = 1f;
         [SerializeField] private float repathCooldown = 0.5f;
         [SerializeField] private float repathDistanceThreshold = 1f;
+        [SerializeField] private float attackRangeBuffer = 1.5f;
         private Vector3 lastTargetPosition;
         private float lastRepathTime = -999f;
         private readonly float retaliateMemoryDuration = 5f;
@@ -91,6 +96,11 @@ namespace Game.AI.Enemies
         private SimpleRagdollController ragdollController;
         private CharacterController characterController;
         private Transform myTransform;
+
+        // -------------------- STATUS EFFECTS --------------------
+        private readonly Dictionary<BurnEffect, Coroutine> activeBurns = new();
+        private readonly Dictionary<SlowEffect, Coroutine> activeSlows = new();
+        private readonly Dictionary<StunEffect, Coroutine> activeStuns = new();
 
         private void Awake()
         {
@@ -162,20 +172,19 @@ namespace Game.AI.Enemies
                     break;
             }
 
-            if (currentState == State.Idle)
-            {
-                if (currentTarget == null)
-                {
-                    AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
-                    if (currentTarget == null)
-                        currentTarget = campfireTarget;
-                }
+            if (currentState != State.Idle) return;
 
-                SetChasing();
+            if (currentTarget == null)
+            {
+                AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
+                if (currentTarget == null)
+                    currentTarget = campfireTarget;
             }
+
+            SetChasing();
         }
 
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             if (!GameManager.Instance.IsGameManagerReady()) return;
             if (!isActive || currentState == State.Dead) return;
@@ -208,7 +217,7 @@ namespace Game.AI.Enemies
 
             // Apply knockback
             move += knockbackVelocity;
-            knockbackVelocity = -Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
+            knockbackVelocity = -Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * knockbackDuration);
 
             // Finally move
             Vector3 displacement = moveSpeed * Time.fixedDeltaTime * move;
@@ -217,17 +226,29 @@ namespace Game.AI.Enemies
 
         private void HandleChasing(float distanceToTarget)
         {
+            if (activeStuns.Count > 0) return;
+
             if (Time.time - lastRepathTime > repathCooldown &&
                 Vector3.Distance(currentTarget.position, lastTargetPosition) > repathDistanceThreshold)
             {
                 lastTargetPosition = currentTarget.position;
                 lastRepathTime = Time.time;
 
-                if (distanceToTarget > rangedAttackRange * 1.5f || distanceToTarget > meleeAttackRange * 1.5f)
+                float rangedAttackThreshold = rangedAttackRange * attackRangeBuffer;
+                float meleeAttackThreshold = meleeAttackRange * attackRangeBuffer;
+
+                bool shouldScanForTargets = attackType switch
+                {
+                    AttackType.Mixed => distanceToTarget > Mathf.Min(rangedAttackThreshold, meleeAttackThreshold),
+                    AttackType.Melee => distanceToTarget > meleeAttackThreshold,
+                    AttackType.Ranged => distanceToTarget > rangedAttackThreshold,
+                    _ => false,
+                };
+
+                if (shouldScanForTargets)
                     AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
 
                 Vector3Int to = GetTargetGridPosition(lastTargetPosition);
-
                 TryRequestPath(to);
             }
 
@@ -242,6 +263,8 @@ namespace Game.AI.Enemies
 
         private void HandleAttacking(float distanceToTarget)
         {
+            if (activeStuns.Count > 0) return;
+
             Vector3 dir = currentTarget.position - myTransform.position;
             dir.y = 0;
             if (dir.sqrMagnitude > 0.01f)
@@ -271,6 +294,8 @@ namespace Game.AI.Enemies
 
         private void HandleRangedAttacking(float distanceToTarget)
         {
+            if (activeStuns.Count > 0) return;
+
             myTransform.LookAt(new Vector3(currentTarget.position.x, myTransform.position.y, currentTarget.position.z));
 
             if (!isAttacking)
@@ -280,7 +305,7 @@ namespace Game.AI.Enemies
             {
                 if (rangedAttacks.Count == 0) return;
 
-                int index = Random.Range(0, rangedAttacks.Count);
+                int index = UnityEngine.Random.Range(0, rangedAttacks.Count);
                 currentRangedAttack = rangedAttacks[index];
 
                 switch (currentRangedAttack.AttackName)
@@ -314,16 +339,16 @@ namespace Game.AI.Enemies
 
         private void HandleAttackTrigger(float distanceToTarget)
         {
-            if (attackType == AttackType.Melee && distanceToTarget <= meleeAttackRange)
-                BeginMeleeAttack();
-            else if (attackType == AttackType.Ranged && distanceToTarget <= rangedAttackRange)
-                BeginRangedAttack();
-            else if (attackType == AttackType.Mixed)
+            if (distanceToTarget <= meleeAttackRange && (attackType == AttackType.Melee || attackType == AttackType.Mixed))
             {
-                if (distanceToTarget <= meleeAttackRange)
-                    BeginMeleeAttack();
-                else if (distanceToTarget <= rangedAttackRange)
-                    BeginRangedAttack();
+                BeginMeleeAttack();
+                return;
+            }
+
+            if (distanceToTarget <= rangedAttackRange && (attackType == AttackType.Ranged || attackType == AttackType.Mixed))
+            {
+                BeginRangedAttack();
+                return;
             }
         }
 
@@ -341,7 +366,9 @@ namespace Game.AI.Enemies
             float timeSinceLast = Time.time - lastPathRequestTime;
             float distToFrozen = Vector3Int.Distance(targetGrid, frozenPathTarget);
 
-            if (frozenPathTarget == new Vector3Int(-999, 0, -999) || distToFrozen >= minTargetMovementThreshold || timeSinceLast >= pathRequestCooldown)
+            if (frozenPathTarget == new Vector3Int(-999, 0, -999) ||
+                distToFrozen >= minTargetMovementThreshold ||
+                timeSinceLast >= pathRequestCooldown)
             {
                 frozenPathTarget = targetGrid;
                 agent.StopTracking();
@@ -395,7 +422,6 @@ namespace Game.AI.Enemies
         {
             // Guard against reinitialization
             if (isActive) return;
-
             if (agent == null || characterController == null) return;
 
             latestSpawnPos = spawnPos;
@@ -452,18 +478,17 @@ namespace Game.AI.Enemies
             AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
         }
 
-        void OnAnimatorMove()
+        private void OnAnimatorMove()
         {
-            if (justSpawned)
-            {
-                characterController.enabled = false;
-                myTransform.position = latestSpawnPos;
-                characterController.enabled = true;
-                justSpawned = false;
-            }
+            if (!justSpawned) return;
+
+            characterController.enabled = false;
+            myTransform.position = latestSpawnPos;
+            characterController.enabled = true;
+            justSpawned = false;
         }
 
-        void BeginMeleeAttack()
+        private void BeginMeleeAttack()
         {
             agent.StopPath();
             animator.SetFloat("Speed", 0f);
@@ -473,7 +498,7 @@ namespace Game.AI.Enemies
                 attackTimer = attackCooldown;
         }
 
-        void BeginRangedAttack()
+        private void BeginRangedAttack()
         {
             agent.StopPath();
             animator.SetFloat("Speed", 0f);
@@ -484,7 +509,7 @@ namespace Game.AI.Enemies
         }
 
         // Called by animation event
-        void RangedAttack()
+        private void RangedAttack()
         {
             if (currentRangedAttack == null || currentTarget == null) return;
 
@@ -496,7 +521,7 @@ namespace Game.AI.Enemies
         }
 
         // Called by animation event
-        void EndAttack()
+        private void EndAttack()
         {
             isAttacking = false;
             ResetMovement();
@@ -510,6 +535,24 @@ namespace Game.AI.Enemies
             moveSpeed = cachedMoveSpeed;
         }
 
+        // ===== ENEMY STATUS EFFECTS =====
+        public void ApplySlow(SlowEffect slowEffect) 
+        {
+            if (activeSlows.ContainsKey(slowEffect)) return;
+
+            Coroutine routine = StartCoroutine(SlowRoutine(slowEffect));
+            activeSlows[slowEffect] = routine;
+        }
+
+        public void StopSlow(SlowEffect slowEffect)
+        {
+            if (!activeSlows.TryGetValue(slowEffect, out Coroutine routine)) return;
+
+            StopCoroutine(routine);
+            ModifySpeed(1f);
+            activeSlows.Remove(slowEffect);
+        }
+
         public void ModifySpeed(float factor)
         {
             if (factor == 1f)
@@ -521,12 +564,80 @@ namespace Game.AI.Enemies
                 animator.speed = factor;
         }
 
+        private IEnumerator SlowRoutine(SlowEffect slowEffect)
+        {
+            ModifySpeed(slowEffect.slowFactor);
+
+            if (!slowEffect.noTimer)
+            {
+                yield return new WaitForSeconds(slowEffect.duration);
+                ModifySpeed(1f);
+            }
+        }
+
+        public void ApplyBurn(BurnEffect burnEffect)
+        {
+            if (activeBurns.ContainsKey(burnEffect)) return;
+
+            Coroutine routine = StartCoroutine(BurnRoutine(burnEffect));
+            activeBurns[burnEffect] = routine;
+        }
+
+        public void StopBurn(BurnEffect burnEffect)
+        {
+            if (!activeBurns.TryGetValue(burnEffect, out Coroutine routine)) return;
+
+            StopCoroutine(routine);
+            activeBurns.Remove(burnEffect);
+        }
+
+        private IEnumerator BurnRoutine(BurnEffect burnEffect)
+        {
+            float elapsed = 0f;
+
+            if (breakableObject.GetHealth() <= 0) yield break;
+
+            while (elapsed < burnEffect.duration)
+            {
+                breakableObject.TakeDamage(
+                    Mathf.RoundToInt(burnEffect.damagePerTick), 
+                    crit: false, 
+                    transform.position, 
+                    Vector3.zero
+                );
+
+                yield return new WaitForSeconds(burnEffect.tickSpeed);
+
+                if (!burnEffect.noTimer)
+                    elapsed += burnEffect.tickSpeed;
+            }
+
+            activeBurns.Remove(burnEffect);
+        }
+
+        public void ApplyStun(StunEffect stunEffect)
+        {
+            if (activeStuns.ContainsKey(stunEffect)) return;
+
+            Coroutine routine = StartCoroutine(StunRoutine(stunEffect));
+            activeStuns[stunEffect] = routine;
+        }
+
+        private IEnumerator StunRoutine(StunEffect stunEffect)
+        {
+            ModifySpeed(0f);
+            yield return new WaitForSeconds(stunEffect.duration);
+            ModifySpeed(1f);
+            activeStuns.Remove(stunEffect);
+        }
+
         public void DealDamage()
         {
             if (currentTarget == null) return;
 
             float distance = Vector3.Distance(myTransform.position, currentTarget.position);
-            if (distance > meleeAttackRange + 0.5f) return;
+            float meleeAttackRangeBuffer = 0.5f;
+            if (distance > meleeAttackRange + meleeAttackRangeBuffer) return;
 
             float damageWithMultiplier = DifficultyManager.Instance.GetDamageMultiplier() * damage;
             int finalDamage = (int)damageWithMultiplier;
@@ -554,13 +665,15 @@ namespace Game.AI.Enemies
                 Vector3 hitPoint = targetBreakable.GetComponent<Collider>().ClosestPoint(transform.position);
                 Vector3 hitNormal = (hitPoint - transform.position).normalized;
 
-                targetBreakable.TakeDamage(finalDamage, false, hitPoint, hitNormal, fromEnemy: true);
+                targetBreakable.TakeDamage(finalDamage, crit: false, hitPoint, hitNormal, fromEnemy: true);
             }
         }
 
         public void Die()
         {
             if (currentState == State.Dead) return;
+
+            StopAllCoroutines();
 
             currentState = State.Dead;
             isActive = false;
@@ -585,11 +698,8 @@ namespace Game.AI.Enemies
         private void Despawn()
         {
             EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
-            if (spawner != null)
-            {
-                if (!TryGetComponent<TrialEnemyMarker>(out _))
-                    spawner.DecreaseEnemyCount();
-            }
+            if (spawner != null && !TryGetComponent<TrialEnemyMarker>(out _))
+                spawner.DecreaseEnemyCount();
 
             if (breakableObject != null)
                 breakableObject.DestroyObject();
@@ -598,17 +708,13 @@ namespace Game.AI.Enemies
             gameObject.SetActive(false);
         }
 
-        public void SetChasing()
-        {
-            currentState = State.Chasing;
-        }
+        public void SetChasing() => currentState = State.Chasing;
 
         public void AssignBestTarget(List<Targetable> potentialTargets)
         {
             // Debug.Log($"{name} AssignBestTarget() called. CurrentState={currentState}, CurrentTarget={(currentTarget != null ? currentTarget.name : null)}");
 
             if (currentState == State.Attacking || currentState == State.RangedAttacking) return;
-
             if (Time.time < nextTargetSwitchTime) return;
 
             Transform bestTarget = null;
@@ -634,30 +740,19 @@ namespace Game.AI.Enemies
             else
                 Debug.Log($"{name} found no valid targets. Falling back to campfire: {(campfireTarget != null ? campfireTarget.name : null)}");*/
 
-            if (bestTarget != null)
-            {
-                if (bestTarget != currentTarget)
-                {
-                    frozenPathTarget = new(-999, 0, -999);
-                    currentTarget = bestTarget;
-                    SetChasing();
-                    agent.StartTracking(currentTarget);
-                    TryRequestPath(GetTargetGridPosition(currentTarget.position));
-                    nextTargetSwitchTime = Time.time + targetStickTime;
-                }
-            }
-            else
-            {
-                if (currentTarget != campfireTarget)
-                {
-                    frozenPathTarget = new(-999, 0, -999);
-                    currentTarget = campfireTarget;
-                    SetChasing();
-                    agent.StartTracking(currentTarget);
-                    nextTargetSwitchTime = Time.time + targetStickTime;
-                    TryRequestPath(GetTargetGridPosition(currentTarget.position));
-                }
-            }
+            bool bestTargetAvailable = bestTarget != null && bestTarget != currentTarget;
+            bool campfireTargetAvailable = campfireTarget != null && campfireTarget != currentTarget;
+
+            if (bestTargetAvailable)
+                currentTarget = bestTarget;
+            else if (campfireTargetAvailable)
+                currentTarget = campfireTarget;
+
+            frozenPathTarget = new(-999, 0, -999);
+            SetChasing();
+            agent.StartTracking(currentTarget);
+            nextTargetSwitchTime = Time.time + targetStickTime;
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
 
             // Debug.Log($"{name} chasing target: {(currentTarget != null ? currentTarget.name : null)} at {(currentTarget != null ? currentTarget.position : null)}");
         }

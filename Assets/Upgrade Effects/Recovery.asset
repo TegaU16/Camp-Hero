@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a76433c1359f7bc4d836749bdec230fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 17012c56093606d41985a14536ab042e, type: 3}
   m_Name: Recovery
   m_EditorClassIdentifier: Assembly-CSharp::RegenToHalfUpgrade
   upgradeName: Recovery
-  description: Regenerates the player's health to 50% passively
-  cost: 1
+  description: Passive health regen to 50% of the player's max health
+  cost: 2
   regenRate: 2

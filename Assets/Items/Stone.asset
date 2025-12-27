@@ -9,20 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Stone
   m_EditorClassIdentifier: 
   itemTypes: 1
   actionType: 0
   maxStack: 20
-  icon: {fileID: 21300000, guid: 25e267992d1b55c49a7e30dcf03f5c31, type: 3}
+  icon: {fileID: 0}
   itemName: Stone
   equippedPrefab: {fileID: 4040467214724443855, guid: 290edec923b17fd4293a2b9ee402ae23, type: 3}
   itemDrop: {fileID: 4703379712838663912, guid: d6c00442f4a24554a94ab64ad01f331b, type: 3}
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
-  attackDistance: 1
+  attackDistance: 3
   attackDamage:
   - 2
   - 5

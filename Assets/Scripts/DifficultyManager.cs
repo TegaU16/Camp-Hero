@@ -19,7 +19,8 @@ public class DifficultyManager : MonoBehaviour
     public static DifficultyManager Instance;
     private Difficulty currentDifficulty;
 
-    public event System.Action<Difficulty> OnDifficultyChanged;
+    public delegate void DifficultyChangedDelegate(bool reset);
+    public event DifficultyChangedDelegate OnDifficultyChanged;
 
     private void Awake()
     {
@@ -84,7 +85,7 @@ public class DifficultyManager : MonoBehaviour
         currentDifficulty = difficulty;
 
         // Notify all listeners
-        OnDifficultyChanged?.Invoke(currentDifficulty);
+        OnDifficultyChanged?.Invoke(reset: false);
     }
 
     public Difficulty GetDifficulty() => currentDifficulty;

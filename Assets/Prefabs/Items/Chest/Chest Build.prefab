@@ -150,10 +150,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1225668700139714346}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e165021a0a5a5424a8e94227a2471b42, type: 3}
+  m_Script: {fileID: 11500000, guid: e039c3fb1ef0f8a488cc74463ebabd37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chestName: Chest
+  chestName: Storage Chest
   maxSlots: 28
   isOpen: 0
   items: []
@@ -167,7 +167,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1225668700139714346}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 2

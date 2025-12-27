@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91932396185f3df4699e48c5985bca49, type: 3}
+  m_Script: {fileID: 11500000, guid: 72475da8d36e7f0439fe0a17db3131b0, type: 3}
   m_Name: Dash
   m_EditorClassIdentifier: Assembly-CSharp::DashUpgrade
   upgradeName: Dash
-  description: Move far and quickly in the direction the player is facing
-  cost: 1
-  cooldown: 2
-  staminaCost: 15
+  description: Move quickly in the direction the player is facing
+  cost: 2
+  cooldown: 5
+  staminaCost: 20
   activationKey: 122
   skillImagePrefab: {fileID: 2975865213208599642, guid: c1c7390b6d0ef294b85b7ef94dae9623, type: 3}
   isOnCooldown: 0
@@ -47,3 +47,4 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   dashStreakPrefab: {fileID: 6441971390562665597, guid: a5470c61dfbca074686d99cc44934ab7, type: 3}
+  dashAnimationTrigger: Dash

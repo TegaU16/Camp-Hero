@@ -20,10 +20,12 @@ public static class Utility
 
     public static Vector3 VoxelCoordToWorld(Vector3Int voxelCoord)
     {
+        float offset = VoxelGrid.Instance.voxelSize / 2f;
+
         return new Vector3(
-            voxelCoord.x + 0.5f,
-            voxelCoord.y + 0.5f,
-            voxelCoord.z + 0.5f);
+            voxelCoord.x + offset,
+            voxelCoord.y + offset,
+            voxelCoord.z + offset);
     }
 
     public static bool IsAreaFree(GameObject prefab, Vector3 intendedPosition, Func<Vector3Int, bool> checkFunc)
@@ -61,9 +63,11 @@ public static class Utility
 
         Vector2Int chunkKey = new(chunkX, chunkZ);
 
-        if (!voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk)) return 0f; // or some default height
-
-        if (localX < 0 || localX >= voxelGrid.chunkSize || localZ < 0 || localZ >= voxelGrid.chunkSize) return 0f; // or default height
+        if (!voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk) || 
+            localX < 0 || 
+            localX >= voxelGrid.chunkSize || 
+            localZ < 0 || 
+            localZ >= voxelGrid.chunkSize) return 0f; // or some default height
 
         return chunk.heightMap[localX, localZ];
     }
@@ -72,12 +76,11 @@ public static class Utility
     {
         foreach (Button button in buttonsInScene)
         {
-            if (button.transform.parent != menuTransform)
-            {
-                button.interactable = !open;
-                if (button.TryGetComponent(out InteractiveButton interactiveButton))
-                    interactiveButton.isActive = !open;
-            }
+            if (button.transform.parent == menuTransform) continue;
+
+            button.interactable = !open;
+            if (button.TryGetComponent(out InteractiveButton interactiveButton))
+                interactiveButton.isActive = !open;
         }
     }
 

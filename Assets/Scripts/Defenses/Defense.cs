@@ -24,13 +24,11 @@ namespace Game.Defenses
 
             fireCooldown -= Time.deltaTime;
 
-            if (currentTarget != null && !IsTargetAlive(currentTarget))
-                currentTarget = null;
-
-            if (currentTarget == null)
+            if (currentTarget == null || !IsTargetAlive(currentTarget))
+            {
                 FindTarget();
-
-            if (currentTarget != null && fireCooldown <= 0f)
+            }
+            else if (fireCooldown <= 0f)
             {
                 Fire();
                 fireCooldown = 1f / fireRate;
@@ -58,16 +56,13 @@ namespace Game.Defenses
 
                 Enemy enemy = hit.GetComponent<Enemy>();
                 BreakableObject breakable = hit.GetComponent<BreakableObject>();
+                if (enemy == null || breakable == null || !IsTargetAlive(hit.transform)) continue;
 
-                if (enemy != null && breakable != null && IsTargetAlive(hit.transform))
-                {
-                    float dist = Vector3.Distance(transform.position, hit.transform.position);
-                    if (dist < shortestDistance)
-                    {
-                        shortestDistance = dist;
-                        nearest = hit.transform;
-                    }
-                }
+                float dist = Vector3.Distance(transform.position, hit.transform.position);
+                if (dist >= shortestDistance) continue;
+
+                shortestDistance = dist;
+                nearest = hit.transform;
             }
 
             currentTarget = nearest;
@@ -87,7 +82,6 @@ namespace Game.Defenses
         protected bool IsTargetAlive(Transform target)
         {
             if (target == null || !target.gameObject.activeInHierarchy) return false;
-
             if (!target.TryGetComponent(out Enemy enemy)) return false;
 
             Enemy.State enemyState = enemy.GetCurrentState();

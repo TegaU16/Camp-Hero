@@ -151,7 +151,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 290839573056755980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2850eb8066a879c46a5515ccce095d9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 69e2e30a86256d646a07512df86a4f1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   range: 10
@@ -162,8 +162,8 @@ MonoBehaviour:
   projectilePrefab: {fileID: 6034776640650808906, guid: ec217e7924a96d340b53fbafce24a8c0, type: 3}
   shotSound: {fileID: 8300000, guid: d0dfe73fa36c421449dcf883d584b189, type: 3}
   rotatingPart: {fileID: 6621425276813562508}
-  mortarArcHeight: 10
-  rotationOffset: {x: 0, y: -90, z: -90}
+  mortarArcHeight: 5
+  rotationOffset: {x: 0, y: -90, z: 0}
 --- !u!114 &-3364939182417238552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,7 +173,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 290839573056755980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 4

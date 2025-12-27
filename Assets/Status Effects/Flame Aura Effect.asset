@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f6833237aa864f42a4a6a7bc4ef3bbd, type: 3}
-  m_Name: Burn Effect
+  m_Script: {fileID: 11500000, guid: 4a39f7911fb8e8f46b96540518d1f2be, type: 3}
+  m_Name: Flame Aura Effect
   m_EditorClassIdentifier: Assembly-CSharp::BurnEffect
-  effectName: Burn
-  icon: {fileID: 0}
   duration: 1
-  damagePerSecond: 2
+  tickSpeed: 0.8
+  damagePerTick: 20
+  noTimer: 1

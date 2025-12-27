@@ -54,8 +54,7 @@ public class BuildingManager : MonoBehaviour
             return;
         }
 
-        selectedItem = InventoryManager.Instance.GetSelectedItem(false);
-
+        selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
         if (selectedItem == null || (selectedItem.itemTypes & ItemType.Building) == 0)
         {
             ClearBuildings();
@@ -117,23 +116,19 @@ public class BuildingManager : MonoBehaviour
                 PlaceObject();
         }
 
-        if (Input.GetKeyDown(rotateBuildingKey))
+        if (Input.GetKeyDown(rotateBuildingKey) && currentGhost != null)
         {
-            if (currentGhost != null)
-            {
-                currentRotationIndex = (currentRotationIndex + 1) % rotations.Length;
-                currentGhost.transform.rotation = rotations[currentRotationIndex];
-            }
+            currentRotationIndex = (currentRotationIndex + 1) % rotations.Length;
+            currentGhost.transform.rotation = rotations[currentRotationIndex];
         }
     }
 
     private void ClearGhostBuilding()
     {
-        if (currentGhost != null)
-        {
-            ClearVisualIndicators();
-            Destroy(currentGhost);
-        }
+        if (currentGhost == null) return;
+
+        ClearVisualIndicators();
+        Destroy(currentGhost);
     }
 
     private void ClearBuildings(Item selectedItem = null)
@@ -199,44 +194,42 @@ public class BuildingManager : MonoBehaviour
         Vector3 offset = new((buildingSize.x - 1) * gridSize / 2f, 0, (buildingSize.y - 1) * gridSize / 2f);
         Vector3 finalPosition = snappedPosition + offset;
 
-        if (!Utility.IsAreaFree(currentGhost, snappedPosition, VoxelGrid.Instance.IsOccupied))
+        if (Utility.IsAreaFree(currentGhost, snappedPosition, VoxelGrid.Instance.IsOccupied)) return;
+
+        int chunkX = Mathf.FloorToInt(finalPosition.x / VoxelGrid.Instance.chunkSize);
+        int chunkZ = Mathf.FloorToInt(finalPosition.z / VoxelGrid.Instance.chunkSize);
+
+        Vector2Int chunkKey = new(chunkX, chunkZ);
+        VoxelChunk chunk = VoxelGrid.Instance.chunkMap[chunkKey];
+
+        GameObject placedObject = Instantiate(selectedItem.buildingGhost, finalPosition, currentGhost.transform.rotation);
+        SetAllScriptsEnabled(placedObject, true);
+
+        placedObject.transform.parent = chunk.chunkObject.transform;
+        chunk.objects.Add(placedObject);
+
+        SpawnedObjectData data = new(finalPosition, placedObject, selectedItem.buildingGhost);
+        Utility.AddObjectDataToChunk(data, finalPosition, chunk);
+
+        chunk.isDirty = true;
+
+        if (placedObject.TryGetComponent(out BreakableObject breakableObject))
         {
-            int chunkX = Mathf.FloorToInt(finalPosition.x / VoxelGrid.Instance.chunkSize);
-            int chunkZ = Mathf.FloorToInt(finalPosition.z / VoxelGrid.Instance.chunkSize);
-
-            Vector2Int chunkKey = new(chunkX, chunkZ);
-            VoxelChunk chunk = VoxelGrid.Instance.chunkMap[chunkKey];
-
-            GameObject placedObject = Instantiate(selectedItem.buildingGhost, finalPosition, currentGhost.transform.rotation);
-            SetAllScriptsEnabled(placedObject, true);
-
-            placedObject.transform.parent = chunk.chunkObject.transform;
-            chunk.objects.Add(placedObject);
-
-            SpawnedObjectData data = new(finalPosition, placedObject, selectedItem.buildingGhost);
-            Utility.AddObjectDataToChunk(data, finalPosition, chunk);
-
-            chunk.isDirty = true;
-
-            if (placedObject.TryGetComponent(out BreakableObject breakableObject))
-            {
-                breakableObject.owningChunk = chunk;
-                breakableObject.PlacedByPlayer = true;
-                breakableObject.DestroyedByEnemy = false;
-            }
-
-            if (placedObject.TryGetComponent(out InteractableItem interactable))
-                interactable.owningChunk = chunk;
-
-            StartCoroutine(BouncePlacedObject(placedObject.transform));
-
-            VoxelGrid.Instance.MarkVoxelArea(placedObject);
-
-            InventoryManager.Instance.UseSelectedItem();
-
-            Destroy(currentGhost);
-            ClearVisualIndicators();
+            breakableObject.owningChunk = chunk;
+            breakableObject.PlacedByPlayer = true;
+            breakableObject.DestroyedByEnemy = false;
         }
+
+        if (placedObject.TryGetComponent(out InteractableItem interactable))
+            interactable.owningChunk = chunk;
+
+        StartCoroutine(BouncePlacedObject(placedObject.transform));
+
+        VoxelGrid.Instance.MarkVoxelArea(placedObject);
+        InventoryManager.Instance.UseSelectedItem();
+
+        Destroy(currentGhost);
+        ClearVisualIndicators();
     }
 
     private IEnumerator BouncePlacedObject(Transform objTransform)
@@ -486,10 +479,7 @@ public class BuildingManager : MonoBehaviour
         ghostWallObjects.Clear();
     }
 
-    private bool IsWallAt(Vector3Int pos)
-    {
-        return placedWalls.ContainsKey(pos);
-    }
+    private bool IsWallAt(Vector3Int pos) => placedWalls.ContainsKey(pos);
 
     private WallSegment GetWallAtPosition(Vector3Int pos)
     {
@@ -497,8 +487,5 @@ public class BuildingManager : MonoBehaviour
         return wall;
     }
 
-    public Vector3Int WorldToGrid(Vector3 worldPos)
-    {
-        return Vector3Int.RoundToInt(worldPos / gridSize);
-    }
+    public Vector3Int WorldToGrid(Vector3 worldPos) => Vector3Int.RoundToInt(worldPos / gridSize);
 }

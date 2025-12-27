@@ -114,14 +114,13 @@ namespace Game.AI.Animals
 
         void OnAnimatorMove()
         {
-            if (justSpawned)
-            {
-                characterController.enabled = false;
-                myTransform.position = latestSpawnPos;
-                characterController.enabled = true;
+            if (!justSpawned) return;
 
-                justSpawned = false;
-            }
+            characterController.enabled = false;
+            myTransform.position = latestSpawnPos;
+            characterController.enabled = true;
+
+            justSpawned = false;
         }
 
         public void Init(Vector3 spawnPosition)
@@ -151,7 +150,8 @@ namespace Game.AI.Animals
         {
             IsActiveAI = false;
             animator.enabled = false;
-            if (ragdollController != null) ragdollController.EnableRagdoll();
+            if (ragdollController != null) 
+                ragdollController.EnableRagdoll();
 
             if (wanderCoroutine != null)
             {
@@ -248,10 +248,7 @@ namespace Game.AI.Animals
             return target;
         }
 
-        public void ApplyKnockback(Vector3 dir, float strength)
-        {
-            knockbackVelocity = dir.normalized * strength;
-        }
+        public void ApplyKnockback(Vector3 dir, float strength) => knockbackVelocity = dir.normalized * strength;
 
         public void ResetAnimatorPose()
         {

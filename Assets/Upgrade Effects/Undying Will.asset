@@ -9,13 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4393a3bfb269b044784c89921d05610d, type: 3}
+  m_Script: {fileID: 11500000, guid: a04de33abc78afb40b6e6e84d4f2b0ec, type: 3}
   m_Name: Undying Will
   m_EditorClassIdentifier: Assembly-CSharp::CheatDeathUpgrade
   upgradeName: Undying Will
-  description: 'Damage that would otherwise kill you now takes you to <color=#FF7F00>1HP</color>
-
-    <color=#DF3020>!</color>
-    Effect applies only when health is above <color=#FF7F00>20%</color>'
+  description: Attacks that would kill the player instead take the player down to
+    1HP, when the player's health is at least 20%
   cost: 2
   minHPPercentage: 0.2

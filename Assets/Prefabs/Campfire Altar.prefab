@@ -9855,6 +9855,7 @@ MonoBehaviour:
   maxShield: 50
   shieldRegenRate: 5
   shieldRegenDelay: 3
+  canHaveShield: 0
   shieldActive: 0
   healthBar: {fileID: 0}
   shieldBar: {fileID: 0}
@@ -9867,7 +9868,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8230836892471065354}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13658b960feed564d80138f745b658fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 4631b902691b1cf4cb9fb4fb13fb0471, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   health: {fileID: 852866813266411254}
@@ -9885,7 +9886,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8230836892471065354}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 0

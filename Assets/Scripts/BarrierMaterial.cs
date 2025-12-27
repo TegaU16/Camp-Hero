@@ -16,8 +16,5 @@ public class BarrierMaterial : MonoBehaviour
         Instance = this;
     }
 
-    public Material Get()
-    {
-        return barrierMat;
-    }
+    public Material GetMaterial() => barrierMat;
 }

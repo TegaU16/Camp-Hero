@@ -17,3 +17,4 @@ MonoBehaviour:
   cost: 3
   levelRequirement: 15
   effectRadius: 6
+  burnEffect: {fileID: 11400000, guid: 43cd50ac03354d44c9c15cc17d1f64a2, type: 2}

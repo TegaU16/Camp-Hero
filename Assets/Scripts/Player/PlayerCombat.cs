@@ -30,7 +30,7 @@ namespace Game.Players
         [HideInInspector] public bool isCritical = false;
 
         public AttackHitbox playerAttackHitbox;
-        private const float reductionFactor = 2f;
+        private const float reductionFactor = 4f;
 
         public AudioClip swordWhoosh;
 
@@ -75,7 +75,7 @@ namespace Game.Players
             if (!canAttack) return;
 
             // 1️⃣ Get current AttackSet
-            Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+            Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
             AttackSet set = (selectedItem != null && selectedItem.attackSet != null)
                 ? selectedItem.attackSet
                 : defaultAttackSet;

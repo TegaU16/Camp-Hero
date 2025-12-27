@@ -26,7 +26,8 @@ public class OneWayBarrier : MonoBehaviour
 
     void Awake()
     {
-        if (!solidCollider) solidCollider = GetComponent<BoxCollider>();
+        if (!solidCollider)
+            solidCollider = GetComponent<BoxCollider>();
 
         // Build two thin trigger strips hugging the wall on both sides
         float t = 0.05f; // trigger thickness

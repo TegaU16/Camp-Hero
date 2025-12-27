@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32d6c7f9002f8ae49bd3fcd5cf4cf59b, type: 3}
+  m_Script: {fileID: 11500000, guid: 94b478d7cce811546bfe74d1bf0e4079, type: 3}
   m_Name: Shield
   m_EditorClassIdentifier: Assembly-CSharp::ShieldUpgrade
   upgradeName: Shield
-  description: 'Gives the player a shield
+  description: 'Gain a regenerative shield.
 
-    Shield health scales with player''s
-    current level'
+    Shield amount increases based on
+    level.'
   cost: 2
   baseShield: 50
   shieldPerLevel: 10

@@ -41,18 +41,18 @@ namespace Game.Storage
 
         public void Interact()
         {
-            StorageUI ui = InventoryManager.Instance.storageMenuUI.GetComponent<StorageUI>();
+            StorageUI storageUI = InventoryManager.Instance.storageMenuUI.GetComponent<StorageUI>();
 
             if (!isOpen)
             {
-                ui.Open(this);
+                storageUI.Open(this);
                 isOpen = true;
-                inventorySlots = ui.GetInventorySlots();
+                inventorySlots = storageUI.GetInventorySlots();
                 InventoryManager.Instance.mainInventory.SetActive(true);
             }
             else
             {
-                ui.Close();
+                storageUI.Close();
                 isOpen = false;
                 inventorySlots = null;
                 InventoryManager.Instance.mainInventory.SetActive(false);
@@ -69,7 +69,6 @@ namespace Game.Storage
                 stored.SyncNameFromItem();
 
             string json = JsonUtility.ToJson(this);
-
             return json;
         }
 

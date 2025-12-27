@@ -9,9 +9,7 @@ namespace Game.Smelting
 
         public Image itemImage;
 
-        public void SetRequirements()
-        {
-            FurnaceManager.Instance.SetSelectedFurnaceItem(this);
-        }
+        // Called by attached button
+        public void SetRequirements() => FurnaceManager.Instance.furnaceUI.SetSelectedFurnaceItem(this);
     }
 }

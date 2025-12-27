@@ -41,8 +41,5 @@ public class HealthBar : MonoBehaviour
         UpdateHealthText(currentHealth);
     }
 
-    private void UpdateHealthText(int health)
-    {
-        healthText.text = health.ToString();
-    }
+    private void UpdateHealthText(int health) => healthText.text = health.ToString();
 }

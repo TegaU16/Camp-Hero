@@ -75,14 +75,12 @@ namespace Game.Defenses
                 Collider hit = hits[i];
 
                 if (!hit.TryGetComponent(out Enemy enemy)) continue;
+                if (!hit.TryGetComponent(out BreakableObject breakable)) continue;
 
-                if (hit.TryGetComponent(out BreakableObject breakable))
-                {
-                    Vector3 hitPoint = hit.GetComponent<CharacterController>().ClosestPoint(transform.position);
-                    Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                Vector3 hitPoint = hit.GetComponent<CharacterController>().ClosestPoint(transform.position);
+                Vector3 hitNormal = (hitPoint - transform.position).normalized;
 
-                    breakable.TakeDamage(damage, false, hitPoint, hitNormal);
-                }
+                breakable.TakeDamage(damage, crit: false, hitPoint, hitNormal);
 
                 enemy.OnAttacked(mortar);
             }

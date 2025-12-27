@@ -17,7 +17,6 @@ namespace Game.Terrain.Structures
         public void Interact()
         {
             if (isActivated || bossDefeated) return;
-
             if (!InventoryManager.Instance.HasItem(requiredKey)) return;
 
             isActivated = true;
@@ -43,18 +42,12 @@ namespace Game.Terrain.Structures
         private void TransformIntoBlessingAltar()
         {
             Instantiate(blessingAltarPrefab, transform.position, transform.rotation);
-            Destroy(gameObject); // Remove this altar
+            Destroy(gameObject);
         }
 
-        public string GetInteractText()
-        {
-            return "Summon Gem Guardian";
-        }
+        public string GetInteractText() => "Summon Gem Guardian";
 
-        public Transform GetTransform()
-        {
-            return transform;
-        }
+        public Transform GetTransform() => transform;
 
         public string SaveState()
         {

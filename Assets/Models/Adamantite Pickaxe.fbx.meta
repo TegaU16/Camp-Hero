@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: palette
+      name: Adamantite Pickaxe Mat
     second: {fileID: 2100000, guid: 4749c58a4ef78114bbabafbc5bc78185, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Adamantite Pickaxe
-    second: {fileID: 2800000, guid: f54aff7f8670df346961200b55eed012, type: 3}
+    second: {fileID: 2800000, guid: bf7d5f7124a3cdd468bdeacaa1776e2b, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

@@ -43,7 +43,8 @@ public class InteractableItemManager : MonoBehaviour
 
     public void Unregister(InteractableItem item)
     {
-        items.Remove(item);
+        if (items.Contains(item))
+            items.Remove(item);
     }
 
     void Update()
@@ -100,11 +101,7 @@ public class InteractableItemManager : MonoBehaviour
         }
     }
 
-    private void CleanupList()
-    {
-        // Remove destroyed items safely
-        items.RemoveAll(item => item == null);
-    }
+    private void CleanupList() => items.RemoveAll(item => item == null);
 
     /// <summary>
     /// Optional utility: Force-update all items instantly
@@ -119,8 +116,6 @@ public class InteractableItemManager : MonoBehaviour
 
             item.TryMergeNearby();
         }
-
-        
     }
 
     public void SetPlayer(GameObject player)

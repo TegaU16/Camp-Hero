@@ -31,7 +31,6 @@ namespace Game.Level
             canvasGroup.alpha = 1f;
 
             initialPosition = player.position + Vector3.up * 2f;
-
             floatDirection = (Vector3.up * 1.2f).normalized;
 
             StartCoroutine(Animate());

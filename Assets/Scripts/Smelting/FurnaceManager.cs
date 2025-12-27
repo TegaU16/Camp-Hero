@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Game.Inventory;
 using Game.Saving;
 using Game.Tutorial;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using Worlds;
 
 namespace Game.Smelting
@@ -14,23 +12,7 @@ namespace Game.Smelting
     {
         public static FurnaceManager Instance;
 
-        [Header("General UI")]
-        public Transform furnaceItemParent;
-        public GameObject furnaceItemPrefab;
         public FurnaceUI furnaceUI;
-        public GameObject recipeSection;
-        public GameObject nullItemSelectText;
-        public List<Button> smeltingTabs;
-
-        [Header("Process Section")]
-        public ArrowFillController progressArrow;
-
-        [Header("Info Section")]
-        public Image resultImage;
-        public TextMeshProUGUI resultName;
-        public Image requiredImage;
-        public TextMeshProUGUI requiredName;
-
         public const float fuelDecreaseRate = -0.01f;
 
         [Header("State")]
@@ -40,15 +22,6 @@ namespace Game.Smelting
         private void Awake()
         {
             Instance = this;
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
-            progressArrow.fillAmount = 0;
-
-            recipeSection.SetActive(false);
-            nullItemSelectText.SetActive(true);
         }
 
         public void TryUnlockRecipes(List<Item> discoveredItems)
@@ -65,62 +38,7 @@ namespace Game.Smelting
             if (unlockedRecipes.Contains(recipe)) return;
 
             unlockedRecipes.Add(recipe);
-
-            GameObject itemGO = Instantiate(furnaceItemPrefab, furnaceItemParent);
-            FurnaceItem uiItem = itemGO.GetComponent<FurnaceItem>();
-            uiItem.recipe = recipe;
-            uiItem.itemImage.sprite = recipe.resultItem.icon;
-        }
-
-        public void SetSelectedFurnaceItem(FurnaceItem furnaceItem = null, bool onOpened = false)
-        {
-            bool itemSelected = furnaceItem != null;
-
-            if (itemSelected)
-            {
-                resultImage.sprite = furnaceItem.recipe.resultItem.icon;
-                requiredImage.sprite = furnaceItem.recipe.requiredItem.icon;
-
-                resultName.text = furnaceItem.recipe.resultItem.name;
-                requiredName.text = furnaceItem.recipe.requiredItem.name;
-            }
-
-            recipeSection.SetActive(itemSelected);
-            nullItemSelectText.SetActive(!itemSelected);
-
-            if (!onOpened)
-            {
-                FurnaceUnit furnaceUnit = furnaceUI.linkedFurnace;
-                if (furnaceUnit != null)
-                    furnaceUnit.selectedItem = furnaceItem;
-            }
-        }
-
-        public void Open(FurnaceUnit unit)
-        {
-            furnaceUI.Open(unit);
-        }
-
-        public void FilterByCategory(SmeltingCategory category, Button button)
-        {
-            foreach (Transform child in furnaceItemParent)
-            {
-                if (!child.TryGetComponent(out FurnaceItem item)) continue;
-
-                bool shouldShow = category == SmeltingCategory.All || item.recipe.category == category;
-                child.gameObject.SetActive(shouldShow);
-            }
-
-            foreach (Button b in smeltingTabs)
-            {
-                if (b.TryGetComponent(out InteractiveButton interactiveButton))
-                {
-                    if (b == button)
-                        interactiveButton.Select();
-                    else
-                        interactiveButton.Deselect();
-                }
-            }
+            furnaceUI.AddUnlockedRecipe(recipe);
         }
 
         public void HighlightSpecificRecipes(SmeltingRecipeHighlightTutorial data)
@@ -136,13 +54,10 @@ namespace Game.Smelting
             {
                 foreach (SmeltingRecipe recipe in data.targetRecipes)
                 {
-                    if (itemUI.recipe == recipe)
-                    {
-                        // requirements
-                        if (data.RequireNotSmeltedBefore && itemUI.recipe.hasBeenSmeltedBefore) continue;
+                    if (itemUI.recipe != recipe) continue;
+                    if (data.RequireNotSmeltedBefore && itemUI.recipe.hasBeenSmeltedBefore) continue;
 
-                        matches.Add(itemUI);
-                    }
+                    matches.Add(itemUI);
                 }
             }
 
@@ -187,7 +102,7 @@ namespace Game.Smelting
         private List<FurnaceItem> GetUnlockedFurnaceItems()
         {
             List<FurnaceItem> items = new();
-            foreach (FurnaceItem item in furnaceItemParent.transform.GetComponentsInChildren<FurnaceItem>())
+            foreach (FurnaceItem item in furnaceUI.furnaceItemParent.transform.GetComponentsInChildren<FurnaceItem>())
                 items.Add(item);
 
             return items;
@@ -196,7 +111,6 @@ namespace Game.Smelting
         private void AnimateRecipeHighlight(FurnaceItem item)
         {
             UIImageAnimator anim = item.GetComponentInChildren<UIImageAnimator>(true);
-
             if (anim == null)
             {
                 Debug.LogWarning("No UIImageAnimator found under " + item.name);
@@ -210,7 +124,6 @@ namespace Game.Smelting
         private void StopRecipeHighlight(FurnaceItem item)
         {
             UIImageAnimator anim = item.GetComponentInChildren<UIImageAnimator>(true);
-
             if (anim == null) return;
 
             anim.Stop();
@@ -227,8 +140,10 @@ namespace Game.Smelting
 
             // Save which recipes were smelted before
             foreach (SmeltingRecipe recipe in smeltingDatabase.allRecipes)
+            {
                 if (recipe.hasBeenSmeltedBefore)
                     saveData.smeltedBeforeIDs.Add(recipe.name);
+            }
 
             SaveSystem.SaveSmelting(WorldSession.CurrentWorldName, saveData);
         }
@@ -236,7 +151,7 @@ namespace Game.Smelting
         public void LoadSmeltingProgress()
         {
             unlockedRecipes.Clear();
-            foreach (Transform child in furnaceItemParent)
+            foreach (Transform child in furnaceUI.furnaceItemParent)
                 Destroy(child.gameObject);
 
             SmeltingSaveData saveData = SaveSystem.LoadSmelting(WorldSession.CurrentWorldName);
@@ -247,16 +162,10 @@ namespace Game.Smelting
             foreach (string recipeName in saveData.unlockedRecipeIDs)
             {
                 SmeltingRecipe recipe = smeltingDatabase.GetRecipeByID(recipeName);
-                if (recipe != null)
-                {
-                    unlockedRecipes.Add(recipe);
+                if (recipe == null) continue;
 
-                    // Rebuild UI
-                    GameObject itemGO = Instantiate(furnaceItemPrefab, furnaceItemParent);
-                    FurnaceItem uiItem = itemGO.GetComponent<FurnaceItem>();
-                    uiItem.recipe = recipe;
-                    uiItem.itemImage.sprite = recipe.resultItem.icon;
-                }
+                unlockedRecipes.Add(recipe);
+                furnaceUI.AddUnlockedRecipe(recipe);
             }
 
             // Load smelted-before flags

@@ -29,10 +29,9 @@ namespace Game.AI.Enemies
         {
             if (!GameManager.Instance.IsGameManagerReady()) return;
             if (enemyScript == null) return;
+            if (!TryGetComponent(out BoxCollider box)) return;
 
             alreadyHit.Clear();
-
-            if (!TryGetComponent(out BoxCollider box)) return;
 
             Vector3 boxCenter = transform.TransformPoint(box.center);
             Vector3 boxHalfExtents = Vector3.Scale(box.size * 0.5f, transform.lossyScale);

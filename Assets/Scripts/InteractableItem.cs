@@ -28,12 +28,11 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
     private void Start()
     {
-        if (TryGetComponent(out Rigidbody rigidBody))
-        {
-            rb = rigidBody;
-            rb.linearDamping = 2f;
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        }
+        if (!TryGetComponent(out Rigidbody rigidBody)) return;
+
+        rb = rigidBody;
+        rb.linearDamping = 2f;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
     private void OnEnable()
@@ -41,6 +40,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         ItemGrid.Register(this);
         InteractableItemManager.Instance.Register(this);
     }
+
     private void OnDisable() 
     {
         ItemGrid.Unregister(this);
@@ -55,23 +55,22 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
     public void CheckGround()
     {
-        if (transform.position.y < -0.1f)
-        {
-            if (Physics.Raycast(transform.position + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
-            {
-                if (rb != null)
-                {
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                }
+        if (transform.position.y >= -0.1f) return;
 
-                transform.position = hit.point + Vector3.up * 0.25f;
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+        Vector3 origin = transform.position + Vector3.up * 100f;
+        if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
+        {
+            Destroy(gameObject);
+            return;
         }
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        transform.position = hit.point + Vector3.up * 0.25f;
     }
 
     public void Interact()
@@ -79,20 +78,17 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         if (isInteracted || !canPickup) return;
         isInteracted = true;
 
-
         bool added = InventoryManager.Instance.AddItem(item, itemCount);
-        if (added)
-        {
-            foreach (Quest quest in QuestManager.Instance.GetActiveQuests())
-                quest.OnItemCollected(item);
-        }
 
         itemCount = InventoryManager.Instance.LastRemainingCount;
-
         InventoryManager.Instance.EquipSelectedItem();
 
-        if (added)
-            DestroyInteractableItem(this);
+        if (!added) return;
+
+        foreach (Quest quest in QuestManager.Instance.GetActiveQuests())
+            quest.OnItemCollected(item);
+
+        DestroyInteractableItem(this);
     }
 
     public void TryMergeNearby()
@@ -101,7 +97,6 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         if (isMerging) return;
 
         isMerging = true;
-
         mergeBuffer.Clear();
 
         foreach (InteractableItem other in ItemGrid.GetNearby(transform.position))
@@ -159,8 +154,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
     private void EnablePickup() => canPickup = true;
 
-    public string GetInteractText()
-        => $"Press E to pick up {itemCount}x {item.itemName}";
+    public string GetInteractText() => $"Press E to pick up {itemCount}x {item.itemName}";
 
     public Transform GetTransform() => transform;
 
@@ -176,10 +170,9 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
     public void LoadState(string json)
     {
         InteractableItemData data = JsonUtility.FromJson<InteractableItemData>(json);
-        if (data != null)
-        {
-            item = ItemRegistry.GetItemByName(data.itemName);
-            itemCount = data.count;
-        }
+        if (data == null) return;
+
+        item = ItemRegistry.GetItemByName(data.itemName);
+        itemCount = data.count;
     }
 }

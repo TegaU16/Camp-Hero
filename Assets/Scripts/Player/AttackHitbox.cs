@@ -28,12 +28,10 @@ namespace Game.Players
         private void PerformHit()
         {
             if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!TryGetComponent(out BoxCollider box)) return;
+            if (attackData == null) return;
 
             alreadyHit.Clear();
-
-            if (!TryGetComponent(out BoxCollider box)) return;
-
-            if (attackData == null) return;
 
             // Compute world center before OverlapBox
             Vector3 worldCenter = transform.TransformPoint(box.center);
@@ -50,12 +48,10 @@ namespace Game.Players
         private void ProcessHit(Collider other, BoxCollider box)
         {
             BreakableObject breakable = other.GetComponentInParent<BreakableObject>();
+
             if (breakable == null) return;
-
             if (((1 << other.gameObject.layer) & breakableLayer) == 0) return;
-
             if (alreadyHit.Contains(breakable)) return;
-
             if (playerCombat == null) return;
 
             Vector3 boxCenter = transform.TransformPoint(box.center);
@@ -80,7 +76,7 @@ namespace Game.Players
             Vector3 knockbackDir = (other.transform.position - playerCombat.transform.position).normalized;
 
             // Calculate base damage (PlayerCombat still decides scaling)
-            Item selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+            Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
             int damage = playerCombat.ItemDamage(breakable, selectedItem, attackData);
 
             breakable.TakeDamage(damage, playerCombat.isCritical, hitPoint, hitNormal);

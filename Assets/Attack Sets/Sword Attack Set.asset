@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53e0f4ebd17044a40b36e39fefd10bca, type: 3}
+  m_Script: {fileID: 11500000, guid: e672d5614c0dbc64cb588a6060491a60, type: 3}
   m_Name: Sword Attack Set
   m_EditorClassIdentifier: Assembly-CSharp::AttackSet
-  comboAttacks: []
+  comboAttacks:
+  - {fileID: 11400000, guid: 5396fe5797ba69c47b9e45983d94caeb, type: 2}

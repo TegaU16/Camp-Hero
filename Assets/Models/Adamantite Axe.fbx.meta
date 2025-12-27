@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Adamantite Axe
+      name: Adamantite Axe Mat
     second: {fileID: 2100000, guid: 633c224c75f951145ad873df62e82348, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Adamantite Axe
-    second: {fileID: 2800000, guid: 10345f4830ac7124e98b66cd2a206e2a, type: 3}
+    second: {fileID: 2800000, guid: cd601783217be3441b2fde069526951f, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

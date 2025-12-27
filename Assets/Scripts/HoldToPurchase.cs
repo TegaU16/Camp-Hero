@@ -29,10 +29,7 @@ public class HoldToPurchase : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         holdRoutine = StartCoroutine(HoldCoroutine());
     }
 
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        isHolding = false;
-    }
+    public void OnPointerUp(PointerEventData eventData) => isHolding = false;
 
     private IEnumerator HoldCoroutine()
     {

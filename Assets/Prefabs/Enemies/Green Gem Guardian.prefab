@@ -1423,34 +1423,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 5482173699686684518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 1
-  enemyType: 0
+  enemyType: 3
   meleeAttackRange: 2
-  rangedAttackRange: 10
+  rangedAttackRange: 12
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
   enemyIcon: {fileID: 0}
-  breakableObject: {fileID: 6964265187664753927}
-  rangedAttackScripts:
-  - {fileID: 1813310609925528782}
-  - {fileID: 4991431898567843458}
-  moveSpeed: 2
+  rangedAttackScripts: []
+  moveSpeed: 4.5
   gravity: -9.8
-  preferredTargets: 0100000004000000000000000300000002000000
+  preferredTargets: 0100000004000000000000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
-  agent: {fileID: -1472045792734137907}
-  animator: {fileID: 1278859115499476902}
-  ragdollController: {fileID: 7788884137607585133}
-  characterController: {fileID: 5324371438397344121}
+  animator: {fileID: 0}
 --- !u!114 &3257782520260415665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1472,11 +1466,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5482173699686684518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720
-  animator: {fileID: 1278859115499476902}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!143 &5324371438397344121
@@ -1513,12 +1506,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5482173699686684518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b97b7f7ea708ab846b2714f11db0fb55, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c937846300e03642b7d5ae47422cff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   laserPrefab: {fileID: 8856641815143031755, guid: c28b689260292ec41b66bacf2f0adf64, type: 3}
-  laserDuration: 3
-  baseDamagePerSecond: 30
+  laserDuration: 4
+  baseDamagePerSecond: 20
   hitMask:
     serializedVersion: 2
     m_Bits: 448
@@ -1532,13 +1525,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 5482173699686684518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a0a235112f67d4994e25e407c94667, type: 3}
+  m_Script: {fileID: 11500000, guid: a399854a741a2bd448f38ad272ddb7d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   warningPrefab: {fileID: 3424625777266883120, guid: 47a3c8db59f380849bdf8c1797c66afa, type: 3}
   damagePrefab: {fileID: 3225354020962840527, guid: 4ec5a1a9af9a142489b3f00cd5dd8d6b, type: 3}
   warningDuration: 1
-  damage: 75
+  damage: 90
 --- !u!114 &-5916683621025783673
 MonoBehaviour:
   m_ObjectHideFlags: 0

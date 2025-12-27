@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Apple
-  m_EditorClassIdentifier: 
-  itemTypes: 20
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Inventory.Item
+  itemTypes: 21
   actionType: 1
   maxStack: 20
   icon: {fileID: 21300000, guid: f6e752f0bf142e143bbcca5f726aae8b, type: 3}
@@ -34,5 +34,5 @@ MonoBehaviour:
   plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
-  output: {fileID: 11400000, guid: dc65bcdc064df6f4a8614d6f11c07a23, type: 2}
+  output: {fileID: 0}
   outputCount: 1

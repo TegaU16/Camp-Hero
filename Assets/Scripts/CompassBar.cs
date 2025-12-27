@@ -98,15 +98,11 @@ public class CompassBar : MonoBehaviour
             group.blocksRaycasts = alpha > 0.01f;
             group.interactable = alpha > 0.01f;
         }
-        else
+        else if (marker.TryGetComponent(out Image image))
         {
-            // fallback if CanvasGroup isn't found, for safety
-            if (marker.TryGetComponent(out Image image))
-            {
-                Color color = image.color;
-                color.a = alpha;
-                image.color = color;
-            }
+            Color color = image.color;
+            color.a = alpha;
+            image.color = color;
         }
     }
 

@@ -24,16 +24,15 @@ namespace Game.Storage
 
             foreach (LootEntry entry in lootEntries)
             {
-                if (Random.value <= entry.probability)
+                if (Random.value > entry.probability) continue;
+
+                StoredItem storedItem = new()
                 {
-                    StoredItem storedItem = new()
-                    {
-                        item = entry.item,
-                        count = Random.Range(entry.minCount, entry.maxCount + 1)
-                    };
-                    storedItem.SyncNameFromItem();
-                    loot.Add(storedItem);
-                }
+                    item = entry.item,
+                    count = Random.Range(entry.minCount, entry.maxCount + 1)
+                };
+                storedItem.SyncNameFromItem();
+                loot.Add(storedItem);
             }
 
             return loot;

@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Iron Sword
+      name: Iron Sword Mat
     second: {fileID: 2100000, guid: f5da8cf837831604d84ce5b337fda88c, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Iron Sword
-    second: {fileID: 2800000, guid: 744f2318e5507654d8d75b69e5fc2e55, type: 3}
+    second: {fileID: 2800000, guid: 3a4dde2cfc1954c48b0692b643428f7d, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

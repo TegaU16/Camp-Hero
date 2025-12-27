@@ -61,24 +61,18 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     private void OnEnable()
     {
-        DifficultyManager.Instance.OnDifficultyChanged += HandleDifficultyChange;
+        DifficultyManager.Instance.OnDifficultyChanged += ApplyDifficultyScaling;
         ResetObject();
     }
 
     private void OnDisable()
     {
-        DifficultyManager.Instance.OnDifficultyChanged -= HandleDifficultyChange;
-    }
-
-    private void HandleDifficultyChange(Difficulty newDifficulty)
-    {
-        ApplyDifficultyScaling();
+        DifficultyManager.Instance.OnDifficultyChanged -= ApplyDifficultyScaling;
     }
 
     private void ApplyDifficultyScaling(bool reset = false)
     {
         float healthMultiplier = DifficultyManager.Instance.GetHealthMultiplier(entityType);
-
         float healthPercent = maxHealth > 0 ? (float)health / maxHealth : 1f;
 
         maxHealth = (int)(baseHealth * healthMultiplier);
@@ -98,25 +92,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         if (TryGetComponent(out Enemy enemy) && enemy.enemyType == Enemy.EnemyType.Boss)
             OnBossHealthChange?.Invoke(health);
 
-        if (health == 0)
-        {
-            if (enemy != null)
-            {
-                enemy.Die();
-                OnEnemyKilled?.Invoke(enemy, damage, damageRequired);
-                return;
-            }
-
-            if (TryGetComponent(out Animal animal))
-            {
-                animal.Die();
-                return;
-            }
-
-            DestroyedByEnemy = fromEnemy;
-            DestroyObject();
-        }
-        else
+        if (health > 0)
         {
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
             if (hitEffectManager != null && hitNormal != default)
@@ -124,7 +100,25 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
             if (entityType == EntityType.Static)
                 TryBounce(transform);
+
+            return;
         }
+
+        if (enemy != null)
+        {
+            enemy.Die();
+            OnEnemyKilled?.Invoke(enemy, damage, damageRequired);
+            return;
+        }
+
+        if (TryGetComponent(out Animal animal))
+        {
+            animal.Die();
+            return;
+        }
+
+        DestroyedByEnemy = fromEnemy;
+        DestroyObject();
     }
 
     private void ShowDamagePopup(int damage, bool crit, Vector3 hitPoint)
@@ -160,13 +154,12 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         {
             foreach (Drop itemDrop in drops)
             {
-                if (Random.value <= itemDrop.dropChance)
-                {
-                    int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
-                    dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
+                if (Random.value > itemDrop.dropChance) continue;
 
-                    SpawnDrop(itemDrop.drop, dropAmount, transform.position, torsoBone, scatter: false);
-                }
+                int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
+                dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
+
+                SpawnDrop(itemDrop.drop, dropAmount, transform.position, torsoBone, scatter: false);
             }
 
             float expGain = expDropped * DifficultyManager.Instance.GetExpMultiplier();
@@ -179,14 +172,13 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             foreach (FurnaceSlot slot in furnaceUnit.furnaceSlots)
             {
                 slot.SyncNameFromItem();
-                if (!string.IsNullOrEmpty(slot.itemName))
-                {
-                    SpawnDrop(
-                        ItemRegistry.GetItemByName(slot.itemName),
-                        slot.count,
-                        transform.position
-                    );
-                }
+                if (string.IsNullOrEmpty(slot.itemName)) continue;
+
+                SpawnDrop(
+                    ItemRegistry.GetItemByName(slot.itemName),
+                    slot.count,
+                    transform.position
+                );
             }
         }
 
@@ -196,14 +188,13 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             foreach (StoredItem storedItem in storageUnit.items)
             {
                 storedItem.SyncNameFromItem();
-                if (!string.IsNullOrEmpty(storedItem.itemName))
-                {
-                    SpawnDrop(
-                        ItemRegistry.GetItemByName(storedItem.itemName),
-                        storedItem.count,
-                        transform.position
-                    );
-                }
+                if (string.IsNullOrEmpty(storedItem.itemName)) continue;
+
+                SpawnDrop(
+                    ItemRegistry.GetItemByName(storedItem.itemName),
+                    storedItem.count,
+                    transform.position
+                );
             }
         }
 
@@ -284,7 +275,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
     public void ResetObject()
     {
         isDestroyed = false;
-        ApplyDifficultyScaling(true);
+        ApplyDifficultyScaling(reset: true);
     }
 
     public int GetMaxHealth() => maxHealth;

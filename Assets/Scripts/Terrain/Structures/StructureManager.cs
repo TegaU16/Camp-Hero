@@ -8,6 +8,8 @@ namespace Game.Terrain.Structures
 {
     public class StructureManager : MonoBehaviour
     {
+        public static StructureManager Instance;
+
         public List<StructureTemplate> structureTemplates;
 
         public List<WorldStructure> activeStructures = new();
@@ -23,6 +25,14 @@ namespace Game.Terrain.Structures
 
         public float minSpacing;
 
+        private void Awake()
+        {
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
+        }
+
         private void Start()
         {
             chunkSize = VoxelGrid.Instance.chunkSize;
@@ -35,11 +45,10 @@ namespace Game.Terrain.Structures
         public void SpawnStructuresInChunk(VoxelChunk chunk)
         {
             float worldSideLength = chunkSize * gridSize;
+            float maxDistanceFromCenter = worldSideLength * outerRadius;
 
             Vector3 chunkPosition = chunk.chunkPosition;
             Vector3 worldCenter = new(worldSideLength * 0.5f * voxelSize, 0f, worldSideLength * 0.5f * voxelSize);
-
-            float maxDistanceFromCenter = worldSideLength * outerRadius;
 
             System.Random worldRng = new(seed);
 
@@ -80,11 +89,11 @@ namespace Game.Terrain.Structures
                             break;
                         }
                     }
+
                     if (tooClose) continue;
 
                     StructureTemplate template = SelectDeterministicStructure(globalX, globalZ, seed);
                     if (template == null) continue;
-
                     if (!IsValidPlacement(structureSpawnPos, template)) continue;
 
                     int targetChunkX = Mathf.FloorToInt(structureSpawnPos.x / (chunkSize * voxelSize));
@@ -126,10 +135,11 @@ namespace Game.Terrain.Structures
                 Vector3 rotatedOffset = rotation * offset;
                 Vector3 partPosition = origin + rotatedOffset;
 
-                // Raycast to ground to get proper y-position
-                Vector3 rayOrigin = partPosition + Vector3.up * 50f;
-                if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 100f, VoxelGrid.Instance.groundLayer))
-                    partPosition.y = hit.point.y;
+                int partPosX = Mathf.RoundToInt(partPosition.x);
+                int partPosZ = Mathf.RoundToInt(partPosition.z);
+
+                float height = Utility.GetHeightAt(partPosX, partPosZ);
+                partPosition.y = height;
 
                 // Only keep valid placements
                 if (Utility.IsAreaFree(prefab, partPosition, VoxelGrid.Instance.IsOccupied)) continue;
@@ -153,6 +163,7 @@ namespace Game.Terrain.Structures
             for (int i = 0; i < template.prefabParts.Count; i++)
             {
                 if (template.prefabParts[i] == null) continue;
+
                 Vector3 offset = i < template.localOffsets.Count ? template.localOffsets[i] : Vector3.zero;
                 totalBounds.Encapsulate(new Bounds(origin + offset, Vector3.one * 2f));
             }
@@ -204,7 +215,6 @@ namespace Game.Terrain.Structures
         private float[,] GetHeightMapForChunk(int chunkX, int chunkZ)
         {
             Vector2Int chunkKey = new(chunkX, chunkZ);
-
             if (VoxelGrid.Instance.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk)) return chunk.heightMap;
 
             return null;

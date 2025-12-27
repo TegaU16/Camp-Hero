@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Adamantite Sword
+      name: Adamantite Sword Mat
     second: {fileID: 2100000, guid: 3d932709905c763479492ab5f9961f73, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Adamantite Sword
-    second: {fileID: 2800000, guid: 95762558bdef5294b9b444ea03dcadb6, type: 3}
+    second: {fileID: 2800000, guid: d679dcfddb3e4ef4ebcfdc413d6b50da, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

@@ -9,11 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ac58c40b4f3a4641994aa530a9e7988, type: 3}
+  m_Script: {fileID: 11500000, guid: b3195e872a2e68b4da41613c58a3d03e, type: 3}
   m_Name: Adrenal Precision
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBasedDamageUpgrade
   upgradeName: Adrenal Precision
-  description: Deal increased <color=#FFFF50>crit</color> damage based on how much
-    <color=#9D48DF>stamina</color> you currently have
+  description: Increased damage based on current stamina
   cost: 1
   staminaMultiplier: 0.5

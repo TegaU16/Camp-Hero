@@ -14,20 +14,32 @@ namespace Game.Registries
         }
 
         public List<PrefabCategory> categories = new()
-    {
-        new PrefabCategory { categoryName = "Resources" },
-        new PrefabCategory { categoryName = "Builds" },
-        new PrefabCategory { categoryName = "Drops" },
-        new PrefabCategory { categoryName = "Enemies" },
-        new PrefabCategory { categoryName = "Animals" },
-        new PrefabCategory { categoryName = "General Structures" },
-        new PrefabCategory { categoryName = "Important Structures" },
-    };
+        {
+            new PrefabCategory { categoryName = "Resources" },
+            new PrefabCategory { categoryName = "Builds" },
+            new PrefabCategory { categoryName = "Drops" },
+            new PrefabCategory { categoryName = "Enemies" },
+            new PrefabCategory { categoryName = "Animals" },
+            new PrefabCategory { categoryName = "General Structures" },
+            new PrefabCategory { categoryName = "Important Structures" },
+        };
+
+        public static PrefabRegistry Instance { get; private set; }
 
         private static Dictionary<string, GameObject> prefabDict;
 
         void Awake()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             if (prefabDict != null && prefabDict.Count > 0) return;
 
             prefabDict = new();
@@ -52,5 +64,13 @@ namespace Game.Registries
 
         public static GameObject GetPrefabByKey(string key) =>
             prefabDict.TryGetValue(key, out GameObject prefab) ? prefab : null;
+
+        public static List<GameObject> GetPrefabsInCategory(string categoryName)
+        {
+            PrefabCategory category = Instance.categories
+                .Find(c => c.categoryName == categoryName);
+
+            return category != null ? category.prefabs : new List<GameObject>();
+        }
     }
 }

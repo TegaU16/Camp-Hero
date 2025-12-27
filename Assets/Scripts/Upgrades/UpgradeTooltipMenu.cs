@@ -2,6 +2,7 @@
 using Game.Level;
 using Game.Players;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -22,6 +23,10 @@ namespace Game.Upgrades
         public TextMeshProUGUI purchaseText;
         public Image holdProgressImage;
         public HoldToPurchase holdToPurchase;
+
+        [Header("Text Colors")]
+        public Color costTextColor;
+        public Color levelTextColor;
 
         private bool isHovered;
         private StatUpgrade currentPlayerUpgrade;
@@ -68,11 +73,11 @@ namespace Game.Upgrades
             // Set text fields
             nameText.text = upgradeBase.UpgradeName;
             descriptionText.text = upgradeBase.effect.description;
-            costText.text = $"<color=#EEEE2C>{upgradeBase.Cost}</color>";
+            costText.text = $"<color=#{costTextColor.ToHexString()}>{upgradeBase.Cost}</color>";
 
             // Campfire upgrades have LevelRequirement
             if (showLevelRequirement && upgradeBase is CampfireUpgrade campfire)
-                levelRequiredText.text = $"<color=#20DF40>LV</color> {campfire.LevelRequirement}";
+                levelRequiredText.text = $"<color=#{levelTextColor.ToHexString()}>LV</color> {campfire.LevelRequirement}";
             else
                 levelRequiredText.text = "";
 
@@ -104,7 +109,6 @@ namespace Game.Upgrades
         public void HideInstant()
         {
             if (isHovered) return;
-
             if (currentButton != null && IsPointerOverTooltipOrButton(currentButton)) return;
 
             gameObject.SetActive(false);
@@ -130,11 +134,7 @@ namespace Game.Upgrades
 
             foreach (RaycastResult hit in hits)
             {
-                // Tooltip itself
-                if (hit.gameObject == gameObject) return true;
-
-                // Upgrade button that opened the tooltip
-                if (hit.gameObject == upgradeButton) return true;
+                if (hit.gameObject == gameObject || hit.gameObject == upgradeButton) return true;
             }
 
             return false;

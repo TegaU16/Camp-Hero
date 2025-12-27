@@ -26,7 +26,6 @@ namespace Game.Terrain.Structures.Trials
         private void Awake()
         {
             Instance = this;
-
             startButtonText = startWaveButton.GetComponentInChildren<TextMeshProUGUI>();
         }
 
@@ -48,7 +47,7 @@ namespace Game.Terrain.Structures.Trials
             foreach (Transform child in waveListContainer)
                 Destroy(child.gameObject);
 
-            int totalWaves = currentAltar.waves.Count;
+            int totalWaves = currentAltar.GetNumberOfWaves();
 
             waveEntries.Clear();
 
@@ -72,14 +71,13 @@ namespace Game.Terrain.Structures.Trials
                     Image img = iconGO.transform.Find("Icon").GetComponent<Image>();
                     TextMeshProUGUI enemyCountText = iconGO.transform.Find("Enemy Count Text").GetComponent<TextMeshProUGUI>();
 
-                    if (waveEnemy.enemyPrefab != null && waveEnemy.enemyPrefab.TryGetComponent(out Enemy enemyData))
-                    {
-                        if (enemyData.enemyIcon != null)
-                            img.sprite = enemyData.enemyIcon;
+                    if (waveEnemy.enemyPrefab == null || !waveEnemy.enemyPrefab.TryGetComponent(out Enemy enemyData)) continue;
 
-                        if (enemyCountText != null)
-                            enemyCountText.text = waveEnemy.count.ToString();
-                    }
+                    if (enemyData.enemyIcon != null)
+                        img.sprite = enemyData.enemyIcon;
+
+                    if (enemyCountText != null)
+                        enemyCountText.text = waveEnemy.count.ToString();
                 }
             }
 
@@ -118,20 +116,21 @@ namespace Game.Terrain.Structures.Trials
 
         private void TryGiveTrialQuest()
         {
-            if (!QuestManager.Instance.hasOpenedTrialMenu)
-            {
-                QuestManager.Instance.AddQuest(QuestManager.Instance.trialQuest);
-                QuestManager.Instance.hasOpenedTrialMenu = true;
-                QuestManager.Instance.SaveQuestData();
-            }
+            if (QuestManager.Instance.hasOpenedTrialMenu) return;
+
+            QuestManager.Instance.AddQuest(QuestManager.Instance.trialQuest);
+            QuestManager.Instance.hasOpenedTrialMenu = true;
+            QuestManager.Instance.SaveQuestData();
         }
 
+        // Called by start wave button
         public void OnStartWaveButtonPressed()
         {
             currentAltar.StartTrialWave();
             OnClose();
         }
 
+        // Called by close button
         public void OnClose()
         {
             gameObject.SetActive(false);

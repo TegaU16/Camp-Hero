@@ -241,9 +241,6 @@ PrefabInstance:
       addedObject: {fileID: 7079056010240785562}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2604569666539157536}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
-      insertIndex: -1
       addedObject: {fileID: -824324922084542924}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
@@ -260,6 +257,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3415172584570525854}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9152326758719532003}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4997075386578795920}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1755211474337944238}
@@ -1513,43 +1516,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9, y: 2.2, z: 0.2}
   m_Center: {x: 0, y: 1.1, z: 0}
---- !u!114 &2604569666539157536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6342064213770231154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackType: 1
-  enemyType: 0
-  meleeAttackRange: 2
-  rangedAttackRange: 10
-  attackCooldown: 2
-  damage: 10
-  knockbackForce: 5
-  enemyIcon: {fileID: 0}
-  breakableObject: {fileID: 711422799353225594}
-  rangedAttackScripts:
-  - {fileID: 651732364563471998}
-  - {fileID: 6622896445496257384}
-  moveSpeed: 2
-  gravity: -9.8
-  preferredTargets: 0100000004000000000000000300000002000000
-  targetStickTime: 3
-  minTargetMovementThreshold: 1
-  repathCooldown: 0.5
-  repathDistanceThreshold: 1
-  pathRequestCooldown: 0.2
-  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
-  agent: {fileID: 7511393704736100126}
-  animator: {fileID: 407705186051579314}
-  ragdollController: {fileID: 289298211943809642}
-  characterController: {fileID: 7308117665617574924}
 --- !u!114 &-824324922084542924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1571,11 +1537,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6342064213770231154}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720
-  animator: {fileID: 407705186051579314}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!143 &7308117665617574924
@@ -1612,12 +1577,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 6342064213770231154}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b97b7f7ea708ab846b2714f11db0fb55, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c937846300e03642b7d5ae47422cff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   laserPrefab: {fileID: 302737067531528612, guid: 5b22ef1aae1495840901f687f0c95c97, type: 3}
-  laserDuration: 3
-  baseDamagePerSecond: 30
+  laserDuration: 4
+  baseDamagePerSecond: 20
   hitMask:
     serializedVersion: 2
     m_Bits: 448
@@ -1631,13 +1596,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6342064213770231154}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a0a235112f67d4994e25e407c94667, type: 3}
+  m_Script: {fileID: 11500000, guid: a399854a741a2bd448f38ad272ddb7d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   warningPrefab: {fileID: 3424625777266883120, guid: 47a3c8db59f380849bdf8c1797c66afa, type: 3}
   damagePrefab: {fileID: 7116235930715329665, guid: 6e7382256762ccb4db1e2e9f2eeca79f, type: 3}
   warningDuration: 1
-  damage: 75
+  damage: 90
 --- !u!114 &3415172584570525854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1651,6 +1616,54 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
   prefabKey: gem_guardian_yellow
+--- !u!114 &9152326758719532003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342064213770231154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.AI.VoxelAgent
+  rotationSpeed: 720
+  speedParam: Speed
+  yLerpSpeed: 5
+--- !u!114 &4997075386578795920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342064213770231154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.AI.Enemies.Enemy
+  attackType: 1
+  enemyType: 3
+  meleeAttackRange: 2
+  rangedAttackRange: 12
+  attackCooldown: 2
+  damage: 10
+  knockbackForce: 5
+  enemyIcon: {fileID: 0}
+  rangedAttackScripts:
+  - {fileID: 651732364563471998}
+  - {fileID: 6622896445496257384}
+  moveSpeed: 4.5
+  gravity: -9.8
+  preferredTargets: 0100000004000000000000000200000003000000
+  targetStickTime: 3
+  minTargetMovementThreshold: 1
+  repathCooldown: 0.5
+  repathDistanceThreshold: 1
+  pathRequestCooldown: 0.2
+  personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
+  animator: {fileID: 0}
 --- !u!1 &6531757012700448668 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1037963683107284927, guid: fd9073084d2868048865e6ecec25aa66, type: 3}

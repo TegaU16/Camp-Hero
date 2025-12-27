@@ -93,7 +93,7 @@ namespace Worlds
             StartCoroutine(LoadGameRoutine());
         }
 
-        void LoadWorldList()
+        private void LoadWorldList()
         {
             foreach (Transform child in worldListParent)
                 Destroy(child.gameObject);
@@ -315,13 +315,12 @@ namespace Worlds
             bool valid = !string.IsNullOrWhiteSpace(text);
             createWorldButton.interactable = valid;
 
-            if (createWorldButton.TryGetComponent(out InteractiveButton interactiveButton))
-            {
-                if (valid)
-                    interactiveButton.Select();
-                else
-                    interactiveButton.Deselect();
-            }
+            if (!createWorldButton.TryGetComponent(out InteractiveButton interactiveButton)) return;
+
+            if (valid)
+                interactiveButton.Select();
+            else
+                interactiveButton.Deselect();
         }
 
         public void OpenEditWorldMenu()

@@ -12,8 +12,5 @@ public class WallSegment : MonoBehaviour
         rightPole.SetActive(right);
     }
 
-    public void SetConnectorToRight(bool active)
-    {
-        connectorToRight.SetActive(active);
-    }
+    public void SetConnectorToRight(bool active) => connectorToRight.SetActive(active);
 }

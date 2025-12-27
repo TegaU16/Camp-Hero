@@ -1,9 +1,19 @@
 fileFormatVersion: 2
-guid: 3e983eccc81753342a8b0d0bbbca5755
+guid: 674a007444a1ad949b7266cbf7b38ca6
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Iron Ore Mat
+    second: {fileID: 2100000, guid: f479e8dedd9212b48853048fc1e3c3ed, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Iron Ore
+    second: {fileID: 2800000, guid: f0c3b0c6fbee9c54bbe389313abb20d8, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -71,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

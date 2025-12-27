@@ -41,8 +41,7 @@ namespace Game.AI.Enemies.Attacks
         {
             while (elapsedTime < laserDuration)
             {
-                if (attacker == null || target == null || laser == null)
-                    break;
+                if (attacker == null || target == null || laser == null) break;
 
                 Vector3 origin = laserOrigin.position;
                 Vector3 targetPos = target.position;
@@ -61,7 +60,6 @@ namespace Game.AI.Enemies.Attacks
                     damageBuffer += deltaDamage;
 
                     int wholeDamage = Mathf.FloorToInt(damageBuffer);
-
                     if (wholeDamage > 0)
                     {
                         if (hit.collider.TryGetComponent(out Health health))
@@ -73,7 +71,7 @@ namespace Game.AI.Enemies.Attacks
                             Vector3 hitPoint = hit.collider.ClosestPoint(transform.position);
                             Vector3 hitNormal = (hitPoint - transform.position).normalized;
 
-                            breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal, true);
+                            breakable.TakeDamage(wholeDamage, crit: false, hitPoint, hitNormal, true);
                         }
 
                         damageBuffer -= wholeDamage;

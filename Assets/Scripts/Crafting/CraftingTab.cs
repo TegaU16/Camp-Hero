@@ -13,7 +13,7 @@ namespace Game.Crafting
             Button button = GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                CraftingManager.Instance.FilterByCategory(category, button);
+                CraftingManager.Instance.craftingUI.FilterByCategory(category, button);
             });
         }
     }

@@ -9,77 +9,81 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0524aa71c14153e4088d75ae7291db57, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ccdba58a7e8662448e98a3401d5a7fe, type: 3}
   m_Name: Hut Chest LT
   m_EditorClassIdentifier: 
   lootEntries:
   - item: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
+    minCount: 5
+    maxCount: 15
+    probability: 0.95
+  - item: {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
     minCount: 4
     maxCount: 15
-    probability: 0.9
-  - item: {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
-    minCount: 5
-    maxCount: 20
-    probability: 0.9
-  - item: {fileID: 11400000, guid: dddd9191554eaaa429167b93efc7e802, type: 2}
-    minCount: 4
-    maxCount: 10
-    probability: 0.3
-  - item: {fileID: 11400000, guid: 673ea92b4941aad4d9b1b6df762082de, type: 2}
-    minCount: 4
-    maxCount: 8
-    probability: 0.2
+    probability: 0.95
   - item: {fileID: 11400000, guid: bedbe0a27a1390045ae4a25ed82d859f, type: 2}
-    minCount: 1
-    maxCount: 5
-    probability: 0.2
+    minCount: 2
+    maxCount: 7
+    probability: 0.5
   - item: {fileID: 11400000, guid: 9f87f19d5e136e942afac09b787c4f7b, type: 2}
     minCount: 2
     maxCount: 6
-    probability: 0.18
-  - item: {fileID: 11400000, guid: f226f58a459e96c4e8e68c4633c1ae94, type: 2}
-    minCount: 3
-    maxCount: 8
-    probability: 0.15
-  - item: {fileID: 11400000, guid: 395e7513434bc0544bf7f2d37284a38d, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.1
+    probability: 0.4
+  - item: {fileID: 11400000, guid: 673ea92b4941aad4d9b1b6df762082de, type: 2}
+    minCount: 4
+    maxCount: 12
+    probability: 0.2
   - item: {fileID: 11400000, guid: 556f3b86c57e5114f9da0401a33243af, type: 2}
     minCount: 1
     maxCount: 1
+    probability: 0.2
+  - item: {fileID: 11400000, guid: 395e7513434bc0544bf7f2d37284a38d, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.2
+  - item: {fileID: 11400000, guid: c375c4a60ab98ac4c928e887782ba7a4, type: 2}
+    minCount: 2
+    maxCount: 5
     probability: 0.1
-  - item: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
-    minCount: 4
-    maxCount: 7
+  - item: {fileID: 11400000, guid: f226f58a459e96c4e8e68c4633c1ae94, type: 2}
+    minCount: 5
+    maxCount: 10
     probability: 0.1
-  - item: {fileID: 11400000, guid: 21f82903bd5dbd24184cddde17965e58, type: 2}
-    minCount: 3
-    maxCount: 8
-    probability: 0.1
-  - item: {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
-    minCount: 4
-    maxCount: 7
+  - item: {fileID: 11400000, guid: d82b3bb6306b0bd44866d6bffe0a3212, type: 2}
+    minCount: 2
+    maxCount: 4
     probability: 0.05
-  - item: {fileID: 11400000, guid: 5048ece4c9d8c624d94431bd52e9f818, type: 2}
-    minCount: 3
-    maxCount: 8
-    probability: 0.02
-  - item: {fileID: 11400000, guid: 54660bbb6fa3ce54ebd5e4e88b17b093, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.02
-  - item: {fileID: 11400000, guid: 16e2be021ac897044b41171a34e2c6d0, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.02
   - item: {fileID: 11400000, guid: f6ca558b36613e34bbe8df775e8261f0, type: 2}
     minCount: 1
     maxCount: 1
-    probability: 0.02
-  - item: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
+    probability: 0.05
+  - item: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
+    minCount: 5
+    maxCount: 9
+    probability: 0.05
+  - item: {fileID: 11400000, guid: 16e2be021ac897044b41171a34e2c6d0, type: 2}
     minCount: 1
     maxCount: 1
+    probability: 0.05
+  - item: {fileID: 11400000, guid: 54660bbb6fa3ce54ebd5e4e88b17b093, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.05
+  - item: {fileID: 11400000, guid: dddd9191554eaaa429167b93efc7e802, type: 2}
+    minCount: 1
+    maxCount: 3
+    probability: 0.05
+  - item: {fileID: 11400000, guid: 21f82903bd5dbd24184cddde17965e58, type: 2}
+    minCount: 4
+    maxCount: 9
+    probability: 0.02
+  - item: {fileID: 11400000, guid: 5963fa232c4375f42826047d5708fed3, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.01
+  - item: {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
+    minCount: 4
+    maxCount: 8
     probability: 0.01
   - item: {fileID: 11400000, guid: 8dc46a65aa3e6d244b3e8d2ce2b8d37e, type: 2}
     minCount: 1
@@ -89,23 +93,23 @@ MonoBehaviour:
     minCount: 1
     maxCount: 1
     probability: 0.01
-  - item: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.01
-  - item: {fileID: 11400000, guid: 1392e31e79a279a4480ef92733410e09, type: 2}
-    minCount: 4
-    maxCount: 7
-    probability: 0.01
-  - item: {fileID: 11400000, guid: 641da5d29b3b8af42a046f5bebbe39ca, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.004
-  - item: {fileID: 11400000, guid: 93ec1758efc756b4db7e83a4374db238, type: 2}
-    minCount: 1
-    maxCount: 1
-    probability: 0.004
+  - item: {fileID: 11400000, guid: 5048ece4c9d8c624d94431bd52e9f818, type: 2}
+    minCount: 3
+    maxCount: 9
+    probability: 0.002
   - item: {fileID: 11400000, guid: d8aff209ec41c6145adf062920a6f987, type: 2}
     minCount: 1
     maxCount: 1
-    probability: 0.004
+    probability: 0.001
+  - item: {fileID: 11400000, guid: 1392e31e79a279a4480ef92733410e09, type: 2}
+    minCount: 3
+    maxCount: 8
+    probability: 0.001
+  - item: {fileID: 11400000, guid: 641da5d29b3b8af42a046f5bebbe39ca, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.001
+  - item: {fileID: 11400000, guid: 93ec1758efc756b4db7e83a4374db238, type: 2}
+    minCount: 1
+    maxCount: 1
+    probability: 0.001

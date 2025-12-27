@@ -27,37 +27,36 @@ namespace Game.Players
             if (currentInteractable != null && (!validNearest || !IsAlive(currentInteractable)))
                 ClearInteractable();
 
-            if (validNearest && IsAlive(nearest))
+            if (!validNearest || !IsAlive(nearest))
             {
-                Object unityObj = nearest as Object;
-                if (unityObj == null || !nearest.GetTransform().gameObject.activeInHierarchy)
-                {
-                    ClearInteractable();
-                    return;
-                }
-
-                if (currentInteractable != nearest)
-                {
-                    currentInteractable = nearest;
-
-                    if (currentUIInstance == null)
-                    {
-                        currentUIInstance = Instantiate(worldUIIndicatorPrefab);
-                        currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
-                    }
-
-                    currentUIInstance.SetActive(true);
-                    currentUI.Setup(currentInteractable);
-                }
-
-                if (Input.GetKeyDown(interactKey))
-                {
-                    currentInteractable?.Interact();
-                    ClearInteractable();
-                }
+                ClearInteractable();
+                return;
             }
-            else
+
+            Object unityObj = nearest as Object;
+            if (unityObj == null || !nearest.GetTransform().gameObject.activeInHierarchy)
             {
+                ClearInteractable();
+                return;
+            }
+
+            if (currentInteractable != nearest)
+            {
+                currentInteractable = nearest;
+
+                if (currentUIInstance == null)
+                {
+                    currentUIInstance = Instantiate(worldUIIndicatorPrefab);
+                    currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
+                }
+
+                currentUIInstance.SetActive(true);
+                currentUI.Setup(currentInteractable);
+            }
+
+            if (Input.GetKeyDown(interactKey))
+            {
+                currentInteractable?.Interact();
                 ClearInteractable();
             }
         }
@@ -97,10 +96,7 @@ namespace Game.Players
             return nearest;
         }
 
-        private bool IsAlive(IInteractable interactable)
-        {
-            return !(interactable is Object unityObj && unityObj == null);
-        }
+        private bool IsAlive(IInteractable interactable) => interactable is not Object unityObj || unityObj != null;
 
         public void ClearInteractable()
         {
@@ -114,26 +110,25 @@ namespace Game.Players
             ClearInteractable();
             IInteractable nearest = FindNearestInteractable(out _);
 
-            if (currentInteractable != nearest)
-            {
-                currentInteractable = nearest;
-                currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
+            if (currentInteractable == nearest) return;
 
-                currentUIInstance.SetActive(true);
-                currentUI.Setup(currentInteractable);
-            }
+            currentInteractable = nearest;
+            currentUI = currentUIInstance.GetComponent<WorldInteractUI>();
+
+            currentUIInstance.SetActive(true);
+            currentUI.Setup(currentInteractable);
         }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if (hit.gameObject.CompareTag("Pickable"))
-            {
-                InteractableItem interactable = hit.gameObject.GetComponentInParent<InteractableItem>();
-                if (interactable != null) interactable.Interact();
+            if (!hit.gameObject.CompareTag("Pickable")) return;
 
-                if (currentInteractable == interactable.GetComponent<IInteractable>())
-                    ClearInteractable();
-            }
+            InteractableItem interactable = hit.gameObject.GetComponentInParent<InteractableItem>();
+            if (interactable != null)
+                interactable.Interact();
+
+            if (currentInteractable == interactable.GetComponent<IInteractable>())
+                ClearInteractable();
         }
     }
 }

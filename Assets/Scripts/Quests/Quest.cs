@@ -40,7 +40,6 @@ namespace Game.Quests
         public void OnItemCollected(Item item)
         {
             if (isCompleted) return;
-
             if (item == null) return;
 
             bool isRequired = requiredItems.Contains(item);

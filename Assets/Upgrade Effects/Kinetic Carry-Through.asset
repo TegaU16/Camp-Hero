@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29680a2b31b330b4ab0f70a7c97de575, type: 3}
+  m_Script: {fileID: 11500000, guid: fc4a6aa8c07de2447af4f9146094a7ce, type: 3}
   m_Name: Kinetic Carry-Through
   m_EditorClassIdentifier: Assembly-CSharp::KineticCarryThrough
-  upgradeName: Kinetic Carry-Through
+  upgradeName: Damage Chain
   description: Deal damage to surrounding enemies when attacking an enemy
   cost: 2
   radius: 5

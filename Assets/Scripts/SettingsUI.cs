@@ -100,6 +100,7 @@ public class SettingsUI : MonoBehaviour
         fullscreenToggle.onValueChanged.AddListener(v => currentSettings.fullscreen = v);
     }
 
+    // Called by button
     public void OnApplyPressed()
     {
         SettingsManager.Instance.ApplySettings();
@@ -109,8 +110,6 @@ public class SettingsUI : MonoBehaviour
         originalSettings = SettingsManager.Instance.currentSettings.Clone();
     }
 
-    public void ToggleSettings(bool open)
-    {
-        gameObject.SetActive(open);
-    }
+    // Called by button
+    public void ToggleSettings(bool open) => gameObject.SetActive(open);
 }

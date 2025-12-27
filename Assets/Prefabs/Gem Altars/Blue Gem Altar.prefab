@@ -239,10 +239,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4423047693754187435}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc2632613433edb4f84d87ecf7132931, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d9e8697e2ffa55498851f970fea0844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  altarID: 
   requiredKey: {fileID: 11400000, guid: 7de1840346da4004e8a6c0ab5a65f977, type: 2}
   bossPrefab: {fileID: 478956996202849501, guid: 02530430257cd8e4cb10f10fae3bc7a9, type: 3}
   bossSpawnPoint: {fileID: 3280665420917833297}

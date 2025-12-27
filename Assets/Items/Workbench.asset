@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Workbench
   m_EditorClassIdentifier: 
-  itemTypes: 10
+  itemTypes: 9
   actionType: 1
-  maxStack: 5
+  maxStack: 20
   icon: {fileID: 21300000, guid: 0e9a4f653240a6f4689ecd8fd1d3d849, type: 3}
   itemName: Workbench
   equippedPrefab: {fileID: 355295075366670682, guid: 5243595402559ee47b44042115473154, type: 3}
@@ -22,7 +22,7 @@ MonoBehaviour:
   buildingGhost: {fileID: 3664823562989333235, guid: 368b46f5c94262044bb0652fecea17a2, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
-  attackDistance: 1
+  attackDistance: 3
   attackDamage:
   - 0
   - 0

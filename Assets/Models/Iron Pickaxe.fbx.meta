@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: palette
+      name: Iron Pickaxe Mat
     second: {fileID: 2100000, guid: cea4cc6828ccd364d83f41ccd0035b1c, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Iron Pickaxe
-    second: {fileID: 2800000, guid: 7704e2dc7b88a61438bc9a39e4599a8c, type: 3}
+    second: {fileID: 2800000, guid: a979cb01350d51a43be67edb929a3997, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

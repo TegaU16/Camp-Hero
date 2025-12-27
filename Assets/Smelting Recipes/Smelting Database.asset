@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13150a4031fa30442adbc80e3c69a884, type: 3}
+  m_Script: {fileID: 11500000, guid: f9ece110ffb71f04ea0d1daee0e009ca, type: 3}
   m_Name: Smelting Database
   m_EditorClassIdentifier: 
   allRecipes:

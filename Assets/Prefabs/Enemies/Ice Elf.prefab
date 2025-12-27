@@ -860,11 +860,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7698406931232590718}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VoxelAgent
   rotationSpeed: 720
-  animator: {fileID: 3998563326355016638}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!114 &418960051743030102
@@ -876,22 +875,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 7698406931232590718}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   attackType: 0
   enemyType: 0
   meleeAttackRange: 2
   rangedAttackRange: 10
-  attackCooldown: 1.2
-  damage: 20
+  attackCooldown: 2
+  damage: 10
   knockbackForce: 5
   enemyIcon: {fileID: 21300000, guid: d11df16fc0cd3dd4883bf8174e68bbca, type: 3}
-  breakableObject: {fileID: 587944235618612474}
   rangedAttackScripts: []
-  moveSpeed: 3
+  moveSpeed: 3.5
   gravity: -9.8
-  preferredTargets: 0100000004000000000000000200000003000000
+  preferredTargets: 0400000001000000000000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
@@ -942,7 +940,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7698406931232590718}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f09cee48568c548a211eaf747cd1fa, type: 3}
+  m_Script: {fileID: 11500000, guid: b179c12731e34bc44ad88a0f12e30afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackHitbox
   targetableLayer:

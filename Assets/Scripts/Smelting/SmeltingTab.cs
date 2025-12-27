@@ -13,7 +13,7 @@ namespace Game.Smelting
             Button button = GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                FurnaceManager.Instance.FilterByCategory(category, button);
+                FurnaceManager.Instance.furnaceUI.FilterByCategory(category, button);
             });
         }
     }

@@ -33,25 +33,21 @@ public class BossHealthBarManager : MonoBehaviour
     private void RegisterHealthBar(BossHealthBar healthBar, GameObject enemy)
     {
         if (healthBar == null || enemy == null) return;
+        if (bossHealthBars.Contains(healthBar)) return;
 
-        if (!bossHealthBars.Contains(healthBar))
-        {
-            healthBar.Setup(enemy);
-            bossHealthBars.Add(healthBar);
-            UpdateHealthBarSizes();
-        }
+        healthBar.Setup(enemy);
+        bossHealthBars.Add(healthBar);
+        UpdateHealthBarSizes();
     }
 
     public void UnRegisterHealthBar(BossHealthBar healthBar)
     {
         if (healthBar == null) return;
+        if (!bossHealthBars.Contains(healthBar)) return;
 
-        if (bossHealthBars.Contains(healthBar))
-        {
-            bossHealthBars.Remove(healthBar);
-            Destroy(healthBar.gameObject);
-            UpdateHealthBarSizes();
-        }
+        bossHealthBars.Remove(healthBar);
+        Destroy(healthBar.gameObject);
+        UpdateHealthBarSizes();
     }
 
     private void UpdateHealthBarSizes()
@@ -63,13 +59,11 @@ public class BossHealthBarManager : MonoBehaviour
         foreach (BossHealthBar bar in bossHealthBars)
         {
             if (bar == null) continue;
+            if (!bar.TryGetComponent(out LayoutElement layout)) continue;
 
-            if (bar.TryGetComponent(out LayoutElement layout))
-            {
-                layout.minWidth = resizedWidth;
-                layout.preferredWidth = resizedWidth;
-                layout.flexibleWidth = 0f; // do NOT stretch, keep exact pixels
-            }
+            layout.minWidth = resizedWidth;
+            layout.preferredWidth = resizedWidth;
+            layout.flexibleWidth = 0f; // do NOT stretch, keep exact pixels
         }
     }
 

@@ -49,9 +49,6 @@ namespace Game.Inventory
             gameObject.SetActive(true);
         }
 
-        public void HideTooltip()
-        {
-            gameObject.SetActive(false);
-        }
+        public void HideTooltip() => gameObject.SetActive(false);
     }
 }

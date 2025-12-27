@@ -74,22 +74,18 @@ namespace Game.AI.Animals
             // Remove any active or pooled animals that belong to this world
             foreach (Animal animal in activeAnimals.ToArray())
             {
-                if (animal == null) continue;
-                if (animal.worldName == worldName)
-                {
-                    Destroy(animal.gameObject);
-                    activeAnimals.Remove(animal);
-                }
+                if (animal == null || animal.worldName != worldName) continue;
+
+                Destroy(animal.gameObject);
+                activeAnimals.Remove(animal);
             }
 
             foreach (Animal animal in pool.ToArray())
             {
-                if (animal == null) continue;
-                if (animal.worldName == worldName)
-                {
-                    Destroy(animal.gameObject);
-                    pool = new Queue<Animal>(pool.Where(a => a != animal));
-                }
+                if (animal == null || animal.worldName != worldName) continue;
+
+                Destroy(animal.gameObject);
+                pool = new Queue<Animal>(pool.Where(a => a != animal));
             }
 
             Debug.Log($"Animal pool cleared for world: {worldName}");

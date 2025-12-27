@@ -6,7 +6,7 @@ namespace Game.Defenses
     public class Projectile : MonoBehaviour
     {
         public float speed = 20f;
-        public float homingStrength = 2f; // Lower = more dodgeable
+        public float homingStrength = 2f;
         public float maxLifetime = 5f;
 
         private Transform attacker;
@@ -27,18 +27,12 @@ namespace Game.Defenses
                 currentDirection = (target.position - transform.position).normalized;
         }
 
-        void Update()
+        private void Update()
         {
             if (!GameManager.Instance.IsGameManagerReady()) return;
 
             lifetime += Time.deltaTime;
-            if (lifetime >= maxLifetime)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            if (target == null)
+            if (lifetime >= maxLifetime || target == null)
             {
                 Destroy(gameObject);
                 return;
@@ -61,7 +55,7 @@ namespace Game.Defenses
             transform.rotation = Quaternion.LookRotation(currentDirection);
         }
 
-        void HitTarget()
+        private void HitTarget()
         {
             Vector3 hitPoint;
             Vector3 hitNormal;
@@ -75,23 +69,20 @@ namespace Game.Defenses
 
             hitNormal = (hitPoint - transform.position).normalized;
 
-            if (target.TryGetComponent(out Targetable targetable))
+            if (target.TryGetComponent(out Targetable targetable) && targetable.TryGetComponent(out Health targetHealth))
             {
-                if (targetable.TryGetComponent(out Health targetHealth))
-                {
-                    targetHealth.TakeDamage(damage, attacker);
+                targetHealth.TakeDamage(damage, attacker);
 
-                    if (target.TryGetComponent(out Rigidbody rb))
-                    {
-                        Vector3 knockbackDir = (target.position - transform.position).normalized;
-                        rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
-                    }
+                if (target.TryGetComponent(out Rigidbody rb))
+                {
+                    Vector3 knockbackDir = (target.position - transform.position).normalized;
+                    rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
                 }
             }
 
             if (target.TryGetComponent(out BreakableObject breakable) && target.TryGetComponent(out Enemy enemy))
             {
-                breakable.TakeDamage(damage, false, hitPoint, hitNormal);
+                breakable.TakeDamage(damage, crit: false, hitPoint, hitNormal);
                 enemy.OnAttacked(attacker);
             }
 

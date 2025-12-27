@@ -497,14 +497,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2717055778412663618}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72fb55c6c0783e74cb196bce06017010, type: 3}
+  m_Script: {fileID: 11500000, guid: a1bd2f39093b1b24abd9df89b4166ca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 8655663043393885058}
   agent: {fileID: -1633701019147389246}
-  wanderRadius: 6
-  waitTimeMin: 4
-  waitTimeMax: 10
+  wanderRadius: 10
+  waitTimeMin: 2
+  waitTimeMax: 5
   gravity: -9.8
   worldName: 
 --- !u!114 &4014674798180960077
@@ -557,11 +557,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2717055778412663618}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720
-  animator: {fileID: 0}
+  animator: {fileID: 8655663043393885058}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!143 &7047266678312269534

@@ -34,6 +34,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Music Settings")]
     public float musicFadeDuration = 1f;
+    private Coroutine fadeCoroutine;
 
     void Awake()
     {
@@ -91,9 +92,6 @@ public class AudioManager : MonoBehaviour
     }
 
     // === MUSIC FUNCTIONS ===
-
-    private Coroutine fadeCoroutine;
-
     public void PlayMusicCategory(string categoryName, bool loop = true)
     {
         if (!musicCategoryDict.TryGetValue(categoryName, out List<AudioClip> clips) || clips.Count == 0)

@@ -64,6 +64,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -85,6 +87,7 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -119,15 +122,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 6034776640650808906}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: babb5e0ebdca3764291a83decb0fef3a, type: 3}
+  m_Script: {fileID: 11500000, guid: 34fe154f81d72e04db9cc3ad0e97c568, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionRadius: 3
+  explosionRadius: 2
   damageMask:
     serializedVersion: 2
     m_Bits: 128
   explosionEffect: {fileID: 0}
-  arcHeight: 10
+  arcHeight: 5
+  turnSpeed: 5
 --- !u!54 &-3259623295310617980
 Rigidbody:
   m_ObjectHideFlags: 0

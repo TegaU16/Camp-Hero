@@ -9,14 +9,8 @@ namespace Game.Terrain.Structures.Trials
         public Sprite selectedImage, unselectedImage;
         public Transform enemyListContainer;
 
-        public void Select()
-        {
-            image.sprite = selectedImage;
-        }
+        public void Select() => image.sprite = selectedImage;
 
-        public void Deselect()
-        {
-            image.sprite = unselectedImage;
-        }
+        public void Deselect() => image.sprite = unselectedImage;
     }
 }

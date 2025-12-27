@@ -1006,12 +1006,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8246356037318663538}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   attackType: 0
   enemyType: 1
-  meleeAttackRange: 1.6
+  meleeAttackRange: 2
   rangedAttackRange: 10
   attackCooldown: 2
   damage: 10
@@ -1019,19 +1019,16 @@ MonoBehaviour:
   enemyIcon: {fileID: 0}
   breakableObject: {fileID: 4155082469710839387}
   rangedAttackScripts: []
-  moveSpeed: 2.2
+  moveSpeed: 4.5
   gravity: -9.8
-  preferredTargets: 0400000000000000010000000200000003000000
+  preferredTargets: 0400000001000000000000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: e31666094eb058341b756b42d1f055f8, type: 2}
-  agent: {fileID: 8354706434717995353}
-  animator: {fileID: 2668882319398817804}
-  ragdollController: {fileID: 5828284291955235218}
-  characterController: {fileID: 8919498063120116401}
+  animator: {fileID: 0}
 --- !u!114 &4155082469710839387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1051,7 +1048,6 @@ MonoBehaviour:
   objectType: 2
   entityType: 0
   objectLevel: 0
-  savedObjectIndex: -1
   torsoBone: {fileID: 5908796393424269821}
   bounceCooldown: 0.2
 --- !u!114 &5828284291955235218
@@ -1080,7 +1076,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8246356037318663538}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f09cee48568c548a211eaf747cd1fa, type: 3}
+  m_Script: {fileID: 11500000, guid: b179c12731e34bc44ad88a0f12e30afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackHitbox
   targetableLayer:
@@ -1095,10 +1091,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8246356037318663538}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VoxelAgent
-  stoppingDistance: 0.05
   rotationSpeed: 720
   animator: {fileID: 2668882319398817804}
   speedParam: Speed

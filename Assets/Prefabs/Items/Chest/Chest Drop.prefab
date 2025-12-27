@@ -98,9 +98,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dc7c68b57226eb4793f6acab2e80f61, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6292277290802739314}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dc7c68b57226eb4793f6acab2e80f61, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1185772721933165330}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dc7c68b57226eb4793f6acab2e80f61, type: 3}
       insertIndex: -1
@@ -149,19 +146,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dc7c68b57226eb4793f6acab2e80f61, type: 3}
   m_PrefabInstance: {fileID: 5458154248433313239}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6292277290802739314
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5151602917863921798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Targetable
-  targetType: 2
 --- !u!54 &1185772721933165330
 Rigidbody:
   m_ObjectHideFlags: 0

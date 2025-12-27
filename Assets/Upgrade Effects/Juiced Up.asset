@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e373f8ce5c19f747a52d50057ee7b02, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e2805835967d6c48a20f8674f94332d, type: 3}
   m_Name: Juiced Up
   m_EditorClassIdentifier: Assembly-CSharp::CritAttackSpeedBoostUpgrade
   upgradeName: Juiced Up
-  description: Increase attack speed for a short period after landing a crit
+  description: Gain increased attack speed after landing a crit
   cost: 1
   speedMultiplier: 1.5
   duration: 3

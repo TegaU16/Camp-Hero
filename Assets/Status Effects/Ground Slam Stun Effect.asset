@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75685361df848774fbabefc62c3c903c, type: 3}
+  m_Script: {fileID: 11500000, guid: e51521355fb2c5a49a4403df8a872bd3, type: 3}
   m_Name: Ground Slam Stun Effect
   m_EditorClassIdentifier: Assembly-CSharp::StunEffect
-  effectName: Ground Slam Stun
-  icon: {fileID: 0}
   duration: 4

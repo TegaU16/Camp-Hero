@@ -12,12 +12,10 @@ public class SceneLoader : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    public void LoadScene(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
-    }
+    public void LoadScene(string sceneName) => SceneManager.LoadScene(sceneName);
 }

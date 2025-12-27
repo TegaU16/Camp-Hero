@@ -30,12 +30,11 @@ public class UIImageAnimator : MonoBehaviour
         if (targetImage == null) return;
 
         timer += Time.deltaTime;
-        if (timer >= 1f / frameRate)
-        {
-            currentFrame = (currentFrame + 1) % frames.Length;
-            targetImage.sprite = frames[currentFrame];
-            timer = 0f;
-        }
+        if (timer < 1f / frameRate) return;
+
+        currentFrame = (currentFrame + 1) % frames.Length;
+        targetImage.sprite = frames[currentFrame];
+        timer = 0f;
     }
 
     public void Play()

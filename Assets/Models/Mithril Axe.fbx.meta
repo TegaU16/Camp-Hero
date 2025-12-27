@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Mithril Axe
+      name: Mithril Axe Mat
     second: {fileID: 2100000, guid: 5c6e2d8a90116e944afb98281a82c9a3, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Mithril Axe
-    second: {fileID: 2800000, guid: 1efc356c9df8e1b4b96231a9e251c967, type: 3}
+    second: {fileID: 2800000, guid: 220d43ff5db7dfa4f82a5f5bce1e3d01, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

@@ -103,12 +103,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 153972581328773051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc2632613433edb4f84d87ecf7132931, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d9e8697e2ffa55498851f970fea0844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  altarID: 
   requiredKey: {fileID: 11400000, guid: 0c87ef4067912594197c8e1ba1006787, type: 2}
-  bossPrefab: {fileID: 0}
+  bossPrefab: {fileID: 6342064213770231154, guid: 9ed6702af4b206649a349ec9e4ae7f1b, type: 3}
   bossSpawnPoint: {fileID: 268973610442140421}
   blessingAltarPrefab: {fileID: 6483958559380496520, guid: a802b45ced5da5b408f0c8e8649a5f94, type: 3}
 --- !u!64 &-7946694310368239230

@@ -15,9 +15,12 @@ public class TabArea : MonoBehaviour
         foreach (Tab tab in tabs)
         {
             if (tab == selectedTab)
+            {
                 tab.Select();
-            else
-                tab.Deselect();
+                continue;
+            }
+
+            tab.Deselect();
         }
     }
 }

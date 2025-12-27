@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Defender Totem
   m_EditorClassIdentifier: 
-  itemTypes: 2
+  itemTypes: 1
   actionType: 1
-  maxStack: 5
+  maxStack: 20
   icon: {fileID: 21300000, guid: ed46a7877fbdd014ebe8cf74af38d660, type: 3}
   itemName: Defender Totem
   equippedPrefab: {fileID: 7557152778351101201, guid: e74a2a45c3a158142b1dcb1dac75a14b, type: 3}
@@ -22,7 +22,7 @@ MonoBehaviour:
   buildingGhost: {fileID: 1151756178927884632, guid: 20297ad09a16f414ab1c7ae64e3775a0, type: 3}
   buildingSize: {x: 2, y: 2}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
-  attackDistance: 1
+  attackDistance: 3
   attackDamage:
   - 0
   - 0

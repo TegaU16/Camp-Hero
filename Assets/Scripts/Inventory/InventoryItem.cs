@@ -6,7 +6,6 @@ using UnityEngine.UI;
 namespace Game.Inventory
 {
     [RequireComponent(typeof(Image))]
-    [RequireComponent(typeof(CanvasGroup))]
     [RequireComponent(typeof(RectTransform))]
     public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
@@ -21,7 +20,6 @@ namespace Game.Inventory
         public float padding;
 
         [HideInInspector] public Image image;
-        public CanvasGroup canvasGroup;
 
         [HideInInspector] public bool isBeingDragged;
         [HideInInspector] public Transform originalParentSlot;
@@ -31,7 +29,6 @@ namespace Game.Inventory
         private void Awake()
         {
             image = GetComponent<Image>();
-            canvasGroup = GetComponent<CanvasGroup>();
         }
 
         private void Start()
@@ -102,10 +99,7 @@ namespace Game.Inventory
             ItemTooltipUI.Instance.HideTooltip();
         }
 
-        public void RevertToOriginalSlot()
-        {
-            PlaceInSlot(originalParent);
-        }
+        public void RevertToOriginalSlot() => PlaceInSlot(originalParent);
 
         public void RefreshCount()
         {

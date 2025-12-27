@@ -60,14 +60,12 @@ namespace Game.Upgrades
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = hits[i];
+                if (!hit.TryGetComponent(out Enemy enemy) || !hit.TryGetComponent(out BreakableObject breakable)) continue;
 
-                if (hit.TryGetComponent(out Enemy enemy) && hit.TryGetComponent(out BreakableObject breakable))
-                {
-                    breakable.TakeDamage(damage, player.transform);
+                breakable.TakeDamage(damage, crit: false);
 
-                    if (stun != null)
-                        stun.Apply(enemy);
-                }
+                if (stun != null)
+                    stun.Apply(enemy);
             }
 
             // Optionally add visual or sound effects here

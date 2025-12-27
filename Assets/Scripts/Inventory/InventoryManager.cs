@@ -74,7 +74,7 @@ namespace Game.Inventory
 
             ChangeSelectedSlot(0);
 
-            ItemEquip.Instance.EquipItem(GetSelectedItem(false));
+            ItemEquip.Instance.EquipItem(GetSelectedItem(delete: false));
         }
 
         // Update is called once per frame
@@ -109,20 +109,19 @@ namespace Game.Inventory
             for (int i = 0; i < inventoryUIHandler.inventorySlots.Count; i++)
             {
                 InventorySlot currentSlot = inventoryUIHandler.inventorySlots[i];
-                if (currentSlot != null && currentSlot.transform.childCount > 0)
+                if (currentSlot == null || currentSlot.transform.childCount <= 0) continue;
+
+                InventoryItem invItem = currentSlot.GetComponentInChildren<InventoryItem>();
+                Item item = invItem.item;
+
+                ItemData itemData = new()
                 {
-                    InventoryItem invItem = currentSlot.GetComponentInChildren<InventoryItem>();
-                    Item item = invItem.item;
+                    itemName = item.name,
+                    count = invItem.count,
+                    position = i
+                };
 
-                    ItemData itemData = new()
-                    {
-                        itemName = item.name,
-                        count = invItem.count,
-                        position = i
-                    };
-
-                    items.Add(itemData);
-                }
+                items.Add(itemData);
             }
 
             List<string> discoveredItemNames = discoveredItems.Where(x => x != null).Select(x => x.itemName).ToList();
@@ -156,7 +155,7 @@ namespace Game.Inventory
 
         public void EquipSelectedItem()
         {
-            Item selectedItem = GetSelectedItem(false);
+            Item selectedItem = GetSelectedItem(delete: false);
 
             if (selectedItem != null && selectedItem.equippedPrefab != null)
                 ItemEquip.Instance.EquipItem(selectedItem);
@@ -166,26 +165,24 @@ namespace Game.Inventory
 
         public void UseSelectedItem()
         {
-            Item selectedItem = GetSelectedItem(false);
-            if (selectedItem != null)
-            {
-                if (selectedItem.actionType != ActionType.None)
-                {
-                    selectedItem = GetSelectedItem(true);
-
-                    // Check if the item count is zero after using it
-                    InventoryItem itemInSlot = inventoryUIHandler.inventorySlots[selectedSlot].GetComponentInChildren<InventoryItem>();
-
-                    if (itemInSlot == null || itemInSlot.count <= 0)
-                        ItemEquip.Instance.EquipItem(null);  // Unequip the item if it's no longer in the inventory
-                    else if (selectedItem.equippedPrefab != null)
-                        ItemEquip.Instance.EquipItem(selectedItem);
-                }
-            }
-            else
+            Item selectedItem = GetSelectedItem(delete: false);
+            if (selectedItem == null)
             {
                 ItemEquip.Instance.EquipItem(null);
+                return;
             }
+
+            if (selectedItem.actionType == ActionType.None) return;
+
+            selectedItem = GetSelectedItem(delete: true);
+
+            // Check if the item count is zero after using it
+            InventoryItem itemInSlot = inventoryUIHandler.inventorySlots[selectedSlot].GetComponentInChildren<InventoryItem>();
+
+            if (itemInSlot == null || itemInSlot.count <= 0)
+                ItemEquip.Instance.EquipItem(null);  // Unequip the item if it's no longer in the inventory
+            else if (selectedItem.equippedPrefab != null)
+                ItemEquip.Instance.EquipItem(selectedItem);
         }
 
         public bool AddItem(Item item, int count = 1, int? targetSlotIndex = null)
@@ -236,16 +233,15 @@ namespace Game.Inventory
                     InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                     InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                    if (itemInSlot != null && itemInSlot.item == item && itemInSlot.count < item.maxStack)
-                    {
-                        int availableSpace = item.maxStack - itemInSlot.count;
-                        int itemsToAdd = Mathf.Min(count, availableSpace);
+                    if (itemInSlot == null || itemInSlot.item != item || itemInSlot.count >= item.maxStack) continue;
 
-                        itemInSlot.count += itemsToAdd;
-                        count -= itemsToAdd;
+                    int availableSpace = item.maxStack - itemInSlot.count;
+                    int itemsToAdd = Mathf.Min(count, availableSpace);
 
-                        itemInSlot.RefreshCount();
-                    }
+                    itemInSlot.count += itemsToAdd;
+                    count -= itemsToAdd;
+
+                    itemInSlot.RefreshCount();
                 }
 
                 // Pass 2: If any left, put in empty slots
@@ -254,12 +250,11 @@ namespace Game.Inventory
                     InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                     InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                    if (itemInSlot == null)
-                    {
-                        int itemsToPlace = Mathf.Min(count, item.maxStack);
-                        SpawnNewItem(item, slot, itemsToPlace);
-                        count -= itemsToPlace;
-                    }
+                    if (itemInSlot != null) continue;
+
+                    int itemsToPlace = Mathf.Min(count, item.maxStack);
+                    SpawnNewItem(item, slot, itemsToPlace);
+                    count -= itemsToPlace;
                 }
             }
 
@@ -275,13 +270,11 @@ namespace Game.Inventory
 
         public void TryDiscoverItem(Item item)
         {
-            if (!discoveredItems.Contains(item))
-            {
-                discoveredItems.Add(item);
+            if (discoveredItems.Contains(item)) return;
 
-                CraftingManager.Instance.TryUnlockRecipes(discoveredItems);
-                FurnaceManager.Instance.TryUnlockRecipes(discoveredItems);
-            }
+            discoveredItems.Add(item);
+            CraftingManager.Instance.TryUnlockRecipes(discoveredItems);
+            FurnaceManager.Instance.TryUnlockRecipes(discoveredItems);
         }
 
         public void LoadDiscoveredItems(List<string> itemNames)
@@ -293,22 +286,21 @@ namespace Game.Inventory
 
         public void DropSelectedItem()
         {
-            Item selectedItem = GetSelectedItem(true);
+            Item selectedItem = GetSelectedItem(delete: true);
             DropItem(selectedItem, 1);
         }
 
         public void DropSelectedStack()
         {
-            Item selectedItem = GetSelectedItem(false);
+            Item selectedItem = GetSelectedItem(delete: false);
             InventorySlot slot = inventoryUIHandler.inventorySlots[selectedSlot];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-            if (itemInSlot != null)
-            {
-                DropItem(selectedItem, itemInSlot.count);
-                itemInSlot.count = 0;
-                GetSelectedItem(false);
-            }
+            if (itemInSlot == null) return;
+
+            DropItem(selectedItem, itemInSlot.count);
+            itemInSlot.count = 0;
+            GetSelectedItem(delete: false);
         }
 
         public void DropAllItems()
@@ -320,12 +312,11 @@ namespace Game.Inventory
                 InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                if (itemInSlot != null)
-                {
-                    DropItem(itemInSlot.item, itemInSlot.count, scatter: true);
-                    itemInSlot.count = 0;
-                    Destroy(itemInSlot.gameObject);
-                }
+                if (itemInSlot == null) continue;
+
+                DropItem(itemInSlot.item, itemInSlot.count, scatter: true);
+                itemInSlot.count = 0;
+                Destroy(itemInSlot.gameObject);
             }
 
             EquipSelectedItem();
@@ -356,23 +347,32 @@ namespace Game.Inventory
 
         public void SetTutorialForItem(InventorySlot slot, Item item)
         {
-            if (slot == null || item == null) return;
+            if (slot == null ||
+                item == null ||
+                discoveredItems.Contains(item) ||
+                !inventoryUIHandler.inventorySlots.Contains(slot)) return;
 
-            if (inventoryUIHandler.inventorySlots.Contains(slot))
+            List<TutorialData> craftingTutorials = TutorialManager.Instance.CreatePickupCraftingRecipeTutorials(item);
+            if (craftingTutorials != null)
             {
-                if (!discoveredItems.Contains(item))
+                foreach (TutorialData tutorialData in craftingTutorials)
                 {
-                    TutorialData craftingTutorial = TutorialManager.Instance.CreatePickupCraftingRecipeTutorial(item);
-                    if (craftingTutorial != null)
-                        TutorialManager.Instance.RegisterAndActivate(craftingTutorial);
-
-                    TutorialData smeltingTutorial = TutorialManager.Instance.CreatePickupSmeltingRecipeTutorial(item);
-                    if (smeltingTutorial != null)
-                        TutorialManager.Instance.RegisterAndActivate(smeltingTutorial);
+                    if (tutorialData != null)
+                        TutorialManager.Instance.RegisterTutorial(tutorialData);
                 }
-
-                TryDiscoverItem(item);
             }
+
+            List<TutorialData> smeltingTutorials = TutorialManager.Instance.CreatePickupSmeltingRecipeTutorials(item);
+            if (smeltingTutorials != null)
+            {
+                foreach (TutorialData tutorialData in smeltingTutorials)
+                {
+                    if (tutorialData != null)
+                        TutorialManager.Instance.RegisterTutorial(tutorialData);
+                }
+            }
+
+            TryDiscoverItem(item);
         }
 
         public Item GetSelectedItem(bool delete)
@@ -380,30 +380,25 @@ namespace Game.Inventory
             InventorySlot slot = inventoryUIHandler.inventorySlots[selectedSlot];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-            if (itemInSlot != null)
+            if (itemInSlot == null) return null;
+
+            if (itemInSlot.count <= 0)
             {
-                if (itemInSlot.count <= 0)
-                {
-                    Destroy(itemInSlot.gameObject);  // Remove the empty item from the slot
-                    return null;
-                }
-
-                Item item = itemInSlot.item;
-
-                if (delete == true)
-                {
-                    itemInSlot.count--;
-
-                    if (itemInSlot.count <= 0)
-                        Destroy(itemInSlot.gameObject);
-                    else
-                        itemInSlot.RefreshCount();
-                }
-
-                return item;
+                Destroy(itemInSlot.gameObject);  // Remove the empty item from the slot
+                return null;
             }
 
-            return null;
+            if (delete)
+            {
+                itemInSlot.count--;
+
+                if (itemInSlot.count <= 0)
+                    Destroy(itemInSlot.gameObject);
+                else
+                    itemInSlot.RefreshCount();
+            }
+
+            return itemInSlot.item;
         }
 
         public InventoryItem GetSelectedInventoryItem()
@@ -419,7 +414,6 @@ namespace Game.Inventory
             foreach (InventorySlot slot in inventoryUIHandler.inventorySlots)
             {
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
-
                 if (itemInSlot != null && itemInSlot.item == item) return true;
             }
 
@@ -431,26 +425,24 @@ namespace Game.Inventory
             foreach (InventorySlot slot in inventoryUIHandler.inventorySlots)
             {
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+                if (itemInSlot == null || itemInSlot.item != item) continue;
 
-                if (itemInSlot != null && itemInSlot.item == item)
+                if (itemInSlot.count <= consumeCount)
                 {
-                    if (itemInSlot.count <= consumeCount)
-                    {
-                        consumeCount -= itemInSlot.count;
-                        Destroy(itemInSlot.gameObject);
-                    }
-                    else
-                    {
-                        itemInSlot.count -= consumeCount;
-                        itemInSlot.RefreshCount();
-                        break;
-                    }
+                    consumeCount -= itemInSlot.count;
+                    Destroy(itemInSlot.gameObject);
+                }
+                else
+                {
+                    itemInSlot.count -= consumeCount;
+                    itemInSlot.RefreshCount();
+                    break;
                 }
 
                 if (consumeCount <= 0) break;
             }
 
-            ItemEquip.Instance.EquipItem(GetSelectedItem(false));
+            ItemEquip.Instance.EquipItem(GetSelectedItem(delete: false));
         }
 
         private void HandleSlotSelection()
@@ -488,7 +480,7 @@ namespace Game.Inventory
             if (IsExtensionOpen())
                 ResetExtensions();
             else if (CraftingManager.Instance != null)
-                CraftingManager.Instance.ToggleCraftingMenu();
+                CraftingManager.Instance.craftingUI.ToggleCraftingMenu(CraftingSource.Base);
         }
 
         private void HandleItemDropping()
@@ -570,13 +562,10 @@ namespace Game.Inventory
                 InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                if (itemInSlot != null &&
-                    itemInSlot.item == item &&
-                    itemInSlot.count < item.maxStack)
-                {
-                    int space = item.maxStack - itemInSlot.count;
-                    remaining -= Mathf.Min(remaining, space);
-                }
+                if (itemInSlot == null || itemInSlot.item != item || itemInSlot.count >= item.maxStack) continue;
+
+                int space = item.maxStack - itemInSlot.count;
+                remaining -= Mathf.Min(remaining, space);
             }
 
             // Then, check for empty slots
@@ -585,11 +574,10 @@ namespace Game.Inventory
                 InventorySlot slot = inventoryUIHandler.inventorySlots[i];
                 InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
 
-                if (itemInSlot == null)
-                {
-                    int space = item.maxStack;
-                    remaining -= Mathf.Min(remaining, space);
-                }
+                if (itemInSlot != null) continue;
+
+                int space = item.maxStack;
+                remaining -= Mathf.Min(remaining, space);
             }
 
             return remaining > 0; // If there's still remaining, inventory is full

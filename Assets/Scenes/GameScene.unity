@@ -263,19 +263,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 7565205}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f165d43cf6003704a92dd13293cf0fa6, type: 3}
+  m_Script: {fileID: 11500000, guid: f90ac2b91811cb74c8c6d3c8b696ff65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  altarPrefabs:
-  - {fileID: 4423047693754187435, guid: 86f3235577c45114d80144e988f586b2, type: 3}
-  - {fileID: 881154247749051603, guid: 766207c9c00b73c44bd3ecde61646e22, type: 3}
-  - {fileID: 7844660309763906660, guid: 602a0b47def10e84ebfb6325f0872f29, type: 3}
-  - {fileID: 153972581328773051, guid: 598fea3aa6611d842bbe296db09949f1, type: 3}
-  worldCenter: {x: 0, y: 0, z: 0}
-  offsetFromEdge: 40
-  terrainMask:
-    serializedVersion: 2
-    m_Bits: 8
+  trialStructurePrefabs:
+  - {fileID: 9177684417866302764, guid: ef329255bb8af95448c7abb59c9174f0, type: 3}
+  - {fileID: 6632706679857284279, guid: fbb6c0c70d8255f4e83054fb1affa494, type: 3}
+  - {fileID: 3888973100209743569, guid: 3328a7bc06c2f7749afe34713c70be91, type: 3}
+  - {fileID: 8558969030745782339, guid: 5bd60cab4f8f6d146ab1e777c683a8dc, type: 3}
+  innerRadius: 0.1
+  outerRadius: 0.45
 --- !u!114 &7565208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,16 +282,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 7565205}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c5f67da578456b40986922b41d0d88f, type: 3}
+  m_Script: {fileID: 11500000, guid: 14b956a096eb78548909825d3ba71cb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trialStructurePrefabs:
-  - {fileID: 5044366259291855496, guid: e7e920f50c330e64dbfad8fc4b381244, type: 3}
-  - {fileID: 4084502265111637907, guid: fbb6c0c70d8255f4e83054fb1affa494, type: 3}
-  - {fileID: 3101251102963738970, guid: 3328a7bc06c2f7749afe34713c70be91, type: 3}
-  - {fileID: 5631074609405359638, guid: 5bd60cab4f8f6d146ab1e777c683a8dc, type: 3}
-  innerRadius: 0.1
-  outerRadius: 0.4
+  altarPrefabs:
+  - {fileID: 4423047693754187435, guid: 86f3235577c45114d80144e988f586b2, type: 3}
+  - {fileID: 881154247749051603, guid: 766207c9c00b73c44bd3ecde61646e22, type: 3}
+  - {fileID: 7844660309763906660, guid: 602a0b47def10e84ebfb6325f0872f29, type: 3}
+  - {fileID: 153972581328773051, guid: 598fea3aa6611d842bbe296db09949f1, type: 3}
+  worldCenter: {x: 0, y: 0, z: 0}
+  offsetFromEdge: 20
+  terrainMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!1 &10085529
 GameObject:
   m_ObjectHideFlags: 0
@@ -3351,7 +3351,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 217984355}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76bf69888a18cf74abba3d662d4ed18e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8c588d9992a766445b14ab9340fc88f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingTab
   category: 0
@@ -4074,7 +4074,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 246713024}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4c0b477f37cd2114192c4a92e60a0f9d, type: 3}
+  m_Script: {fileID: 11500000, guid: f60cc65e3430f9648bf9d03d1e5a2e5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxRequestsPerFrame: 5
@@ -5198,7 +5198,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 307774321}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76bf69888a18cf74abba3d662d4ed18e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8c588d9992a766445b14ab9340fc88f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingTab
   category: 2
@@ -5272,7 +5272,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 311280689}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f96417f7a6ce7840ad70bfcfa225b2b, type: 3}
+  m_Script: {fileID: 11500000, guid: e9580a5d51a06594a8f57a57983f9531, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   structureTemplates:
@@ -5280,9 +5280,9 @@ MonoBehaviour:
   activeStructures: []
   structureLayer:
     serializedVersion: 2
-    m_Bits: 128
-  outerRadius: 0.42
-  minSpacing: 80
+    m_Bits: 8
+  outerRadius: 0.4
+  minSpacing: 70
 --- !u!4 &311280691
 Transform:
   m_ObjectHideFlags: 0
@@ -5878,7 +5878,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 100.00002}
+  m_AnchoredPosition: {x: 0, y: 100.00022}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &323336297
@@ -5990,8 +5990,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 978931152}
   m_HandleRect: {fileID: 978931151}
   m_Direction: 2
-  m_Value: 0.99999976
-  m_Size: 0.5466667
+  m_Value: 1
+  m_Size: 0.54666674
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6768,23 +6768,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 375925494}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768e0d624c2ff4d4ba0cebeead456d46, type: 3}
+  m_Script: {fileID: 11500000, guid: 1028cecf874d9554a952f008861050e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  furnaceItemParent: {fileID: 1726591891}
-  furnaceItemPrefab: {fileID: 8109688725954714224, guid: 45a357f3cdb4d2849b6b9197704562dd, type: 3}
   furnaceUI: {fileID: 1725352980}
-  recipeSection: {fileID: 386742896}
-  nullItemSelectText: {fileID: 1349791192}
-  smeltingTabs:
-  - {fileID: 1119750317}
-  - {fileID: 422971548}
-  - {fileID: 2123256803}
-  progressArrow: {fileID: 1584495032}
-  resultImage: {fileID: 1263786881}
-  resultName: {fileID: 715173892}
-  requiredImage: {fileID: 1387677592}
-  requiredName: {fileID: 810758797}
   smeltingDatabase: {fileID: 11400000, guid: 50ba64e19fed2a54cba02bf23bc27d86, type: 2}
 --- !u!4 &375925496
 Transform:
@@ -7794,7 +7781,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 422971544}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddeefffd9740d85498a7fe983526f11d, type: 3}
+  m_Script: {fileID: 11500000, guid: b9c59e0448dd311408ff164ad2e9a65b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmeltingTab
   category: 1
@@ -10220,7 +10207,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 591501345}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 647108d4201cf934fa6090fd17203b44, type: 3}
+  m_Script: {fileID: 11500000, guid: 05586802ff739ee47bc5c61a663e250b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &591501347
@@ -11832,7 +11819,7 @@ MonoBehaviour:
   dayCountText: {fileID: 56092854}
   timeOfDayText: {fileID: 722084049}
   dayTextUI: {fileID: 2033048049}
-  enemyPool: {fileID: 1792087624}
+  enemyPool: {fileID: 1792087628}
 --- !u!4 &649169902
 Transform:
   m_ObjectHideFlags: 0
@@ -11910,10 +11897,10 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 1505964869}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 2d3ffa0af35afad4fb0d0ae301a0786f, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 752938516}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 24d61eb9a2810594da108829c465a32d, type: 2}
     vitality:
       Name: Vitality
       Value: 0
@@ -11923,13 +11910,13 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 1126472988}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: dc110818daa600640a2529f181e8beb1, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 1171400627}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 5a47b8f1ffa852e4786e76d5a6a8f3b7, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 1096709478}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 53cf4822808a89b4a984bb1acf3e9bd3, type: 2}
     endurance:
       Name: Endurance
       Value: 0
@@ -11939,10 +11926,10 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 1473971459}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: fc430c76453542e48b62c37f43ca95d4, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 916554252}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 1f9f199071395264cad147af1d62e766, type: 2}
     stamina:
       Name: Stamina
       Value: 0
@@ -11952,10 +11939,10 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 1879146822}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 56d63be01a8fd394c9599bc330abf171, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 187163446}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: d94da6c2faa0a374c845271b89b6ffef, type: 2}
     luck:
       Name: Luck
       Value: 0
@@ -11965,10 +11952,10 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 176797196}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 9cea96aeeadc07b4588d0be36f0d2c6f, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 895014712}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 92b86ba68d248bf49b542af36b8a0971, type: 2}
     speed:
       Name: Speed
       Value: 0
@@ -11978,10 +11965,10 @@ MonoBehaviour:
       upgrades:
       - purchased: 0
         upgradeButtonObj: {fileID: 679077046}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: c5eda71f3e0bff9469b3a217eafa4575, type: 2}
       - purchased: 0
         upgradeButtonObj: {fileID: 971649379}
-        effect: {fileID: 0}
+        effect: {fileID: 11400000, guid: 33928513070168b44aeb58725e94c9e8, type: 2}
     campfireUpgrades:
     - purchased: 0
       upgradeButtonObj: {fileID: 1465941280}
@@ -17389,7 +17376,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 949784343}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbef00c6989c56946a4d5e62d38fed5f, type: 3}
+  m_Script: {fileID: 11500000, guid: 1337ce5e7464fe94a8bf8190a3285947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   waveEntryPrefab: {fileID: 7657831470430261952, guid: 8d4f045e17a1c4d46a249c3dd7267c74, type: 3}
@@ -17479,13 +17466,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 951883889}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22f50d0774fd5554fa6aa4ce5c4c4162, type: 3}
+  m_Script: {fileID: 11500000, guid: e207de3532bc2514eb94874ff2dc0570, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   voxelMaterial: {fileID: 2100000, guid: e7471210859a2724db53cd2c0f06306b, type: 2}
   voxelGridRoot: {fileID: 951883892}
   campFirePrefab: {fileID: 8230836892471065354, guid: 10b1eaf5534bb224c92b17dc4e70853d, type: 3}
-  minSpacing: 10
+  minSpacing: 6
   seed: 12345
   borderWallPrefab: {fileID: 7842881656123862893, guid: 8f5433e2b0ef1c34b9a39841ab7cf9c1, type: 3}
   chunksFromBorder: 1
@@ -17493,21 +17480,16 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  chunkViewDistance: 6
+  chunkViewDistance: 10
   biomes:
   - {fileID: 11400000, guid: 822f6c3dd93e08140b4d2b9d4ca52ab0, type: 2}
   biomeNoiseScale: 1
   chunkSize: 16
-  gridSize: 20
+  gridSize: 10
   voxelSize: 1
   maxHeight: 10
   heightOffset: 0.4
   outerRadius: 0.44
-  colliderPool: {fileID: 0}
-  structureManager: {fileID: 311280690}
-  animalSpawner: {fileID: 1792087629}
-  gemAltarSpawner: {fileID: 7565207}
-  keyStructureSpawner: {fileID: 7565208}
 --- !u!1 &960337785
 GameObject:
   m_ObjectHideFlags: 0
@@ -17907,7 +17889,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 983940357}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76bf69888a18cf74abba3d662d4ed18e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8c588d9992a766445b14ab9340fc88f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingTab
   category: 3
@@ -18081,8 +18063,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 671985166}
   m_HandleRect: {fileID: 671985165}
   m_Direction: 2
-  m_Value: -0.00000030517577
-  m_Size: 0.6666667
+  m_Value: -0.0000025939949
+  m_Size: 0.66666675
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -18388,6 +18370,7 @@ GameObject:
   - component: {fileID: 1029622026}
   - component: {fileID: 1029622029}
   - component: {fileID: 1029622030}
+  - component: {fileID: 1029622031}
   m_Layer: 5
   m_Name: Crafting Menu
   m_TagString: Untagged
@@ -18436,6 +18419,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37123568558880145b610c05afaee9d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1029622031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029622025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e010173fa35d244dad8f981b4f7dbc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Crafting.CraftingUI
+  craftingItemPrefab: {fileID: 8959304659675671088, guid: 538be452eda974b4ea9c2ec07091901d, type: 3}
+  craftingItemParent: {fileID: 1448323074}
+  craftingItemName: {fileID: 1852799153}
+  craftingItemIconBackground: {fileID: 1305566476}
+  craftingItemIcon: {fileID: 1056435872}
+  requirementPrefabParent: {fileID: 168832736}
+  craftButton: {fileID: 1049289748}
+  craftingTabs:
+  - {fileID: 217984363}
+  - {fileID: 1210406048}
+  - {fileID: 307774328}
+  - {fileID: 983940364}
+  selectedItem: {fileID: 0}
 --- !u!114 &1034111221 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2641122750280970774, guid: f4184e810e04d5b4f8a2060767f763a8, type: 3}
@@ -20522,7 +20530,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1119750313}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddeefffd9740d85498a7fe983526f11d, type: 3}
+  m_Script: {fileID: 11500000, guid: b9c59e0448dd311408ff164ad2e9a65b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmeltingTab
   category: 0
@@ -21973,7 +21981,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1202642737}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f7252d76e220a34da6b5c88a7537b43, type: 3}
+  m_Script: {fileID: 11500000, guid: eacb430d6fdc91442b519c697256b67b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxRequestsPerFrame: 1
@@ -22084,7 +22092,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1210406041}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76bf69888a18cf74abba3d662d4ed18e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8c588d9992a766445b14ab9340fc88f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingTab
   category: 1
@@ -23718,7 +23726,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1291457539}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f40590719e44fb40a2e23066024a188, type: 3}
+  m_Script: {fileID: 11500000, guid: c6d9c37134573b24bbb2c5c5898bd5b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UpgradeTooltipMenu
   nameText: {fileID: 1319999581}
@@ -26658,7 +26666,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1390967051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2b932b85612cf64b9dd60e92b52e462, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d8aaae8ac5edb744861555ed44691a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingTutorialHandler
 --- !u!114 &1390967054
@@ -26670,7 +26678,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1390967051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7610e5c4381c6ba43ae8296266a799ae, type: 3}
+  m_Script: {fileID: 11500000, guid: 71aa6623b8a55a94189318ce420abd41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmeltingTutorialHandler
 --- !u!114 &1390967055
@@ -26682,7 +26690,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1390967051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ee5ed4dd433e9b40af6f054d4c28bfd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0b739877557ae364e9e46a94f2fc33a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
 --- !u!1 &1392789699
@@ -29557,7 +29565,7 @@ MonoBehaviour:
     prefabs:
     - {fileID: 1594266282575450657, guid: 111b3314de704e14c81d3cad55e4b0ae, type: 3}
     - {fileID: 6419132561559435068, guid: 89a89a530bc1b7744b72c12192e6481f, type: 3}
-    - {fileID: 5577426781986146749, guid: 36347d8e6926c9a40a29f615c2005e35, type: 3}
+    - {fileID: 6959633915284627044, guid: 36347d8e6926c9a40a29f615c2005e35, type: 3}
     - {fileID: 5596515248738443585, guid: d0e9789c4a099c54082f7214c4fd47d8, type: 3}
     - {fileID: 5089579695378597119, guid: 4b3783fda820cb5448e14595c33b8ad9, type: 3}
     - {fileID: 5996018733791518837, guid: 64b2915a0b493aa4ca61c50c727c6316, type: 3}
@@ -29577,13 +29585,13 @@ MonoBehaviour:
     - {fileID: 7838755196610609500, guid: c2c7a09f0945ad74a9520e1acf7f45c6, type: 3}
     - {fileID: 8706993344553825615, guid: 10251b8a21f05544d985b38051886b31, type: 3}
     - {fileID: 4494010776646809524, guid: 282fe738445715441af97f731467887d, type: 3}
-    - {fileID: 2773703832446058973, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
+    - {fileID: 5609003839569157637, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
     - {fileID: 6543480528732816947, guid: 17fe3ddee77399644a518a4132ed8940, type: 3}
     - {fileID: 9175304881291783079, guid: 25cba4e89c9dadf41a7509aae3ee9609, type: 3}
     - {fileID: 1300611963905405125, guid: f79f665cc05bf4642a2e279c720fdd0f, type: 3}
     - {fileID: 3924220530090478521, guid: 3aa46ad5ee46f3c46a927fa54d878e41, type: 3}
     - {fileID: 2658952235936788507, guid: a8e8e4573b8ae5e439031dfd4cf822ff, type: 3}
-    - {fileID: 2339103782091125912, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
+    - {fileID: 1612894569515296370, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
     - {fileID: 3449517136513081630, guid: d599651c7762f4e41aba380fa015bc06, type: 3}
     - {fileID: 8475628114037023104, guid: ee2324911d668ce4c9519dc0d77434ef, type: 3}
     - {fileID: 5921956913580067714, guid: dfef35f7880936d40b7a45dd450a4fb7, type: 3}
@@ -29626,10 +29634,10 @@ MonoBehaviour:
     - {fileID: 881154247749051603, guid: 766207c9c00b73c44bd3ecde61646e22, type: 3}
     - {fileID: 7844660309763906660, guid: 602a0b47def10e84ebfb6325f0872f29, type: 3}
     - {fileID: 153972581328773051, guid: 598fea3aa6611d842bbe296db09949f1, type: 3}
-    - {fileID: 5044366259291855496, guid: e7e920f50c330e64dbfad8fc4b381244, type: 3}
-    - {fileID: 4084502265111637907, guid: fbb6c0c70d8255f4e83054fb1affa494, type: 3}
-    - {fileID: 3101251102963738970, guid: 3328a7bc06c2f7749afe34713c70be91, type: 3}
-    - {fileID: 5631074609405359638, guid: 5bd60cab4f8f6d146ab1e777c683a8dc, type: 3}
+    - {fileID: 9177684417866302764, guid: ef329255bb8af95448c7abb59c9174f0, type: 3}
+    - {fileID: 6632706679857284279, guid: fbb6c0c70d8255f4e83054fb1affa494, type: 3}
+    - {fileID: 3888973100209743569, guid: 3328a7bc06c2f7749afe34713c70be91, type: 3}
+    - {fileID: 8558969030745782339, guid: 5bd60cab4f8f6d146ab1e777c683a8dc, type: 3}
     - {fileID: 8230836892471065354, guid: 10b1eaf5534bb224c92b17dc4e70853d, type: 3}
     - {fileID: 6483958559380496520, guid: a802b45ced5da5b408f0c8e8649a5f94, type: 3}
 --- !u!4 &1572769354
@@ -29810,8 +29818,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2019047479}
   m_HandleRect: {fileID: 2019047478}
   m_Direction: 2
-  m_Value: 0.99999976
-  m_Size: 0.5466667
+  m_Value: 1
+  m_Size: 0.54666674
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -32037,7 +32045,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 344}
+  m_AnchoredPosition: {x: 973, y: 344}
   m_SizeDelta: {x: 480, y: 186}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1725352978
@@ -32069,14 +32077,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 1725352975}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e02ba987bb9889e479936e93747d39a2, type: 3}
+  m_Script: {fileID: 11500000, guid: 7dc7928de52e92643a1edf36369960b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inputSlot: {fileID: 1043687843}
   outputSlot: {fileID: 1172822479}
   fuelSlot: {fileID: 479854242}
-  fuelBar: {fileID: 1298252315}
+  furnaceItemParent: {fileID: 1726591891}
+  furnaceItemPrefab: {fileID: 8109688725954714224, guid: 45a357f3cdb4d2849b6b9197704562dd, type: 3}
+  smeltingTabs:
+  - {fileID: 1119750317}
+  - {fileID: 422971548}
+  - {fileID: 2123256803}
   progressBar: {fileID: 1584495032}
+  fuelBar: {fileID: 1298252315}
+  recipeSection: {fileID: 386742896}
+  nullItemSelectText: {fileID: 1349791192}
+  resultImage: {fileID: 1263786881}
+  resultName: {fileID: 715173892}
+  requiredImage: {fileID: 1387677592}
+  requiredName: {fileID: 810758797}
   linkedFurnace: {fileID: 0}
 --- !u!1 &1726591890
 GameObject:
@@ -32726,11 +32746,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1771459502}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f55b9bda85b300647a1f5fccda758b07, type: 3}
+  m_Script: {fileID: 11500000, guid: 62ba42e6a3bc48a40a74f4789a1966d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   slotPrefab: {fileID: 4291950133302665867, guid: f4184e810e04d5b4f8a2060767f763a8, type: 3}
-  inventoryItemPrefab: {fileID: 4184796502668218777, guid: bc9da29384477f940b4139e1cdec1ec7, type: 3}
   slotParent: {fileID: 1771459503}
   slotHeight: 36
 --- !u!1001 &1772851451
@@ -33394,8 +33413,8 @@ GameObject:
   - component: {fileID: 1792087624}
   - component: {fileID: 1792087627}
   - component: {fileID: 1792087628}
+  - component: {fileID: 1792087631}
   - component: {fileID: 1792087630}
-  - component: {fileID: 1792087629}
   m_Layer: 0
   m_Name: Mob Manager
   m_TagString: Untagged
@@ -33412,34 +33431,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792087623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 019a3d3bd86cce24eb285c1d062f8b22, type: 3}
+  m_Script: {fileID: 11500000, guid: a12973a9475c2b14db833e49f91c8bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dayNightCycle: {fileID: 649169901}
-  enemyTiers:
-  - prefab: {fileID: 6133712532379057815, guid: 1ec4b0686515d904aa67f3ed5ad5d296, type: 3}
-    unlockDay: 1
-    poolSize: 4
-    regularsToSpawnWith: []
-  - prefab: {fileID: 1633517326538075026, guid: 86666a96968314c4eb1ee603a6ac83aa, type: 3}
-    unlockDay: 2
-    poolSize: 3
-    regularsToSpawnWith: []
-  - prefab: {fileID: 6941125607410677010, guid: d1b21a462099ca24c9f8eadf7f09b982, type: 3}
-    unlockDay: 4
-    poolSize: 2
-    regularsToSpawnWith: []
-  - prefab: {fileID: 8246356037318663538, guid: 2ad59279966463342af6ee78059934ad, type: 3}
-    unlockDay: 5
-    poolSize: 1
-    regularsToSpawnWith: []
-  - prefab: {fileID: 7698406931232590718, guid: 0f804f897e8c6634a82b90e96f1198ed, type: 3}
-    unlockDay: 3
-    poolSize: 4
-    regularsToSpawnWith: []
-  poolGraveyardPosition: {x: 0, y: -1000, z: 0}
-  dailyGrowthRate: 0.1
-  maxGrowthMultiplier: 3
+  clusterCount: 3
+  animalsPerCluster: 5
+  clusterRadius: 5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  globalAnimalCap: 100
 --- !u!114 &1792087625
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33449,20 +33450,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792087623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 099233c41e10ad542b3726a010371147, type: 3}
+  m_Script: {fileID: 11500000, guid: 5c2e88772fb6e464cbc4bf4c6a5d79eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnRadius: 20
-  spawnInterval:
-  - 10
-  - 15
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  dayNightCycle: {fileID: 649169901}
-  enemyPool: {fileID: 1792087624}
-  eliteSpawnChance: 0.007
-  blightSpawnChance: 0.003
+  animalSpawner: {fileID: 1792087624}
+  animalPrefab: {fileID: 111912941036290077, guid: 51f3cc7fbc4f54f4e952527578a3fc8a, type: 3}
+  initialPoolSize: 10
+  poolGraveyardPosition: {x: 0, y: -1000, z: 0}
 --- !u!4 &1792087626
 Transform:
   m_ObjectHideFlags: 0
@@ -33487,16 +33481,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792087623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2bec17db6c78d74f82eff1038c907c3, type: 3}
+  m_Script: {fileID: 11500000, guid: e5331dcd5b8a3114193bd249334dc159, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trialEnemyPrefabs:
-  - {fileID: 6133712532379057815, guid: 1ec4b0686515d904aa67f3ed5ad5d296, type: 3}
-  - {fileID: 1633517326538075026, guid: 86666a96968314c4eb1ee603a6ac83aa, type: 3}
-  - {fileID: 6941125607410677010, guid: d1b21a462099ca24c9f8eadf7f09b982, type: 3}
-  - {fileID: 7698406931232590718, guid: 0f804f897e8c6634a82b90e96f1198ed, type: 3}
-  poolSizePerType: 10
-  poolGraveyardPosition: {x: 0, y: -1000, z: 0}
+  globalScanInterval: 1
 --- !u!114 &1792087628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33506,29 +33494,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792087623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16b0536a2eb81634bbaf61750268fbff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2fa03c407384c3d45bb32bb16d1fcb14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  globalScanInterval: 1
---- !u!114 &1792087629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1792087623}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9896a9a914156a468dfc6376e4bf706, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clusterCount: 1
-  animalsPerCluster: 5
-  clusterRadius: 5
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  globalAnimalCap: 20
+  dayNightCycle: {fileID: 649169901}
+  enemyTiers:
+  - prefab: {fileID: 6133712532379057815, guid: 1ec4b0686515d904aa67f3ed5ad5d296, type: 3}
+    unlockDay: 1
+    poolSize: 5
+    regularsToSpawnWith: []
+  - prefab: {fileID: 1633517326538075026, guid: 86666a96968314c4eb1ee603a6ac83aa, type: 3}
+    unlockDay: 2
+    poolSize: 3
+    regularsToSpawnWith: []
+  - prefab: {fileID: 6941125607410677010, guid: d1b21a462099ca24c9f8eadf7f09b982, type: 3}
+    unlockDay: 3
+    poolSize: 3
+    regularsToSpawnWith: []
+  - prefab: {fileID: 7698406931232590718, guid: 0f804f897e8c6634a82b90e96f1198ed, type: 3}
+    unlockDay: 4
+    poolSize: 5
+    regularsToSpawnWith: []
+  - prefab: {fileID: 8246356037318663538, guid: 2ad59279966463342af6ee78059934ad, type: 3}
+    unlockDay: 5
+    poolSize: 1
+    regularsToSpawnWith: []
+  poolGraveyardPosition: {x: 0, y: -1000, z: 0}
+  dailyGrowthRate: 0.1
+  maxGrowthMultiplier: 3
 --- !u!114 &1792087630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33538,13 +33531,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792087623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c19a709653cb70c4eb7497847ca3191b, type: 3}
+  m_Script: {fileID: 11500000, guid: 608fbaf6ba3489c4ebba59e49f967cb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animalSpawner: {fileID: 1792087629}
-  animalPrefab: {fileID: 111912941036290077, guid: 51f3cc7fbc4f54f4e952527578a3fc8a, type: 3}
-  initialPoolSize: 5
+  trialEnemyPrefabs:
+  - {fileID: 6941125607410677010, guid: d1b21a462099ca24c9f8eadf7f09b982, type: 3}
+  - {fileID: 6133712532379057815, guid: 1ec4b0686515d904aa67f3ed5ad5d296, type: 3}
+  - {fileID: 7698406931232590718, guid: 0f804f897e8c6634a82b90e96f1198ed, type: 3}
+  - {fileID: 1633517326538075026, guid: 86666a96968314c4eb1ee603a6ac83aa, type: 3}
+  poolSizePerType: 10
   poolGraveyardPosition: {x: 0, y: -1000, z: 0}
+--- !u!114 &1792087631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792087623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ac29f9eccfdfdd45839909315d9146d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.AI.Enemies.EnemySpawner
+  spawnRadius: 20
+  spawnInterval:
+  - 10
+  - 15
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  dayNightCycle: {fileID: 649169901}
+  enemyPool: {fileID: 1792087628}
+  eliteSpawnChance: 0.007
+  blightSpawnChance: 0.003
 --- !u!1 &1796962545
 GameObject:
   m_ObjectHideFlags: 0
@@ -36345,21 +36364,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1897864079}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc2c205313395f8439b1112d852bb1da, type: 3}
+  m_Script: {fileID: 11500000, guid: eff22808fc6425048b5d7bcb3ee92a3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  craftingItemPrefab: {fileID: 8959304659675671088, guid: 538be452eda974b4ea9c2ec07091901d, type: 3}
-  craftingItemParent: {fileID: 1448323074}
-  craftingItemName: {fileID: 1852799153}
-  craftingItemIconBackground: {fileID: 1305566476}
-  craftingItemIcon: {fileID: 1056435872}
-  requirementPrefabParent: {fileID: 168832736}
-  craftButton: {fileID: 1049289748}
-  craftingTabs:
-  - {fileID: 217984363}
-  - {fileID: 1210406048}
-  - {fileID: 307774328}
-  - {fileID: 983940364}
+  craftingUI: {fileID: 1029622031}
   craftingDatabase: {fileID: 11400000, guid: 39db8cf1e8a98784db24068119cb8a6b, type: 2}
 --- !u!1 &1909045925
 GameObject:
@@ -37414,7 +37422,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1963540307}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b18584a6683023647a5562e170d67062, type: 3}
+  m_Script: {fileID: 11500000, guid: 0373b734c8971234297e982dea6cc0a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
   starterQuest:
@@ -37422,9 +37430,9 @@ MonoBehaviour:
     title: Collect all 4 GEMS
     isCompleted: 0
     requiredItems:
-    - {fileID: 11400000, guid: 583a3e5488840214491eea5f3ae57ac3, type: 2}
     - {fileID: 11400000, guid: 128d71fc4ba01e446ac5d92031ca9c5e, type: 2}
     - {fileID: 11400000, guid: 458acfdbf6a9c524ca739664e58e4108, type: 2}
+    - {fileID: 11400000, guid: 583a3e5488840214491eea5f3ae57ac3, type: 2}
     - {fileID: 11400000, guid: c2bb2fa177d41be4aba4ad5a441af59a, type: 2}
     requiredCount: 4
     currentCount: 0
@@ -37449,7 +37457,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1963540307}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d447080bbbbc19f4bbfca801211aea58, type: 3}
+  m_Script: {fileID: 11500000, guid: f9f17ee522532be4caa7af77fe5ff1f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestUIManager
   questListContainer: {fileID: 2029361963}
@@ -39472,7 +39480,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2123256799}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddeefffd9740d85498a7fe983526f11d, type: 3}
+  m_Script: {fileID: 11500000, guid: b9c59e0448dd311408ff164ad2e9a65b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SmeltingTab
   category: 2

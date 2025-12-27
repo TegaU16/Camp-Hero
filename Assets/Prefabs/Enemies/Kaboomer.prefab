@@ -260,21 +260,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 1633517326538075026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 2
   enemyType: 0
-  meleeAttackRange: 1.2
+  meleeAttackRange: 2
   rangedAttackRange: 10
   attackCooldown: 2
-  damage: 25
+  damage: 10
   knockbackForce: 5
   enemyIcon: {fileID: 21300000, guid: 9304241331bf64b44921a858724efe9f, type: 3}
-  breakableObject: {fileID: 1239901857397409524}
   rangedAttackScripts:
   - {fileID: 2023774751360520589}
-  moveSpeed: 1.8
+  moveSpeed: 4
   gravity: -9.8
   preferredTargets: 0100000004000000000000000200000003000000
   targetStickTime: 3
@@ -283,10 +282,7 @@ MonoBehaviour:
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: 4c8cc3ef1c7dcd64294dc30d887f0700, type: 2}
-  agent: {fileID: 412454301896586459}
-  animator: {fileID: 5404485727569505106}
-  ragdollController: {fileID: 8491393488900717002}
-  characterController: {fileID: 3461761033048163492}
+  animator: {fileID: 0}
 --- !u!114 &1239901857397409524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -326,7 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   collidersToIgnore:
   - {fileID: 5818360538608658529}
-  animator: {fileID: 0}
+  animator: {fileID: 5404485727569505106}
   agent: {fileID: 412454301896586459}
   proceduralAnimator: {fileID: 0}
 --- !u!65 &5818360538608658529
@@ -359,7 +355,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1633517326538075026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f09cee48568c548a211eaf747cd1fa, type: 3}
+  m_Script: {fileID: 11500000, guid: b179c12731e34bc44ad88a0f12e30afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetableLayer:
@@ -374,11 +370,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1633517326538075026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720
-  animator: {fileID: 5404485727569505106}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!143 &3461761033048163492
@@ -415,7 +410,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1633517326538075026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19767f6d6091a7c4dbc98365710c38c6, type: 3}
+  m_Script: {fileID: 11500000, guid: 2ad6abad5c6c4774190b18ff046f3de8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 7233558314745915786, guid: d0667485cef428f42a8ff4a9c83840dc, type: 3}

@@ -7,8 +7,7 @@ namespace Game.Storage
 {
     public class StorageUI : MonoBehaviour
     {
-        public GameObject slotPrefab;             // Empty slot UI
-        public GameObject inventoryItemPrefab;    // Item prefab
+        public GameObject slotPrefab;
         public Transform slotParent;
 
         private StorageUnit linkedStorage;
@@ -54,40 +53,33 @@ namespace Game.Storage
                 GameObject slot = Instantiate(slotPrefab, slotParent);
                 slotInstances.Add(slot);
 
-                if (i < linkedStorage.items.Count)
-                {
-                    StoredItem storedItem = linkedStorage.items[i];
-                    if (storedItem != null && storedItem.item != null) // Add null check
-                    {
-                        GameObject itemGO = Instantiate(inventoryItemPrefab, slot.transform);
-                        InventoryItem inventoryItem = itemGO.GetComponent<InventoryItem>();
+                if (i >= linkedStorage.items.Count) continue;
 
-                        inventoryItem.image = itemGO.GetComponent<Image>();
-                        inventoryItem.canvasGroup = itemGO.GetComponent<CanvasGroup>();
+                StoredItem storedItem = linkedStorage.items[i];
+                if (storedItem == null || storedItem.item == null) continue;
 
-                        inventoryItem.SetItem(storedItem.item, storedItem.count);
-                        inventoryItem.PlaceInSlot(slot.transform);
-                    }
-                }
+                InventorySlot inventorySlot = slot.GetComponent<InventorySlot>();
+                InventoryManager.Instance.SpawnNewItem(storedItem.item, inventorySlot, storedItem.count);
             }
 
+            // Resize the menu based on number of slots
             int slotsPerRow = InventoryManager.numHotbarSlots;
             int modulo = linkedStorage.maxSlots % slotsPerRow != 0 ? 1 : 0;
             int numRows = Mathf.FloorToInt(linkedStorage.maxSlots / slotsPerRow) + modulo;
 
             float spacing = 12f;
             menuHeight = spacing + slotHeight * numRows;
-            if (TryGetComponent(out RectTransform rectTransform))
-            {
-                Vector2 currentSize = rectTransform.sizeDelta;
-                rectTransform.sizeDelta = new Vector2(currentSize.x, menuHeight);
 
-                float baseY = -142f;
-                Vector2 anchoredPos = rectTransform.anchoredPosition;
-                anchoredPos.y = numRows * slotHeight / 2 + baseY;
+            if (!TryGetComponent(out RectTransform rectTransform)) return;
 
-                rectTransform.anchoredPosition = anchoredPos;
-            }
+            Vector2 currentSize = rectTransform.sizeDelta;
+            rectTransform.sizeDelta = new Vector2(currentSize.x, menuHeight);
+
+            float baseY = -142f;
+            Vector2 anchoredPos = rectTransform.anchoredPosition;
+            anchoredPos.y = numRows * slotHeight / 2f + baseY;
+
+            rectTransform.anchoredPosition = anchoredPos;
         }
 
         private void ClearSlots()
@@ -124,24 +116,15 @@ namespace Game.Storage
             foreach (GameObject slot in slotInstances)
             {
                 InventoryItem inventoryItem = slot.GetComponentInChildren<InventoryItem>();
+                if (inventoryItem == null || inventoryItem.item == null) continue;
 
-                if (inventoryItem != null)
+                StoredItem stored = new()
                 {
-                    if (inventoryItem.item == null)
-                    {
-                        Debug.LogWarning("SaveItemsToStorage: InventoryItem has no item assigned.");
-                    }
-                    else
-                    {
-                        StoredItem stored = new()
-                        {
-                            item = inventoryItem.item,
-                            count = Mathf.Max(1, inventoryItem.count)
-                        };
-                        stored.SyncNameFromItem();
-                        linkedStorage.items.Add(stored);
-                    }
-                }
+                    item = inventoryItem.item,
+                    count = Mathf.Max(1, inventoryItem.count)
+                };
+                stored.SyncNameFromItem();
+                linkedStorage.items.Add(stored);
             }
         }
     }

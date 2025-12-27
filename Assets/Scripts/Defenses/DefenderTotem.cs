@@ -39,18 +39,15 @@ namespace Game.Defenses
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = hits[i];
-                if (hit.TryGetComponent(out Enemy enemy))
-                {
-                    Vector3 hitPoint = hit.ClosestPoint(transform.position);
-                    Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                if (!hit.TryGetComponent(out Enemy enemy)) continue;
 
-                    if (enemy.TryGetComponent(out BreakableObject breakable))
-                    {
-                        breakable.TakeDamage(pulseDamage, false, hitPoint, hitNormal);
-                    }
+                Vector3 hitPoint = hit.ClosestPoint(transform.position);
+                Vector3 hitNormal = (hitPoint - transform.position).normalized;
 
-                    enemy.OnAttacked(transform);
-                }
+                if (enemy.TryGetComponent(out BreakableObject breakable))
+                    breakable.TakeDamage(pulseDamage, crit: false, hitPoint, hitNormal);
+
+                enemy.OnAttacked(transform);
             }
 
             if (pulseEffect != null)

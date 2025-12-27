@@ -73,12 +73,6 @@ namespace Game.Terrain
         public float heightOffset = 0.5f;
         [Range(0f, 0.5f)] public float outerRadius;
 
-        [Header("Managers")]
-        [SerializeField] private StructureManager structureManager;
-        [SerializeField] private AnimalSpawner animalSpawner;
-        [SerializeField] private GemAltarSpawner gemAltarSpawner;
-        [SerializeField] private KeyStructureSpawner keyStructureSpawner;
-
         private void Awake()
         {
             if (Instance == null)
@@ -97,7 +91,7 @@ namespace Game.Terrain
         {
             if (worldGenerated) return;
 
-            animalSpawner.groundLayer = groundLayer;
+            AnimalSpawner.Instance.groundLayer = groundLayer;
             seed = worldSeed;
             worldName = name;
 
@@ -134,7 +128,7 @@ namespace Game.Terrain
                     Vector2Int chunkKey = new(x, z);
                     chunkMap[chunkKey] = chunk;
 
-                    animalSpawner.chunks.Add(chunk);
+                    AnimalSpawner.Instance.chunks.Add(chunk);
 
                     GenerateChunkTerrain(chunk, chunkPosition);
 
@@ -146,7 +140,7 @@ namespace Game.Terrain
             }
 
             // --- Key structures ---
-            yield return StartCoroutine(keyStructureSpawner.SpawnKeyStructures(terrainWidth, worldCenter, (progress) =>
+            yield return StartCoroutine(KeyStructureSpawner.Instance.SpawnKeyStructures(terrainWidth, worldCenter, (progress) =>
             {
                 OnProgress?.Invoke((currentStep + progress) / totalSteps);
             }));
@@ -155,8 +149,8 @@ namespace Game.Terrain
             yield return null;
 
             // --- Altars ---
-            gemAltarSpawner.worldCenter = worldCenter;
-            yield return StartCoroutine(gemAltarSpawner.SpawnAltarsRoutine(terrainWidth, (progress) =>
+            GemAltarSpawner.Instance.worldCenter = worldCenter;
+            yield return StartCoroutine(GemAltarSpawner.Instance.SpawnAltarsRoutine(terrainWidth, (progress) =>
             {
                 OnProgress?.Invoke((currentStep + progress) / totalSteps);
             }));
@@ -248,7 +242,7 @@ namespace Game.Terrain
                 chunkMap[new Vector2Int(
                     (int)data.chunkPosition.x / chunkSize,
                     (int)data.chunkPosition.z / chunkSize)] = chunk;
-                animalSpawner.chunks.Add(chunk);
+                AnimalSpawner.Instance.chunks.Add(chunk);
 
                 currentStep++;
                 OnProgress?.Invoke((float)currentStep / totalSteps);
@@ -279,50 +273,42 @@ namespace Game.Terrain
             Vector3Int gridPos = Utility.WorldToVoxelCoord(worldCenter);
             Vector3 snappedPos = Utility.VoxelCoordToWorld(gridPos);
 
-            Vector3 rayStart = snappedPos + 200f * maxHeight * Vector3.up;
-            Vector3 rayEnd = snappedPos + Vector3.down * maxHeight;
+            int snappedX = Mathf.FloorToInt(snappedPos.x);
+            int snappedZ = Mathf.FloorToInt(snappedPos.z);
 
-            Debug.DrawLine(rayStart, rayEnd, Color.red, 10f); // visualize ray in Scene view
+            float height = Utility.GetHeightAt(snappedX, snappedZ);
+            Vector3 spawnPos = new(snappedPos.x, height, snappedPos.z);
 
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, Mathf.Infinity, groundLayer))
+            GameObject spawnedCampfire = Instantiate(campFirePrefab, spawnPos, Quaternion.identity);
+
+            if (GameManager.Instance == null)
             {
-                float heightOffset = 0f;
-                if (campFirePrefab.TryGetComponent(out CapsuleCollider col))
-                    heightOffset = col.height / 2f;
-
-                Vector3 spawnPos = hit.point + new Vector3(0, heightOffset, 0);
-
-                GameObject spawnedCampfire = Instantiate(campFirePrefab, spawnPos, Quaternion.identity);
-
-                if (GameManager.Instance == null)
-                {
-                    Debug.LogError("[Campfire] GameManager.Instance is null!");
-                    return;
-                }
-
-                GameManager.Instance.SetCampfire(spawnedCampfire);
-
-                if (spawnedCampfire.TryGetComponent(out Health health))
-                    health.SetHealth(health.maxHealth);
-
-                MarkVoxelArea(spawnedCampfire, buildable: true);
-
-                int x = (int)(spawnPos.x / chunkSize);
-                int z = (int)(spawnPos.z / chunkSize);
-                Vector2Int chunkKey = new(x, z);
-
-                if (!chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
-                {
-                    Debug.LogError($"[Campfire] No chunk found at key {chunkKey}");
-                    return;
-                }
-
-                spawnedCampfire.transform.parent = chunk.chunkObject.transform;
-                chunk.objects.Add(spawnedCampfire);
-
-                SpawnedObjectData data = new(spawnPos, spawnedCampfire, campFirePrefab);
-                Utility.AddObjectDataToChunk(data, spawnPos, chunk);
+                Debug.LogError("[Campfire] GameManager.Instance is null!");
+                return;
             }
+
+            GameManager.Instance.SetCampfire(spawnedCampfire);
+
+            if (spawnedCampfire.TryGetComponent(out Health health))
+                health.SetHealth(health.maxHealth);
+
+            MarkVoxelArea(spawnedCampfire, buildable: true);
+
+            int x = (int)(spawnPos.x / chunkSize);
+            int z = (int)(spawnPos.z / chunkSize);
+            Vector2Int chunkKey = new(x, z);
+
+            if (!chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
+            {
+                Debug.LogError($"[Campfire] No chunk found at key {chunkKey}");
+                return;
+            }
+
+            spawnedCampfire.transform.parent = chunk.chunkObject.transform;
+            chunk.objects.Add(spawnedCampfire);
+
+            SpawnedObjectData data = new(spawnPos, spawnedCampfire, campFirePrefab);
+            Utility.AddObjectDataToChunk(data, spawnPos, chunk);
         }
 
         private IEnumerator SpawnNaturalObjects()
@@ -593,7 +579,7 @@ namespace Game.Terrain
         {
             if (!chunk.structureSpawned)
             {
-                structureManager.SpawnStructuresInChunk(chunk);
+                StructureManager.Instance.SpawnStructuresInChunk(chunk);
                 chunk.structureSpawned = true;
             }
 
@@ -613,7 +599,7 @@ namespace Game.Terrain
 
                     Vector3 basePosition = chunkPosition + new Vector3(
                         (cx + 0.5f) * voxelSize,
-                        maxHeight * voxelSize,
+                        0f,
                         (cz + 0.5f) * voxelSize
                     );
 
@@ -637,9 +623,7 @@ namespace Game.Terrain
 
                     Vector3Int spawnKey = Utility.WorldToVoxelCoord(spawnPosition);
                     if (chunk.savedObjectPositionsInt.Contains(spawnKey)) continue;
-
                     if (dist < minDistanceFromCenter || dist > maxDistanceFromCenter) continue;
-
                     if (!IsWithinBorders(spawnPosition)) continue;
 
                     bool tooClose = false;
@@ -713,14 +697,9 @@ namespace Game.Terrain
                     if (storage != null)
                     {
                         if (!string.IsNullOrEmpty(data.savedStateJson))
-                        {
                             storage.LoadState(data.savedStateJson);
-                        }
-                        else
-                        {
-                            if (storage.TryGetComponent(out LootTableReference lootRef) && lootRef.lootTable != null)
-                                storage.items = lootRef.lootTable.GetRandomLoot();
-                        }
+                        else if (storage.TryGetComponent(out LootTableReference lootRef) && lootRef.lootTable != null)
+                            storage.items = lootRef.lootTable.GetRandomLoot();
                     }
 
                     MarkVoxelArea(obj, buildable: false);
@@ -831,14 +810,14 @@ namespace Game.Terrain
 
                             SetChunkObjectVisibility(chunk, true);
                         }
-                        else if (!shouldBeVisible && chunk.objectsInstantiated)
+                        else if (chunk.objectsInstantiated)
                         {
                             SetChunkObjectVisibility(chunk, false);
                         }
                     }
                 }
 
-                yield return _waitForSeconds0_2; // balance performance + responsiveness
+                yield return _waitForSeconds0_2;
             }
         }
 
@@ -1022,15 +1001,14 @@ namespace Game.Terrain
             if (enable)
             {
                 voxelStates[pos] = current | flag;
+                return;
             }
+
+            current &= ~flag;
+            if (current == VoxelState.None)
+                voxelStates.Remove(pos); // cleanup
             else
-            {
-                current &= ~flag;
-                if (current == VoxelState.None)
-                    voxelStates.Remove(pos); // cleanup
-                else
-                    voxelStates[pos] = current;
-            }
+                voxelStates[pos] = current;
         }
 
         public void MarkVoxelArea(GameObject instance, bool occupy = true, bool walkable = false, bool buildable = true)

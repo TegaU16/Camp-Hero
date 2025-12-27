@@ -66,26 +66,27 @@ namespace Game
         private void Update()
         {
             if (IsGameOver) return;
-
-            if (Input.GetKeyDown(togglePauseKey))
+            if (!Input.GetKeyDown(togglePauseKey)) return;
+            if (InventoryManager.Instance.JustClosedExtension)
             {
-                if (InventoryManager.Instance.JustClosedExtension)
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                    InventoryManager.Instance.JustClosedExtension = false;
-                    return;
-                }
-
-                if (IsPaused)
-                    ResumeGame();
-                else
-                    PauseGame();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                InventoryManager.Instance.JustClosedExtension = false;
+                return;
             }
+
+            if (IsPaused)
+                ResumeGame();
+            else
+                PauseGame();
         }
 
         private void OnApplicationQuit() => SaveGame(true);
-        private void OnApplicationPause(bool pause) { if (pause) SaveGame(); }
+        private void OnApplicationPause(bool pause)
+        {
+            if (pause)
+                SaveGame();
+        }
 
         // ----------------- PLAYER -----------------
         public void SpawnPlayer(Vector3 position, PlayerSaveData data = null)
@@ -110,11 +111,10 @@ namespace Game
 
         public void OnUIBound()
         {
-            if (pendingPlayerData != null && playerInstance.TryGetComponent(out Player player))
-            {
-                ApplyPlayerLoadedData(player, pendingPlayerData);
-                pendingPlayerData = null;
-            }
+            if (pendingPlayerData == null || !playerInstance.TryGetComponent(out Player player)) return;
+
+            ApplyPlayerLoadedData(player, pendingPlayerData);
+            pendingPlayerData = null;
         }
 
         private void ApplyPlayerLoadedData(Player player, PlayerSaveData data)
@@ -153,21 +153,20 @@ namespace Game
 
         public void BindPlayerUI(Player player)
         {
-            if (player != null)
-            {
-                player.BindUI(
+            if (player == null) return;
+
+            player.BindUI(
                     UIManager.Instance.GetHealthBar("Player"),
                     UIManager.Instance.GetStaminaBar()
                 );
 
-                if (player.healthBar != null)
-                    player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
+            if (player.healthBar != null)
+                player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
 
-                if (player.staminaBar != null)
-                    player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
+            if (player.staminaBar != null)
+                player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
 
-                player.UpdateVitals();
-            }
+            player.UpdateVitals();
         }
 
         public IEnumerator RespawnPlayer(Player player)
@@ -220,33 +219,28 @@ namespace Game
             VoxelGrid.Instance.SetPlayer(playerInstance);
 
             CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
-            if (cinemachineCamera != null && playerInstance.TryGetComponent(out Player player))
+            if (cinemachineCamera == null || !playerInstance.TryGetComponent(out Player player)) return;
+            if (player.cameraTarget == null)
             {
-                if (player.cameraTarget == null)
-                {
-                    Debug.LogWarning("Camera target not yet initialized");
-                    return;
-                }
-
-                cinemachineCamera.Follow = player.cameraTarget;
-                cinemachineCamera.LookAt = player.cameraTarget;
+                Debug.LogWarning("Camera target not yet initialized");
+                return;
             }
+
+            cinemachineCamera.Follow = player.cameraTarget;
+            cinemachineCamera.LookAt = player.cameraTarget;
         }
 
         // ----------------- CAMPFIRE -----------------
         public void SetCampfire(GameObject campfireObj, CampfireSaveData campfireData = null)
         {
             campFireInstance = campfireObj;
+            if (!campFireInstance.TryGetComponent(out Campfire campfire)) return;
 
-            if (campFireInstance.TryGetComponent(out Campfire campfire))
-            {
-                campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
+            campfire.health.healthBar = UIManager.Instance.GetHealthBar("Campfire");
+            int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
 
-                int campfireHealth = campfireData != null ? campfireData.currentHealth : campfire.health.maxHealth;
-
-                if (campfire.health.healthBar != null)
-                    campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
-            }
+            if (campfire.health.healthBar != null)
+                campfire.health.healthBar.Initialize(campfire.health.maxHealth, campfireHealth);
         }
 
         // ----------------- SAVE / LOAD -----------------
@@ -525,22 +519,15 @@ namespace Game
             if (string.IsNullOrEmpty(WorldSession.CurrentWorldName)) return;
 
             WorldMetaData meta = SaveSystem.LoadWorldMeta(WorldSession.CurrentWorldName);
-            if (meta != null)
-            {
-                meta.worldState = newState;
-                meta.lastPlayedDate = System.DateTime.Now.ToString();
-                SaveSystem.SaveWorldMeta(meta);
-            }
+            if (meta == null) return;
+
+            meta.worldState = newState;
+            meta.lastPlayedDate = System.DateTime.Now.ToString();
+            SaveSystem.SaveWorldMeta(meta);
         }
 
-        public bool IsGameManagerReady()
-        {
-            return !IsGameOver && !IsPaused && !IsLoading;
-        }
+        public bool IsGameManagerReady() => !IsGameOver && !IsPaused && !IsLoading;
 
-        public void OpenSettingsMenu()
-        {
-            settingsMenuUI.SetActive(true);
-        }
+        public void OpenSettingsMenu() => settingsMenuUI.SetActive(true);
     }
 }

@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa5190ba54442b745aa7694d1e47c794, type: 3}
+  m_Script: {fileID: 11500000, guid: e534e3edf90a28f459e964c6ddc7853f, type: 3}
   m_Name: Thorns
   m_EditorClassIdentifier: Assembly-CSharp::ThornsUpgrade
   upgradeName: Thorns
-  description: Deal 30% of damage received back to the attacker
+  description: Enemies that attack the player receive recoil damage
   cost: 1
-  thornsDamageRatio: 0.3
+  thornsDamageRatio: 0.1

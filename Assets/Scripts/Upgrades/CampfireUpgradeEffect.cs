@@ -12,15 +12,9 @@ namespace Game.Upgrades
         // Optionally track whether it’s currently active
         protected bool isActive;
 
-        public override void OnUnlocked(Player player)
-        {
-            isActive = true;
-        }
+        public override void OnUnlocked(Player player) => isActive = true;
 
-        public override void OnRemoved(Player player)
-        {
-            isActive = false;
-        }
+        public override void OnRemoved(Player player) => isActive = false;
 
         public virtual void OnPlayerEnterRange(Campfire campfire, Player player) { }
         public virtual void OnPlayerExitRange(Campfire campfire, Player player) { }

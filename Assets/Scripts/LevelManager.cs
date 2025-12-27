@@ -39,10 +39,10 @@ namespace Game.Level
             UpdateUI();
 
             Dictionary<int, int> bonuses = new()
-        {
-            { 5, 3 },
-            { 10, 5 }
-        };
+            {
+                { 5, 3 },
+                { 10, 5 }
+            };
 
             maxLevelWithPointsGiven = FindLevelForPoints(120, bonuses);
         }

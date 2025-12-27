@@ -35,14 +35,16 @@ namespace Game.Inventory
 
             foreach (InventorySlot slot in GetAllSlots())
             {
-                if (slot != null && RectTransformUtility.RectangleContainsScreenPoint(slot.GetComponent<RectTransform>(), mousePosition))
-                {
-                    if (isLeft)
-                        slot.HandleLeftClick();
-                    else
-                        slot.HandleRightClick();
-                    return;
-                }
+                if (slot == null) continue;
+
+                RectTransform slotTransform = slot.GetComponent<RectTransform>();
+                if (!RectTransformUtility.RectangleContainsScreenPoint(slotTransform, mousePosition)) continue;
+
+                if (isLeft)
+                    slot.HandleLeftClick();
+                else
+                    slot.HandleRightClick();
+                return;
             }
         }
 

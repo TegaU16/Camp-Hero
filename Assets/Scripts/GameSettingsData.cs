@@ -11,8 +11,5 @@ public class GameSettingsData
     public bool fullscreen = true;
     public int qualityLevel = 2;
 
-    public GameSettingsData Clone()
-    {
-        return (GameSettingsData)MemberwiseClone();
-    }
+    public GameSettingsData Clone() => (GameSettingsData)MemberwiseClone();
 }

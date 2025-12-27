@@ -45,10 +45,7 @@ public class PickupNotification : MonoBehaviour
         PlayAnimation();
     }
 
-    public void MoveTo(Vector2 targetPos)
-    {
-        rectTransform.DOAnchorPos(targetPos, 0.3f).SetEase(Ease.OutCubic);
-    }
+    public void MoveTo(Vector2 targetPos) => rectTransform.DOAnchorPos(targetPos, 0.3f).SetEase(Ease.OutCubic);
 
     private void UpdateUI()
     {
@@ -92,8 +89,5 @@ public class PickupNotification : MonoBehaviour
         });
     }
 
-    public void CaptureBasePosition()
-    {
-        BaseAnchoredPos = rectTransform.anchoredPosition;
-    }
+    public void CaptureBasePosition() => BaseAnchoredPos = rectTransform.anchoredPosition;
 }

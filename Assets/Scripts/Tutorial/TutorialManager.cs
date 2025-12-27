@@ -10,7 +10,7 @@ namespace Game.Tutorial
     public class TutorialManager : MonoBehaviour
     {
         public static TutorialManager Instance;
-        private readonly List<TutorialData> tutorials = new();
+        private readonly Dictionary<string, TutorialData> tutorials = new();
 
         void Awake()
         {
@@ -20,32 +20,9 @@ namespace Game.Tutorial
                 Destroy(gameObject);
         }
 
-        void Update()
-        {
-            foreach (TutorialData tutorial in tutorials)
-            {
-                if (tutorial.isActive || Time.time - tutorial.lastTriggeredTime < tutorial.cooldown) continue;
+        public void RegisterTutorial(TutorialData data) => tutorials[data.id] = data;
 
-                if (tutorial.triggerCondition != null && tutorial.triggerCondition())
-                    ActivateTutorial(tutorial);
-            }
-
-            foreach (TutorialData tutorial in tutorials.Where(t => t.isActive))
-            {
-                if (tutorial.completionCondition != null && tutorial.completionCondition())
-                    CompleteTutorial(tutorial);
-            }
-        }
-
-        private void RegisterTutorial(TutorialData data) => tutorials.Add(data);
-
-        public void RegisterAndActivate(TutorialData data)
-        {
-            RegisterTutorial(data);
-            ActivateTutorial(data);
-        }
-
-        private void ActivateTutorial(TutorialData data)
+        public void ActivateTutorial(TutorialData data)
         {
             data.isActive = true;
             data.lastTriggeredTime = Time.time;
@@ -65,13 +42,13 @@ namespace Game.Tutorial
             }
         }
 
-        private void CompleteTutorial(TutorialData data)
+        public void CompleteTutorial(TutorialData data)
         {
             data.isActive = false;
             TutorialEventBus.CompleteTutorial(data);
         }
 
-        public TutorialData CreatePickupCraftingRecipeTutorial(Item item)
+        public List<TutorialData> CreatePickupCraftingRecipeTutorials(Item item)
         {
             // Pull recipes intentionally mapped to this item
             List<Item> discoveredItems = InventoryManager.Instance.discoveredItems;
@@ -89,24 +66,31 @@ namespace Game.Tutorial
             highlightSO.RequireCraftable = false;
             highlightSO.RequireNotCraftedBefore = true;
 
-            // Create tutorial instance
-            TutorialData tutorial = new()
+            List<TutorialData> tutorials = new();
+
+            // Create tutorial instances
+            foreach (CraftingRecipe recipe in matchingRecipes) 
             {
-                id = $"pickup_{item.itemName}_recipe_tutorial",
-                description = $"Highlight recipes unlocked by picking up {item.itemName}",
-                type = TutorialType.HighlightObject,
-                craftingRecipeHighlightData = highlightSO,
-                duration = 5f,
-                cooldown = 9999f,
+                TutorialData tutorial = new()
+                {
+                    id = $"{recipe.resultItem.itemName}_crafting",
+                    description = $"Highlight recipes unlocked by picking up {item.itemName}",
+                    type = TutorialType.HighlightObject,
+                    craftingRecipeHighlightData = highlightSO,
+                    duration = 5f,
+                    cooldown = 9999f,
 
-                triggerCondition = () => true,
-                completionCondition = null
-            };
+                    triggerCondition = () => true,
+                    completionCondition = null
+                };
 
-            return tutorial;
+                tutorials.Add(tutorial);
+            }
+
+            return tutorials;
         }
 
-        public TutorialData CreatePickupSmeltingRecipeTutorial(Item item)
+        public List<TutorialData> CreatePickupSmeltingRecipeTutorials(Item item)
         {
             List<Item> discoveredItems = InventoryManager.Instance.discoveredItems;
             SmeltingRecipe[] matchingRecipes = FurnaceManager.Instance.smeltingDatabase.GetRecipesUnlockedByItem(item, discoveredItems);
@@ -122,17 +106,34 @@ namespace Game.Tutorial
             highlightSO.RequireSmeltable = false;
             highlightSO.RequireNotSmeltedBefore = true;
 
-            TutorialData tutorial = new()
-            {
-                id = $"pickup_{item.itemName}_recipe_tutorial",
-                description = $"Highlight smelting recipes unlocked by picking up {item.itemName}",
-                type = TutorialType.HighlightObject,
-                smeltingRecipeHighlightData = highlightSO,
-                duration = 5f,
-                cooldown = 9999f
-            };
+            List<TutorialData> tutorials = new();
 
-            return tutorial;
+            // Create tutorial instances
+            foreach (SmeltingRecipe recipe in matchingRecipes)
+            {
+                TutorialData tutorial = new()
+                {
+                    id = $"{recipe.resultItem.itemName}_smelting",
+                    description = $"Highlight recipes unlocked by picking up {item.itemName}",
+                    type = TutorialType.HighlightObject,
+                    smeltingRecipeHighlightData = highlightSO,
+                    duration = 5f,
+                    cooldown = 9999f,
+
+                    triggerCondition = () => true,
+                    completionCondition = null
+                };
+
+                tutorials.Add(tutorial);
+            }
+
+            return tutorials;
+        }
+
+        public TutorialData GetTutorialData(string id)
+        {
+            tutorials.TryGetValue(id, out TutorialData data);
+            return data;
         }
     }
 }

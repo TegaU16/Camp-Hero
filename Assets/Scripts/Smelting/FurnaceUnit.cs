@@ -14,15 +14,9 @@ namespace Game.Smelting
         [System.NonSerialized]
         public Item item;
 
-        public void SyncNameFromItem()
-        {
-            itemName = item != null ? item.name : null;
-        }
+        public void SyncNameFromItem() => itemName = item != null ? item.name : null;
 
-        public void ResolveItemFromName()
-        {
-            item = !string.IsNullOrEmpty(itemName) ? ItemRegistry.GetItemByName(itemName) : null;
-        }
+        public void ResolveItemFromName() => item = ItemRegistry.GetItemByName(itemName);
     }
 
     public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
@@ -62,67 +56,57 @@ namespace Game.Smelting
             if (inputSlot != null)
                 SaveUI();
 
-            // Always use our own data, not the UI
-            if (fuel.currentFuel < fuel.maxFuel && fuelData.item != null && fuelData.count > 0)
+            if (fuelData.item.fuelValue + fuel.currentFuel <= fuel.maxFuel && fuelData.item != null && fuelData.count > 0)
             {
-                if (fuelData.item.fuelValue + fuel.currentFuel <= fuel.maxFuel)
-                {
-                    fuel.AddFuel(fuelData.item);
-                    fuelData.count--;
+                fuel.AddFuel(fuelData.item);
+                fuelData.count--;
 
-                    if (fuelData.count <= 0)
-                        fuelData.item = null;
+                if (fuelData.count <= 0)
+                    fuelData.item = null;
 
-                    if (inputSlot != null)
-                        LoadUI();
-                }
+                if (inputSlot != null)
+                    LoadUI();
             }
 
-            if (fuel.currentFuel > 0 && inputData.item != null && inputData.count > 0)
+            if (fuel.currentFuel <= 0 || inputData.item == null || inputData.count <= 0) return;
+
+            fuel.Consume(Time.deltaTime * fuel.fuelUseRate);
+            smeltProgress += smeltRate * Time.deltaTime;
+
+            if (smeltProgress >= 1.0f)
             {
-                fuel.Consume(Time.deltaTime * fuel.fuelUseRate);
-
-                smeltProgress += smeltRate * Time.deltaTime;
-
-                if (smeltProgress >= 1.0f)
-                {
-                    SmeltItem();
-                    smeltProgress = 0f;
-                }
+                SmeltItem();
+                smeltProgress = 0f;
             }
         }
 
         private void SmeltItem()
         {
-            if (inputData.item != null)
+            if (inputData.item == null) return;
+
+            SmeltingRecipe recipe = FurnaceManager.Instance.smeltingDatabase.GetRecipeByInput(inputData.item);
+            if (recipe != null)
+                recipe.hasBeenSmeltedBefore = true;
+
+            if (outputData.item == null)
             {
-                SmeltingRecipe recipe = FurnaceManager.Instance.smeltingDatabase.GetRecipeByInput(inputData.item);
-                if (recipe != null)
-                    recipe.hasBeenSmeltedBefore = true;
-
-                if (outputData.item == null)
-                {
-                    outputData.item = inputData.item.output;
-                    outputData.count = inputData.item.outputCount;
-                }
-                else if (outputData.item == inputData.item.output)
-                {
-                    outputData.count += inputData.item.outputCount;
-                }
-
-                inputData.count--;
-                if (inputData.count <= 0)
-                    inputData.item = null;
-
-                if (inputSlot != null)
-                    LoadUI();
+                outputData.item = inputData.item.output;
+                outputData.count = inputData.item.outputCount;
             }
+            else if (outputData.item == inputData.item.output)
+            {
+                outputData.count += inputData.item.outputCount;
+            }
+
+            inputData.count--;
+            if (inputData.count <= 0)
+                inputData.item = null;
+
+            if (inputSlot != null)
+                LoadUI();
         }
 
-        public float GetFuelRatio()
-        {
-            return fuel?.GetFuelRatio() ?? 0f;
-        }
+        public float GetFuelRatio() => fuel?.GetFuelRatio() ?? 0f;
 
         public void LoadUI()
         {
@@ -163,7 +147,7 @@ namespace Game.Smelting
 
         public void Interact()
         {
-            FurnaceManager.Instance.Open(this);
+            FurnaceManager.Instance.furnaceUI.Open(this);
             InventoryManager.Instance.mainInventory.SetActive(true);
         }
 

@@ -22,7 +22,7 @@ namespace Game.Crafting
 
         public void SetRequirements()
         {
-            CraftingManager.Instance.SetSelectedCraftingItem(this);
+            CraftingManager.Instance.craftingUI.SetSelectedCraftingItem(this);
         }
 
         public bool HasItems()

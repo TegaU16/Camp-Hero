@@ -34,15 +34,9 @@ public class StaminaBar : MonoBehaviour
         RefreshUI();
     }
 
-    public void AddStamina(float amount)
-    {
-        ChangeStamina(amount);
-    }
+    public void AddStamina(float amount) => ChangeStamina(amount);
 
-    public void DecreaseStamina()
-    {
-        ChangeStamina(-decrementRate * Time.deltaTime);
-    }
+    public void DecreaseStamina() => ChangeStamina(-decrementRate * Time.deltaTime);
 
     public void IncreaseStamina()
     {

@@ -360,7 +360,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1475517495259762540}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f52cb2935c3138d41997a8715126bbf7, type: 3}
+  m_Script: {fileID: 11500000, guid: 85abe978e60d77043b2687c807ea6a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestUIElement
   titleText: {fileID: 5386371156482622433}

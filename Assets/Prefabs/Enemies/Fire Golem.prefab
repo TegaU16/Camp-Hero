@@ -981,12 +981,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 6941125607410677010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f09cee48568c548a211eaf747cd1fa, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetableLayer:
-    serializedVersion: 2
-    m_Bits: 448
+  attackType: 0
+  enemyType: 0
+  meleeAttackRange: 2
+  rangedAttackRange: 10
+  attackCooldown: 2
+  damage: 10
+  knockbackForce: 5
+  enemyIcon: {fileID: 21300000, guid: ad3f1f6b0dd710a46b5899a497046665, type: 3}
+  rangedAttackScripts: []
+  moveSpeed: 3.5
+  gravity: -9.8
+  preferredTargets: 0400000002000000000000000100000003000000
+  targetStickTime: 3
+  minTargetMovementThreshold: 1
+  repathCooldown: 0.5
+  repathDistanceThreshold: 1
+  pathRequestCooldown: 0.2
+  personality: {fileID: 11400000, guid: e31666094eb058341b756b42d1f055f8, type: 2}
+  animator: {fileID: 0}
 --- !u!114 &3745046083675803282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,32 +1012,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 6941125607410677010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: b179c12731e34bc44ad88a0f12e30afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackType: 0
-  enemyType: 0
-  meleeAttackRange: 1.5
-  rangedAttackRange: 10
-  attackCooldown: 2
-  damage: 40
-  knockbackForce: 5
-  enemyIcon: {fileID: 21300000, guid: ad3f1f6b0dd710a46b5899a497046665, type: 3}
-  breakableObject: {fileID: 260430940316343405}
-  rangedAttackScripts: []
-  moveSpeed: 1.5
-  gravity: -9.8
-  preferredTargets: 0000000002000000010000000400000003000000
-  targetStickTime: 3
-  minTargetMovementThreshold: 1
-  repathCooldown: 0.5
-  repathDistanceThreshold: 1
-  pathRequestCooldown: 0.2
-  personality: {fileID: 11400000, guid: e31666094eb058341b756b42d1f055f8, type: 2}
-  agent: {fileID: 8515405239404360121}
-  animator: {fileID: 4465363624190883282}
-  ragdollController: {fileID: 5665800037854704043}
-  characterController: {fileID: 1361809052639613521}
+  targetableLayer:
+    serializedVersion: 2
+    m_Bits: 448
 --- !u!114 &8515405239404360121
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1031,7 +1027,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6941125607410677010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720

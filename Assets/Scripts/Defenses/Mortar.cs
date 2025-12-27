@@ -30,23 +30,22 @@ namespace Game.Defenses
                 rotatingPart.rotation = Quaternion.LookRotation(launchVelocity) * Quaternion.Euler(rotationOffset);
 
             GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-            if (proj.TryGetComponent(out MortarProjectile mortarProj))
+            if (!proj.TryGetComponent(out MortarProjectile mortarProj)) return;
+
+            Collider projectileCollider = proj.GetComponent<Collider>();
+            Collider[] mortarColliders = GetComponentsInChildren<Collider>();
+
+            foreach (Collider col in mortarColliders)
             {
-                Collider projectileCollider = proj.GetComponent<Collider>();
-                Collider[] mortarColliders = GetComponentsInChildren<Collider>();
-
-                foreach (Collider col in mortarColliders)
-                {
-                    if (projectileCollider != null && col != null)
-                        Physics.IgnoreCollision(projectileCollider, col);
-                }
-
-                mortarProj.SetTarget(currentTarget);
-                mortarProj.SetMortar(transform);
-                mortarProj.Launch(currentTarget.position, damage);
-
-                AudioManager.Instance.PlaySFX(shotSound);
+                if (projectileCollider != null && col != null)
+                    Physics.IgnoreCollision(projectileCollider, col);
             }
+
+            mortarProj.SetTarget(currentTarget);
+            mortarProj.SetMortar(transform);
+            mortarProj.Launch(currentTarget.position, damage);
+
+            AudioManager.Instance.PlaySFX(shotSound);
         }
     }
 }

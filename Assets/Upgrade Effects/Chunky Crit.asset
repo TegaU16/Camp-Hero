@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b48e30252e3e8648a9b16e803b89185, type: 3}
+  m_Script: {fileID: 11500000, guid: d0a9b02710b650c4f9d565f1cd8c2136, type: 3}
   m_Name: Chunky Crit
   m_EditorClassIdentifier: Assembly-CSharp::ChunkyCritUpgrade
   upgradeName: Chunky Crit
-  description: <color=#FFFF50>Crits</color> have a small chance to be <color=#AF4F20>chunky</color>,
-    dealing <color=#FF7F00>20x</color> damage
+  description: Small chance to deal CHUNKY damage
   cost: 2
   chunkyMultiplier: 20
   chance: 0.1

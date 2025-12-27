@@ -51,6 +51,7 @@ namespace Game.Terrain.Structures
             auraCollider = GetComponent<SphereCollider>();
             if (auraCollider == null)
                 auraCollider = gameObject.AddComponent<SphereCollider>();
+
             auraCollider.isTrigger = true;
 
             foreach (CampfireUpgradeEffect upg in activeUpgrades)
@@ -59,7 +60,6 @@ namespace Game.Terrain.Structures
 
         private void Start()
         {
-            // find any players already inside the collider (use Physics.OverlapSphere)
             Collider[] cols = new Collider[20];
             int colliderCount = Physics.OverlapSphereNonAlloc(transform.position, auraCollider.radius, cols);
 
@@ -67,25 +67,20 @@ namespace Game.Terrain.Structures
             {
                 Collider col = cols[i];
                 if (!col.TryGetComponent(out CharacterController _)) continue;
+                if (!col.TryGetComponent(out MonoBehaviour script)) continue;
+                if (script is not Player && script is not Enemy) continue;
 
-                if (col.TryGetComponent(out MonoBehaviour script))
+                if (!charactersInRange.Contains(script))
+                    charactersInRange.Add(script);
+
+                foreach (CampfireUpgradeEffect upgrade in activeUpgrades)
                 {
-                    if (script is not Player && script is not Enemy) continue;
+                    if (Vector3.Distance(transform.position, script.transform.position) > upgrade.effectRadius) continue;
 
-                    if (!charactersInRange.Contains(script))
-                        charactersInRange.Add(script);
-
-                    foreach (CampfireUpgradeEffect upgrade in activeUpgrades)
-                    {
-                        if (Vector3.Distance(transform.position, script.transform.position) <= upgrade.effectRadius)
-                        {
-                            if (script is Player player)
-                                upgrade.OnPlayerEnterRange(this, player);
-                            else if (script is Enemy enemy)
-                                upgrade.OnEnemyEnterRange(this, enemy);
-                        }
-
-                    }
+                    if (script is Player player)
+                        upgrade.OnPlayerEnterRange(this, player);
+                    else if (script is Enemy enemy)
+                        upgrade.OnEnemyEnterRange(this, enemy);
                 }
             }
 
@@ -97,20 +92,17 @@ namespace Game.Terrain.Structures
             if (!other.TryGetComponent(out MonoBehaviour script)) return;
             if (script is not Player && script is not Enemy) return;
 
-            // track players so exit is reliable
             if (!charactersInRange.Contains(script))
                 charactersInRange.Add(script);
 
-            // For each upgrade, check per-upgrade radius and call Enter if inside
             foreach (CampfireUpgradeEffect upgrade in activeUpgrades)
             {
-                if (Vector3.Distance(transform.position, script.transform.position) <= upgrade.effectRadius)
-                {
-                    if (script is Player player)
-                        upgrade.OnPlayerEnterRange(this, player);
-                    else if (script is Enemy enemy)
-                        upgrade.OnEnemyEnterRange(this, enemy);
-                }
+                if (Vector3.Distance(transform.position, script.transform.position) > upgrade.effectRadius) continue;
+
+                if (script is Player player)
+                    upgrade.OnPlayerEnterRange(this, player);
+                else if (script is Enemy enemy)
+                    upgrade.OnEnemyEnterRange(this, enemy);
             }
         }
 
@@ -121,17 +113,14 @@ namespace Game.Terrain.Structures
 
             charactersInRange.Remove(script);
 
-            // call exit for all upgrades that previously applied (we don't track per-upgrade state here,
-            // so just call OnPlayerExitRange if player is outside that upgrade's aura)
             foreach (CampfireUpgradeEffect upgrade in activeUpgrades)
             {
-                if (Vector3.Distance(transform.position, script.transform.position) <= upgrade.effectRadius)
-                {
-                    if (script is Player player)
-                        upgrade.OnPlayerExitRange(this, player);
-                    else if (script is Enemy enemy)
-                        upgrade.OnEnemyExitRange(this, enemy);
-                }
+                if (Vector3.Distance(transform.position, script.transform.position) > upgrade.effectRadius) continue;
+
+                if (script is Player player)
+                    upgrade.OnPlayerExitRange(this, player);
+                else if (script is Enemy enemy)
+                    upgrade.OnEnemyExitRange(this, enemy);
             }
         }
 
@@ -155,11 +144,10 @@ namespace Game.Terrain.Structures
 
         public void UnlockGem(GemColor color)
         {
-            if (!unlockedGems.Contains(color))
-            {
-                unlockedGems.Add(color);
-                UpdateGemVisibility();
-            }
+            if (unlockedGems.Contains(color)) return;
+
+            unlockedGems.Add(color);
+            UpdateGemVisibility();
         }
 
         public void RemoveGem(GemColor color)
@@ -184,10 +172,7 @@ namespace Game.Terrain.Structures
 
         public Transform GetTransform() => transform;
 
-        public void Die()
-        {
-            GameManager.Instance.GameOver(win: false);
-        }
+        public void Die() => GameManager.Instance.GameOver(win: false);
 
         public string SaveState()
         {
@@ -209,17 +194,16 @@ namespace Game.Terrain.Structures
             {
                 health.SetHealth(health.maxHealth);
                 UpdateGemVisibility();
+                return;
             }
-            else
-            {
-                health.SetHealth(data.currentHealth);
 
-                unlockedGems.Clear();
-                foreach (GemColor color in data.unlockedGems)
-                    unlockedGems.Add(color);
+            health.SetHealth(data.currentHealth);
 
-                UpdateGemVisibility();
-            }
+            unlockedGems.Clear();
+            foreach (GemColor color in data.unlockedGems)
+                unlockedGems.Add(color);
+
+            UpdateGemVisibility();
         }
     }
 }

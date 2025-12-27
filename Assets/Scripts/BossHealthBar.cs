@@ -18,22 +18,20 @@ public class BossHealthBar : MonoBehaviour
     public void Setup(GameObject bossEnemy)
     {
         if (bossEnemy == null) return;
+        if (!bossEnemy.TryGetComponent(out BreakableObject breakableObject)) return;
 
-        if (bossEnemy.TryGetComponent(out BreakableObject breakableObject))
-        {
-            this.breakableObject = breakableObject;
+        this.breakableObject = breakableObject;
 
-            currentHealth = breakableObject.GetHealth();
-            healthText.text = currentHealth.ToString();
+        currentHealth = breakableObject.GetHealth();
+        healthText.text = currentHealth.ToString();
 
-            string enemyName = bossEnemy.name.Replace("(Clone)", "").TrimEnd();
-            enemyNameText.text = enemyName;
+        string enemyName = bossEnemy.name.Replace("(Clone)", "").TrimEnd();
+        enemyNameText.text = enemyName;
 
-            slider.maxValue = breakableObject.GetMaxHealth();
-            slider.value = currentHealth;
+        slider.maxValue = breakableObject.GetMaxHealth();
+        slider.value = currentHealth;
 
-            breakableObject.OnBossHealthChange += OnBossHealthChanged;
-        }
+        breakableObject.OnBossHealthChange += OnBossHealthChanged;
     }
 
     public void OnBossHealthChanged(int health)

@@ -194,25 +194,18 @@ public class DayNightCycle : MonoBehaviour
             dayTextUI.ShowDay(currentDay);
     }
 
-    public int GetCurrentDay()
-    {
-        return currentDay;
-    }
+    public int GetCurrentDay() => currentDay;
 
     public bool IsNight()
     {
         // Night spans past midnight (18 → 6)
-        if (nightStart > nightEnd)
-            return timeOfDay >= nightStart || timeOfDay < nightEnd;
+        if (nightStart > nightEnd) return timeOfDay >= nightStart || timeOfDay < nightEnd;
 
         // Night does NOT span midnight
         return timeOfDay >= nightStart && timeOfDay < nightEnd;
     }
 
-    private void UpdateDayNightIcon()
-    {
-        sunMoonIcon.sprite = isNight ? moonIcon : sunIcon;
-    }
+    private void UpdateDayNightIcon() => sunMoonIcon.sprite = isNight ? moonIcon : sunIcon;
 
     public void SaveDayNight()
     {

@@ -9,12 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afc29b3cbfb571647b4b69cf6bd9fedd, type: 3}
+  m_Script: {fileID: 11500000, guid: 1ba42cacdacc65342a60b7b3f5da47f7, type: 3}
   m_Name: Lifesteal
   m_EditorClassIdentifier: Assembly-CSharp::LifestealUpgrade
   upgradeName: Lifesteal
-  description: 'Gain health whenever you deal damage to an enemy
-
-    Health gained
-    scales with damage dealt'
-  cost: 1
+  description: Regenerate health as you deal damage to enemies
+  cost: 2

@@ -14,7 +14,7 @@ public class SimpleRagdollController : MonoBehaviour
     [Header("For Procedural Animations")]
     [SerializeField] private ProceduralAnimator proceduralAnimator;
 
-    public bool IsSetup { get; private set; } = false;
+    public bool IsSetup { get; private set; } = true;
 
     void Awake()
     {
@@ -32,43 +32,44 @@ public class SimpleRagdollController : MonoBehaviour
 
     public void EnableRagdoll()
     {
-        if (!IsSetup)
+        if (IsSetup) return;
+
+        if (TryGetComponent(out CharacterController cc))
+            cc.enabled = false;
+
+        // Enable physics on all rigidbodies
+        foreach (Rigidbody rb in allRigidbodies)
         {
-            if (TryGetComponent(out CharacterController cc)) 
-                cc.enabled = false;
-
-            // Enable physics on all rigidbodies
-            foreach (Rigidbody rb in allRigidbodies)
-            {
-                rb.isKinematic = false;
-                rb.linearDamping = 2f;
-                rb.angularDamping = 4f;
-                rb.sleepThreshold = 0.5f;
-            }
-
-            StartCoroutine(FreezeAfterTime(3f));
-
-            foreach (Collider col in allColliders)
-            {
-                if (col.GetComponent<CharacterController>() == null)
-                    col.enabled = true;
-            }
-
-            if (animator != null)
-                animator.enabled = false;
-
-            if (proceduralAnimator != null)
-                proceduralAnimator.enabled = true;
-
-            if (agent != null)
-                agent.enabled = false;
-
-            IsSetup = true;
+            rb.isKinematic = false;
+            rb.linearDamping = 2f;
+            rb.angularDamping = 4f;
+            rb.sleepThreshold = 0.5f;
         }
+
+        StartCoroutine(FreezeAfterTime(3f));
+
+        foreach (Collider col in allColliders)
+        {
+            if (col.GetComponent<CharacterController>() == null)
+                col.enabled = true;
+        }
+
+        if (animator != null)
+            animator.enabled = false;
+
+        if (proceduralAnimator != null)
+            proceduralAnimator.enabled = true;
+
+        if (agent != null)
+            agent.enabled = false;
+
+        IsSetup = true;
     }
 
     public void DisableRagdoll()
     {
+        if (!IsSetup) return;
+
         foreach (Rigidbody rb in allRigidbodies)
         {
             if (!rb.isKinematic)

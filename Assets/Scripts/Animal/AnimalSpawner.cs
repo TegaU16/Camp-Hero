@@ -84,13 +84,14 @@ namespace Game.AI.Animals
                     (clusterCenter.z + 10000f) * 0.005f
                 );
 
-                if (Physics.Raycast(clusterCenter + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 200f, groundLayer))
-                    clusterCenter.y = hit.point.y;
-                else
-                    continue;
+                Vector3 clusterOrigin = clusterCenter + Vector3.up * 100f;
+                if (!Physics.Raycast(clusterOrigin, Vector3.down, out RaycastHit hit, 200f, groundLayer)) continue;
+
+                clusterCenter.y = hit.point.y;
 
                 int animalsInCluster = Mathf.RoundToInt(animalsPerCluster * clusterNoise);
-                if (animalsInCluster <= 0) animalsInCluster = 1;
+                if (animalsInCluster <= 0) 
+                    animalsInCluster = 1;
 
                 for (int j = 0; j < animalsInCluster; j++)
                 {
@@ -137,20 +138,17 @@ namespace Game.AI.Animals
             {
                 foreach (Animal animal in kvp.Value)
                 {
-                    if (animal == null) continue;
+                    if (animal == null || !animal.TryGetComponent(out BreakableObject breakable)) continue;
 
-                    if (animal.TryGetComponent(out BreakableObject breakable))
+                    PrefabID prefabID = animal.GetComponent<PrefabID>();
+                    string id = prefabID.prefabKey;
+
+                    dataList.Add(new AnimalSaveData
                     {
-                        PrefabID prefabID = animal.GetComponent<PrefabID>();
-                        string id = prefabID.prefabKey;
-
-                        dataList.Add(new AnimalSaveData
-                        {
-                            prefabID = id,
-                            position = animal.transform.position,
-                            currentHealth = breakable.GetHealth()
-                        });
-                    }
+                        prefabID = id,
+                        position = animal.transform.position,
+                        currentHealth = breakable.GetHealth()
+                    });
                 }
             }
 
@@ -203,15 +201,14 @@ namespace Game.AI.Animals
             if (savedAnimals != null)
             {
                 LoadAnimals(savedAnimals);
+                return;
             }
-            else
-            {
-                System.Random prng = new(VoxelGrid.Instance.seed);
-                List<VoxelChunk> shuffledChunks = chunks.OrderBy(_ => prng.Next()).ToList();
 
-                foreach (VoxelChunk chunk in shuffledChunks)
-                    StartCoroutine(SpawnAnimalsForChunk(chunk));
-            }
+            System.Random prng = new(VoxelGrid.Instance.seed);
+            List<VoxelChunk> shuffledChunks = chunks.OrderBy(_ => prng.Next()).ToList();
+
+            foreach (VoxelChunk chunk in shuffledChunks)
+                StartCoroutine(SpawnAnimalsForChunk(chunk));
         }
 
         public void ClearAllAnimals(bool clearPool = false)

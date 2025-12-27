@@ -6,10 +6,20 @@ namespace Game.Terrain.Structures
 {
     public class GemAltarSpawner : MonoBehaviour
     {
+        public static GemAltarSpawner Instance;
+
         public GameObject[] altarPrefabs; // Array of 4 altar prefabs
         public Vector3 worldCenter = Vector3.zero;
         public float offsetFromEdge = 20f;
         [SerializeField] private LayerMask terrainMask;
+
+        private void Awake()
+        {
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
+        }
 
         public IEnumerator SpawnAltarsRoutine(float worldSize, System.Action<float> onProgress = null)
         {
@@ -23,10 +33,10 @@ namespace Game.Terrain.Structures
 
             Vector3[] altarPositions = new Vector3[]
             {
-        worldCenter + new Vector3(-halfSize + offsetFromEdge, 0, -halfSize + offsetFromEdge),
-        worldCenter + new Vector3(-halfSize + offsetFromEdge, 0,  halfSize - offsetFromEdge),
-        worldCenter + new Vector3( halfSize - offsetFromEdge, 0, -halfSize + offsetFromEdge),
-        worldCenter + new Vector3( halfSize - offsetFromEdge, 0,  halfSize - offsetFromEdge)
+                worldCenter + new Vector3(-halfSize + offsetFromEdge, 0, -halfSize + offsetFromEdge),
+                worldCenter + new Vector3(-halfSize + offsetFromEdge, 0,  halfSize - offsetFromEdge),
+                worldCenter + new Vector3( halfSize - offsetFromEdge, 0, -halfSize + offsetFromEdge),
+                worldCenter + new Vector3( halfSize - offsetFromEdge, 0,  halfSize - offsetFromEdge)
             };
 
             for (int i = 0; i < altarPositions.Length; i++)
@@ -59,15 +69,10 @@ namespace Game.Terrain.Structures
         private Vector3 AdjustHeightToTerrain(Vector3 position)
         {
             Vector3 rayStart = position + Vector3.up * 200f;
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f, terrainMask))
-            {
-                return hit.point;
-            }
-            else
-            {
-                Debug.LogWarning($"No terrain found below altar position: {position}");
-                return position;
-            }
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f, terrainMask)) return hit.point;
+
+            Debug.LogWarning($"No terrain found below altar position: {position}");
+            return position;
         }
     }
 }

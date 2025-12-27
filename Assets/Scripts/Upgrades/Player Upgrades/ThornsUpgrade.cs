@@ -32,7 +32,7 @@ namespace Game.Upgrades
         private void OnThornsHit(int currentDamage, BreakableObject breakable)
         {
             float thornsDamage = currentDamage * thornsDamageRatio;
-            breakable.TakeDamage((int)thornsDamage, false);
+            breakable.TakeDamage((int)thornsDamage, crit: false);
         }
     }
 }

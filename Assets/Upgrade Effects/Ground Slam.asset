@@ -9,19 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 158c094585a9e9742bb73435fb2d9e42, type: 3}
+  m_Script: {fileID: 11500000, guid: 862a19b161e206840b407cd38b905a3b, type: 3}
   m_Name: Ground Slam
   m_EditorClassIdentifier: Assembly-CSharp::GroundSlamUpgrade
   upgradeName: Ground Slam
-  description: Slam the ground with overwhelming power, dealing massive damage and
-    <color=#9FDFE5>stunning</color> enemies around you
-  cost: 2
-  cooldown: 45
-  staminaCost: 20
+  description: Slam the ground and smash enemies with overwhelming force
+  cost: 3
+  cooldown: 5
+  staminaCost: 25
   activationKey: 120
   skillImagePrefab: {fileID: 4643298529219022040, guid: f6fd9f93f7ea2ea4ab743b1d3f3f86a2, type: 3}
   isOnCooldown: 0
-  damage: 50
+  damage: 100
   radius: 5
   stun: {fileID: 11400000, guid: b65ada11cf8c62c47b7c9fa9b8802239, type: 2}
   slamAnimationTrigger: Ground Slam

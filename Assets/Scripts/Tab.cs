@@ -15,10 +15,8 @@ public class Tab : MonoBehaviour
         tabArea = GetComponentInParent<TabArea>();
     }
 
-    public void OnTabClicked()
-    {
-        tabArea.SelectTab(this);
-    }
+    // Called by button
+    public void OnTabClicked() => tabArea.SelectTab(this);
 
     public void Select()
     {

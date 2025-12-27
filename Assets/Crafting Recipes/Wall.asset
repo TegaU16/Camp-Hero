@@ -9,12 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca13b4c80743af948b45551ae470c014, type: 3}
+  m_Script: {fileID: 11500000, guid: 652ce7b35ee134240b55748c1a5519d8, type: 3}
   m_Name: Wall
   m_EditorClassIdentifier: Assembly-CSharp::CraftingRecipe
   resultItem: {fileID: 11400000, guid: 360a1425f4f9b764e9c566c5e61f0baa, type: 2}
   requirements:
   - requiredItem: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
-    count: 20
+    count: 8
   category: 3
+  source: -1
+  hasBeenCraftedBefore: 0
   itemsRequiredToUnlock: []

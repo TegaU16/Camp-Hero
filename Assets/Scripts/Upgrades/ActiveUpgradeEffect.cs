@@ -16,15 +16,9 @@ namespace Game.Upgrades
 
         public abstract void Activate(Player player);
 
-        public override void OnUnlocked(Player player)
-        {
-            player.RegisterActiveUpgrade(this);
-        }
+        public override void OnUnlocked(Player player) => player.RegisterActiveUpgrade(this);
 
-        public override void OnRemoved(Player player)
-        {
-            player.UnregisterActiveUpgrade(this);
-        }
+        public override void OnRemoved(Player player) => player.UnregisterActiveUpgrade(this);
 
         public IEnumerator CooldownRoutine()
         {

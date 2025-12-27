@@ -19,10 +19,7 @@ public class DamageArea : MonoBehaviour
 
     public void SetDamage(int dmg) => damage = dmg;
 
-    public void Activate(Transform attacker)
-    {
-        StartCoroutine(AttackLifecycle(attacker));
-    }
+    public void Activate(Transform attacker) => StartCoroutine(AttackLifecycle(attacker));
 
     private IEnumerator AttackLifecycle(Transform attacker)
     {
@@ -73,14 +70,11 @@ public class DamageArea : MonoBehaviour
         for (int i = 0; i < numHits; i++)
         {
             Collider hit = hits[i];
-            if (hit.TryGetComponent(out Health health))
-            {
-                // Skip if already damaged once
-                if (damagedTargets.Contains(health)) continue;
+            if (!hit.TryGetComponent(out Health health)) continue;
+            if (damagedTargets.Contains(health)) continue;
 
-                health.TakeDamage(damage, attacker);
-                damagedTargets.Add(health);
-            }
+            health.TakeDamage(damage, attacker);
+            damagedTargets.Add(health);
         }
     }
 }

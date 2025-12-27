@@ -9,12 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6b13f2bb4110cb43a1e12bcfebdaa8d, type: 3}
+  m_Script: {fileID: 11500000, guid: 3903e82d5188598488e57b0128cd6afa, type: 3}
   m_Name: Hut
   m_EditorClassIdentifier: 
   structureName: Hut
   prefabParts:
   - {fileID: 92347587458306418, guid: 61500a5c1c40ca6499665c2b59ce052f, type: 3}
   localOffsets: []
-  localSizes:
-  - {x: 5, y: 6}

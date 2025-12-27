@@ -127,21 +127,20 @@ namespace Game.AI.Enemies
                 int desiredSize = CalculateAdjustedPoolSize(tier.poolSize, currentDay);
                 int currentSize = currentPoolSizes.ContainsKey(tier.prefab) ? currentPoolSizes[tier.prefab] : 0;
 
-                if (desiredSize > currentSize)
+                if (desiredSize <= currentSize) continue;
+
+                int toAdd = desiredSize - currentSize;
+                if (!pools.TryGetValue(tier.prefab, out var pool))
                 {
-                    int toAdd = desiredSize - currentSize;
-                    if (!pools.TryGetValue(tier.prefab, out var pool))
-                    {
-                        pool = new Queue<Enemy>();
-                        pools[tier.prefab] = pool;
-                    }
-
-                    for (int i = 0; i < toAdd; i++)
-                        pool.Enqueue(CreatePooledEnemy(tier.prefab));
-
-                    currentPoolSizes[tier.prefab] = desiredSize;
-                    Debug.Log($"Expanded pool for {tier.prefab.name} to {desiredSize}");
+                    pool = new Queue<Enemy>();
+                    pools[tier.prefab] = pool;
                 }
+
+                for (int i = 0; i < toAdd; i++)
+                    pool.Enqueue(CreatePooledEnemy(tier.prefab));
+
+                currentPoolSizes[tier.prefab] = desiredSize;
+                Debug.Log($"Expanded pool for {tier.prefab.name} to {desiredSize}");
             }
         }
 

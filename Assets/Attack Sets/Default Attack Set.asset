@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53e0f4ebd17044a40b36e39fefd10bca, type: 3}
+  m_Script: {fileID: 11500000, guid: e672d5614c0dbc64cb588a6060491a60, type: 3}
   m_Name: Default Attack Set
   m_EditorClassIdentifier: Assembly-CSharp::AttackSet
   comboAttacks:

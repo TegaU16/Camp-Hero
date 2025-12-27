@@ -17,11 +17,18 @@ namespace Game.Crafting
         public Item resultItem;
         public Requirement[] requirements;
         public CraftingCategory category;
+        public CraftingSource source;
         [HideInInspector] public bool hasBeenCraftedBefore;
 
         [Header("Unlocking Logic")]
         [Tooltip("Leave empty to unlock this recipe when any requirement item is discovered.")]
         public Item[] itemsRequiredToUnlock;
+
+        private void OnValidate()
+        {
+            if (source == 0)
+                source = CraftingSource.Base;
+        }
 
         /// <summary>
         /// Determines if this recipe should be unlocked given the player's discovered items.
@@ -57,5 +64,12 @@ namespace Game.Crafting
         Defenses,
         Consumables,
         Resources
+    }
+
+    [System.Flags]
+    public enum CraftingSource
+    {
+        Base = 1 << 0,
+        Workbench = 1 << 1
     }
 }

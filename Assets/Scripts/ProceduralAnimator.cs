@@ -119,15 +119,9 @@ public class ProceduralAnimator : MonoBehaviour
         Animate(Time.deltaTime);
     }
 
-    public void SetMovementSpeed(float speed)
-    {
-        movementSpeed = speed;
-    }
+    public void SetMovementSpeed(float speed) => movementSpeed = speed;
 
-    public void SetAttacking(bool attacking)
-    {
-        isAttacking = attacking;
-    }
+    public void SetAttacking(bool attacking) => isAttacking = attacking;
 
     private void Animate(float deltaTime)
     {
@@ -231,31 +225,27 @@ public class ProceduralAnimator : MonoBehaviour
     private void PlayFootstep()
     {
         if (!characterController.isGrounded) return;
+        if (!Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.2f)) return;
 
-        // Raycast down to detect surface
-        if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out RaycastHit hit, 1.2f))
+        SurfaceType surface = hit.collider.GetComponent<SurfaceType>();
+        AudioClip[] clips = null;
+
+        if (surface != null)
         {
-            SurfaceType surface = hit.collider.GetComponent<SurfaceType>();
-
-            AudioClip[] clips = null;
-
-            if (surface != null)
+            switch (surface.surfaceType)
             {
-                switch (surface.surfaceType)
-                {
-                    case SurfaceType.Type.Grass: clips = grassClips; break;
-                    case SurfaceType.Type.Wood: clips = woodClips; break;
-                    case SurfaceType.Type.Stone: clips = stoneClips; break;
-                }
+                case SurfaceType.Type.Grass: clips = grassClips; break;
+                case SurfaceType.Type.Wood: clips = woodClips; break;
+                case SurfaceType.Type.Stone: clips = stoneClips; break;
             }
-
-            if (clips == null || clips.Length == 0) return;
-
-            AudioClip clip = clips[Random.Range(0, clips.Length)];
-            float pitch = 1f + Random.Range(-footstepPitchVariance, footstepPitchVariance);
-
-            AudioManager.Instance.PlaySFX(clip, pitch, transform.position);
         }
+
+        if (clips == null || clips.Length == 0) return;
+
+        AudioClip clip = clips[Random.Range(0, clips.Length)];
+        float pitch = 1f + Random.Range(-footstepPitchVariance, footstepPitchVariance);
+
+        AudioManager.Instance.PlaySFX(clip, pitch, transform.position);
     }
 
     public void SetProceduralOverrides(bool legs, bool arms, bool torso)

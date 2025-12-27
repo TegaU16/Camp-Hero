@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Game.Inventory;
 using Game.Quests;
+using Game.Registries;
 using Game.Saving;
 using UnityEngine;
+using Worlds;
 
 namespace Game.Terrain.Structures.Trials
 {
@@ -24,7 +26,7 @@ namespace Game.Terrain.Structures.Trials
     public class TrialAltar : MonoBehaviour, IInteractable, ISaveableObject
     {
         public Transform[] spawnPoints;
-        public List<TrialWave> waves = new();
+        private List<TrialWave> waves = new();
         public Item key;
 
         [HideInInspector] public int currentWave = 0;
@@ -41,11 +43,64 @@ namespace Game.Terrain.Structures.Trials
         public string barrierLayerName = "TrialBarrier";
         public bool oneWayAllowInsideToExitOnly = false;
 
+        [Header("Wave Settings")]
+        [SerializeField] private int minWaves = 2;
+        [SerializeField] private int maxWaves = 5;
+
+        [SerializeField] private int minEnemiesPerWave = 2;
+        [SerializeField] private int maxEnemiesPerWave = 6;
+
+        [SerializeField] private int minCountPerEnemy = 1;
+        [SerializeField] private int maxCountPerEnemy = 4;
+
         private GameObject barrierRoot;
 
         private void Start()
         {
+            GenerateWaves();
             SetBarrierActive(false);
+        }
+
+        private void GenerateWaves()
+        {
+            if (waves != null && waves.Count > 0) return;
+
+            waves = new List<TrialWave>();
+
+            // Combine world seed + altar position for uniqueness
+            int altarSeed = Utility.ConsistentHash(WorldSession.CurrentSeed) ^ transform.position.GetHashCode();
+            System.Random rng = new(altarSeed);
+
+            List<GameObject> enemyPrefabs =
+                PrefabRegistry.GetPrefabsInCategory("Enemies");
+
+            if (enemyPrefabs.Count == 0)
+            {
+                Debug.LogWarning("No enemy prefabs found for trial generation.");
+                return;
+            }
+
+            int waveCount = rng.Next(minWaves, maxWaves + 1);
+
+            for (int w = 0; w < waveCount; w++)
+            {
+                TrialWave wave = new();
+                int enemiesInWave = rng.Next(minEnemiesPerWave, maxEnemiesPerWave + 1);
+
+                for (int i = 0; i < enemiesInWave; i++)
+                {
+                    GameObject enemy = enemyPrefabs[rng.Next(enemyPrefabs.Count)];
+                    int count = rng.Next(minCountPerEnemy, maxCountPerEnemy + 1);
+
+                    wave.enemies.Add(new WaveEnemy
+                    {
+                        enemyPrefab = enemy,
+                        count = count
+                    });
+                }
+
+                waves.Add(wave);
+            }
         }
 
         public void Interact()
@@ -104,11 +159,8 @@ namespace Game.Terrain.Structures.Trials
         private IEnumerator SpawnWave(GameObject enemyPrefab, int count, float delayBetweenSpawns = 1.5f)
         {
             if (waveFail) yield break;
-
             if (enemyPrefab == null) yield break;
-
             if (spawnPoints == null || spawnPoints.Length == 0) yield break;
-
             if (TrialEnemyPool.Instance == null) yield break;
 
             List<Transform> shuffledSpawns = new(spawnPoints);
@@ -138,10 +190,7 @@ namespace Game.Terrain.Structures.Trials
             }
         }
 
-        private bool AreAllTrialEnemiesDead()
-        {
-            return FindObjectsByType<TrialEnemyMarker>(FindObjectsSortMode.None).Length == 0;
-        }
+        private bool AreAllTrialEnemiesDead() => FindObjectsByType<TrialEnemyMarker>(FindObjectsSortMode.None).Length == 0;
 
         private void GrantKey()
         {
@@ -154,7 +203,6 @@ namespace Game.Terrain.Structures.Trials
         private void CollectKey()
         {
             if (key == null) return;
-
             if (InventoryManager.Instance.IsInventoryFullForItem(key)) return;
 
             InventoryManager.Instance.AddItem(key);
@@ -174,10 +222,7 @@ namespace Game.Terrain.Structures.Trials
             return $"Start Wave {currentWave + 1}";
         }
 
-        public Transform GetTransform()
-        {
-            return transform;
-        }
+        public Transform GetTransform() => transform;
 
         public List<WaveEnemy> GetEnemiesForWave(int waveIndex = -1)
         {
@@ -188,9 +233,10 @@ namespace Game.Terrain.Structures.Trials
             if (waves == null || waves.Count == 0 || waveIndex < 0 || waveIndex >= waves.Count) return null;
 
             TrialWave trialWave = waves[waveIndex];
-
             return trialWave.enemies;
         }
+
+        public int GetNumberOfWaves() => waves.Count;
 
         private void EnsureBarrierBuilt()
         {
@@ -248,7 +294,7 @@ namespace Game.Terrain.Structures.Trials
                 mf.mesh = BuildQuadMesh(size.z, size.y, Vector3.right);
 
             MeshRenderer mr = wall.AddComponent<MeshRenderer>();
-            mr.material = BarrierMaterial.Instance.Get();
+            mr.material = BarrierMaterial.Instance.GetMaterial();
 
             if (oneWayAllowInsideToExitOnly)
             {
@@ -283,27 +329,28 @@ namespace Game.Terrain.Structures.Trials
 
             mesh.vertices = new Vector3[]
             {
-        (-right * width/2) + (-up * height/2),
-        ( right * width/2) + (-up * height/2),
-        (-right * width/2) + ( up * height/2),
-        ( right * width/2) + ( up * height/2)
+                (-right * width/2) + (-up * height/2),
+                ( right * width/2) + (-up * height/2),
+                (-right * width/2) + ( up * height/2),
+                ( right * width/2) + ( up * height/2)
             };
 
             mesh.uv = new Vector2[]
             {
-        new(0,0), new(1,0),
-        new(0,1), new(1,1)
+                new(0,0), new(1,0),
+                new(0,1), new(1,1)
             };
 
             mesh.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
-
             mesh.RecalculateNormals();
+
             return mesh;
         }
 
         private void SetBarrierActive(bool active)
         {
             if (!useBarrier) return;
+
             EnsureBarrierBuilt();
             barrierRoot.SetActive(active);
         }
@@ -335,6 +382,9 @@ namespace Game.Terrain.Structures.Trials
         public void LoadState(string json)
         {
             TrialAltarSaveData data = JsonUtility.FromJson<TrialAltarSaveData>(json);
+
+            GenerateWaves();
+
             if (data != null)
             {
                 currentWave = data.currentWave;

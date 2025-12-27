@@ -19,4 +19,4 @@ MonoBehaviour:
   effectRadius: 5
   damageAmountPerTick: 15
   tickRate: 1
-  speedDebuff: 0.5
+  slowEffect: {fileID: 11400000, guid: 2549665d41f42ba42b5f667816ee5dea, type: 2}

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Game.AI
 {
+    [RequireComponent(typeof(Animator))]
     public class VoxelAgent : MonoBehaviour
     {
         private List<Vector3Int> path;
@@ -21,9 +22,8 @@ namespace Game.AI
         private float stoppingDistance = 0.1f;
         [SerializeField] private float rotationSpeed = 720f; // degrees per second
 
-        // Animator (optional)
-        [Header("Optional Animator")]
-        [SerializeField] private Animator animator;
+        [Header("Animator Settings")]
+        private Animator animator;
         [SerializeField] private string speedParam = "Speed";
 
         // Y smoothing
@@ -39,6 +39,7 @@ namespace Game.AI
 
         private void Start()
         {
+            animator = GetComponent<Animator>();
             if (TryGetComponent(out CharacterController cc))
                 stoppingDistance = cc.radius + 0.25f;
         }
@@ -116,31 +117,27 @@ namespace Game.AI
         {
             Vector3 currentPos = transform.position;
 
-            if (trackingTarget != null)
+            if (trackingTarget != null && Time.time >= nextTrackingCheckTime)
             {
-                if (Time.time >= nextTrackingCheckTime)
+                Vector3Int from = WorldToGrid(transform.position);
+                Vector3Int to = WorldToGrid(trackingTarget.position);
+
+                if (CanWalkDirectly(from, to))
                 {
-                    Vector3Int from = WorldToGrid(transform.position);
-                    Vector3Int to = WorldToGrid(trackingTarget.position);
-
-                    if (CanWalkDirectly(from, to))
-                    {
-                        SetDirectTarget(to);
-                    }
-                    else
-                    {
-                        RequestPath(to); // fallback to A*
-                        StopTracking();  // stop direct tracking temporarily
-                    }
-
-                    nextTrackingCheckTime = Time.time + directTrackingCheckInterval;
+                    SetDirectTarget(to);
                 }
+                else
+                {
+                    RequestPath(to); // fallback to A*
+                    StopTracking();  // stop direct tracking temporarily
+                }
+
+                nextTrackingCheckTime = Time.time + directTrackingCheckInterval;
             }
 
             if (HasPath)
             {
                 Vector3 next = GridToWorld(path[pathIndex]);
-
                 DesiredPosition = Vector3.Lerp(DesiredPosition, next, 0.2f);
 
                 Vector2 flatCur = new(currentPos.x, currentPos.z);
@@ -163,28 +160,18 @@ namespace Game.AI
                 velocity = Vector3.zero;
             }
 
+            Vector3 directWorldTarget = GridToWorld(directTarget);
             Vector3 toTarget;
-            if (isWalkingDirect)
-            {
-                Vector3 directWorldTarget = GridToWorld(directTarget);
-                toTarget = directWorldTarget - currentPos;
-            }
-            else
-            {
-                toTarget = DesiredPosition - currentPos;
-            }
+
+            toTarget = isWalkingDirect ? directWorldTarget - currentPos : DesiredPosition - currentPos;
             toTarget.y = 0f;
 
-            if (toTarget.magnitude > stoppingDistance)
-                velocity = toTarget.normalized;
-            else
-                velocity = Vector3.zero;
+            velocity = toTarget.magnitude > stoppingDistance ? toTarget.normalized : Vector3.zero;
 
             float targetY = Utility.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
             currentY = Mathf.Lerp(currentY, targetY, yLerpSpeed * Time.deltaTime);
 
-            Vector3 faceDir = isWalkingDirect ? (GridToWorld(directTarget) - transform.position) : velocity;
-
+            Vector3 faceDir = isWalkingDirect ? (directWorldTarget - transform.position) : velocity;
             faceDir.y = 0;
 
             if (faceDir.magnitude > 0.01f)
@@ -258,27 +245,21 @@ namespace Game.AI
 
         public Vector3 GetMovementThisFrame()
         {
-            if (isWalkingDirect)
+            if (!isWalkingDirect) return velocity;
+
+            Vector3 targetWorld = GridToWorld(directTarget);
+            Vector3 direction = targetWorld - transform.position;
+            direction.y = 0;
+
+            if (trackingTarget == null && direction.magnitude < 0.1f)
             {
-                Vector3 targetWorld = GridToWorld(directTarget);
-                Vector3 direction = targetWorld - transform.position;
-                direction.y = 0;
-
-                if (trackingTarget == null && direction.magnitude < 0.1f)
-                {
-                    isWalkingDirect = false;
-                    return Vector3.zero;
-                }
-
-                return direction.normalized;
+                isWalkingDirect = false;
+                return Vector3.zero;
             }
 
-            return velocity;
+            return direction.normalized;
         }
 
-        public float GetTargetY()
-        {
-            return currentY;
-        }
+        public float GetTargetY() => currentY;
     }
 }

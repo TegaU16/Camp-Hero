@@ -4955,7 +4955,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1151756178927884632}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8829070d0715bd249b2017e395996345, type: 3}
+  m_Script: {fileID: 11500000, guid: 8792915af0cbd104594fde40b312a95a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   range: 10
@@ -4964,6 +4964,7 @@ MonoBehaviour:
   rotationSpeed: 5
   firePoint: {fileID: 0}
   projectilePrefab: {fileID: 0}
+  shotSound: {fileID: 0}
   pulseRadius: 5
   pulseDamage: 15
   pulseInterval: 2
@@ -4988,9 +4989,9 @@ MonoBehaviour:
     minValue: 1
     maxValue: 1
     dropChance: 1
-  objectType: 1
+  objectType: 0
   entityType: 1
-  objectLevel: 0
+  objectLevel: 1
   torsoBone: {fileID: 0}
   bounceCooldown: 0.2
 --- !u!114 &2653586899177330430
@@ -5002,7 +5003,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1151756178927884632}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 4

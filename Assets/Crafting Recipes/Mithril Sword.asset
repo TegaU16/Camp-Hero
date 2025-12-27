@@ -9,15 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca13b4c80743af948b45551ae470c014, type: 3}
+  m_Script: {fileID: 11500000, guid: 652ce7b35ee134240b55748c1a5519d8, type: 3}
   m_Name: Mithril Sword
   m_EditorClassIdentifier: 
   resultItem: {fileID: 11400000, guid: 66a200ffeb9f2334ca3aad882fadbcb0, type: 2}
   requirements:
   - requiredItem: {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
-    count: 15
+    count: 12
   - requiredItem: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
     count: 5
   category: 1
+  source: 2
+  hasBeenCraftedBefore: 0
   itemsRequiredToUnlock:
   - {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}

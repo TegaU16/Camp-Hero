@@ -59,21 +59,20 @@ namespace Game.Quests
 
             foreach (Quest quest in activeQuests)
             {
-                if (quest != null)
-                {
-                    QuestSaveData questSaveData = new()
-                    {
-                        questID = quest.questID,
-                        questTitle = quest.title,
-                        isCompleted = quest.isCompleted,
-                        requiredItems = quest.requiredItems.Where(x => x != null).Select(x => x.name).ToList(),
-                        requiredCount = quest.requiredCount,
-                        currentCount = quest.currentCount
-                    };
+                if (quest == null) continue;
 
-                    worldQuestSaveData.questSaveDatas.Add(questSaveData);
-                    worldQuestSaveData.hasOpenedTrialMenu = hasOpenedTrialMenu;
-                }
+                QuestSaveData questSaveData = new()
+                {
+                    questID = quest.questID,
+                    questTitle = quest.title,
+                    isCompleted = quest.isCompleted,
+                    requiredItems = quest.requiredItems.Where(x => x != null).Select(x => x.name).ToList(),
+                    requiredCount = quest.requiredCount,
+                    currentCount = quest.currentCount
+                };
+
+                worldQuestSaveData.questSaveDatas.Add(questSaveData);
+                worldQuestSaveData.hasOpenedTrialMenu = hasOpenedTrialMenu;
             }
 
             SaveSystem.SaveQuestData(WorldSession.CurrentWorldName, worldQuestSaveData);
@@ -105,29 +104,27 @@ namespace Game.Quests
                 hasOpenedTrialMenu = worldQuestSaveData.hasOpenedTrialMenu;
                 return worldQuestSaveData;
             }
-            else
+
+            List<QuestSaveData> defaultQuestList = new();
+            QuestSaveData starterQuestData = new()
             {
-                List<QuestSaveData> defaultQuestList = new();
-                QuestSaveData starterQuestData = new()
-                {
-                    questID = starterQuest.questID,
-                    questTitle = starterQuest.title,
-                    isCompleted = starterQuest.isCompleted,
-                    requiredItems = starterQuest.requiredItems.Where(x => x != null).Select(x => x.itemName).ToList(),
-                    requiredCount = starterQuest.requiredCount,
-                    currentCount = starterQuest.currentCount
-                };
-                defaultQuestList.Add(starterQuestData);
+                questID = starterQuest.questID,
+                questTitle = starterQuest.title,
+                isCompleted = starterQuest.isCompleted,
+                requiredItems = starterQuest.requiredItems.Where(x => x != null).Select(x => x.itemName).ToList(),
+                requiredCount = starterQuest.requiredCount,
+                currentCount = starterQuest.currentCount
+            };
+            defaultQuestList.Add(starterQuestData);
 
-                WorldQuestSaveData defaultWorldQuestSaveData = new()
-                {
-                    questSaveDatas = defaultQuestList
-                };
+            WorldQuestSaveData defaultWorldQuestSaveData = new()
+            {
+                questSaveDatas = defaultQuestList
+            };
 
-                AddQuest(starterQuest);
+            AddQuest(starterQuest);
 
-                return defaultWorldQuestSaveData;
-            }
+            return defaultWorldQuestSaveData;
         }
     }
 }

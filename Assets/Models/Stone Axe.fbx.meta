@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Stone Axe
+      name: Stone Axe Mat
     second: {fileID: 2100000, guid: 588cd9068a61dfb41ba83970a67c7818, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Stone Axe
-    second: {fileID: 2800000, guid: c0c557b37d0529a4992ae75aca947450, type: 3}
+    second: {fileID: 2800000, guid: ca182d007ec0a0e4ca572bc526f0c012, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

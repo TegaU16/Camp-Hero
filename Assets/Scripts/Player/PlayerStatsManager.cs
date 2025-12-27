@@ -125,15 +125,12 @@ namespace Game.Players
             UpdateStatOuterUI(stat);
         }
 
-        public void UpdateStatOuterUI(Stat stat)
-        {
-            stat.OuterLevelText.text = $"{stat.Value + 1}/{stat.MaxValue + 1}";
-        }
+        public void UpdateStatOuterUI(Stat stat) => stat.OuterLevelText.text = $"{stat.Value + 1}/{stat.MaxValue}";
 
         public void ToggleCampfireStatsMenu(bool open)
         {
             if (open)
-                RefreshUpgradeUI(stats.campfireUpgrades, true);
+                RefreshUpgradeUI(stats.campfireUpgrades, showLevelRequirement: true);
 
             if (campfireStatsMenu != null)
                 campfireStatsMenu.SetActive(open);
@@ -215,9 +212,7 @@ namespace Game.Players
         public void PurchaseUpgrade<T>(UpgradeBase<T> upgrade) where T : UpgradeEffect
         {
             if (upgrade.purchased) return;
-
             if (stats.goldenPoints < upgrade.Cost) return;
-
             if (upgrade is CampfireUpgrade campfireUpgrade &&
                 LevelManager.Instance.GetLevel() < campfireUpgrade.LevelRequirement) return;
 
@@ -235,7 +230,7 @@ namespace Game.Players
             }
             else if (campfireStatsMenu.activeSelf)
             {
-                RefreshUpgradeUI(stats.campfireUpgrades, true);
+                RefreshUpgradeUI(stats.campfireUpgrades, showLevelRequirement: true);
             }
         }
 

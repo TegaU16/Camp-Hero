@@ -7,7 +7,7 @@ namespace Game.Crafting
         public void Interact()
         {
             if (CraftingManager.Instance != null)
-                CraftingManager.Instance.ToggleCraftingMenu();
+                CraftingManager.Instance.craftingUI.ToggleCraftingMenu(CraftingSource.Workbench);
         }
 
         public string GetInteractText()

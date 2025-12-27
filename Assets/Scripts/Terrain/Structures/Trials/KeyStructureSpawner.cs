@@ -115,20 +115,5 @@ namespace Game.Terrain.Structures.Trials
             Debug.LogWarning($"No terrain found below key structure position: {position}");
             return position;
         }
-
-        public bool IsNearKeyStructure(Vector3 pos, float radius = 20f)
-        {
-            foreach (Vector3 keyPos in keyStructurePositions)
-            {
-                if (Vector3.Distance(pos, keyPos) < radius) return true;
-            }
-
-            return false;
-        }
-
-        public List<Vector3> GetKeyStructurePositions()
-        {
-            return keyStructurePositions;
-        }
     }
 }

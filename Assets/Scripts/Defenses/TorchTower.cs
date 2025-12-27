@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Game.AI.Enemies;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Game.Defenses
 {
@@ -33,11 +34,9 @@ namespace Game.Defenses
                 Vector3 hitPoint;
                 Vector3 hitNormal;
 
-                if (target.TryGetComponent(out CharacterController controller))
-                    hitPoint = controller.ClosestPoint(transform.position);
-                else
-                    continue;
+                if (!target.TryGetComponent(out CharacterController controller)) continue;
 
+                hitPoint = controller.ClosestPoint(transform.position);
                 hitNormal = (hitPoint - transform.position).normalized;
 
                 // Assign or reuse a beam for this target
@@ -48,65 +47,53 @@ namespace Game.Defenses
                 }
 
                 GameObject beamObj = targetToBeam[target];
-                LineRenderer lr = beamObj.GetComponent<LineRenderer>();
-                lr.enabled = true;
-                lr.SetPosition(0, firePoint.position);
-                lr.SetPosition(1, target.position);
+                LineRenderer lineRenderer = beamObj.GetComponent<LineRenderer>();
+                lineRenderer.enabled = true;
+                lineRenderer.SetPosition(0, firePoint.position);
+                lineRenderer.SetPosition(1, target.position);
 
-                if (fireCooldown <= 0f)
-                {
-                    if (target.TryGetComponent(out BreakableObject breakable))
-                    {
-                        float damage = damagePerTarget;
+                if (fireCooldown > 0f || !target.TryGetComponent(out BreakableObject breakable)) continue;
 
-                        if (!damageBuffer.ContainsKey(target))
-                            damageBuffer[target] = 0f;
-
-                        damageBuffer[target] += damage;
-
-                        int wholeDamage = Mathf.FloorToInt(damageBuffer[target]);
-                        if (wholeDamage > 0)
-                        {
-                            breakable.TakeDamage(wholeDamage, false, hitPoint, hitNormal);
-                            damageBuffer[target] -= wholeDamage;
-                        }
-
-                        if (target.TryGetComponent(out Enemy enemy))
-                            enemy.OnAttacked(transform);
-                    }
-                }
-            }
-
-            // Apply cooldown only once per tick
-            if (fireCooldown <= 0f)
                 fireCooldown = 1f / fireRate;
+                float damage = damagePerTarget;
+
+                if (!damageBuffer.ContainsKey(target))
+                    damageBuffer[target] = 0f;
+
+                damageBuffer[target] += damage;
+
+                int wholeDamage = Mathf.FloorToInt(damageBuffer[target]);
+                if (wholeDamage > 0)
+                {
+                    breakable.TakeDamage(wholeDamage, crit: false, hitPoint, hitNormal);
+                    damageBuffer[target] -= wholeDamage;
+                }
+
+                if (target.TryGetComponent(out Enemy enemy))
+                    enemy.OnAttacked(transform);
+            }
         }
 
         private void CleanUpBeams()
         {
             List<Transform> toRemove = new();
-            foreach (var pair in targetToBeam)
+            foreach (KeyValuePair<Transform, GameObject> pair in targetToBeam)
             {
-                // Clean up if the target is dead or out of range or no longer selected
-                bool isDead = !IsTargetAlive(pair.Key);
-                bool isOutOfRange = !targets.Contains(pair.Key);
+                if (pair.Key == null) continue;
 
-                if (isDead || isOutOfRange || pair.Key == null)
-                {
-                    if (pair.Value != null)
-                        pair.Value.GetComponent<LineRenderer>().enabled = false;
+                bool isAlive = IsTargetAlive(pair.Key);
+                bool isWithinRange = targets.Contains(pair.Key);
 
-                    toRemove.Add(pair.Key);
-                }
+                if (isAlive && isWithinRange) continue;
+
+                if (pair.Value != null)
+                    pair.Value.GetComponent<LineRenderer>().enabled = false;
+
+                toRemove.Add(pair.Key);
+                targetToBeam.Remove(pair.Key);
+                damageBuffer.Remove(pair.Key);
             }
 
-            foreach (Transform key in toRemove)
-            {
-                targetToBeam.Remove(key);
-                damageBuffer.Remove(key);
-            }
-
-            // Also remove dead enemies from the targets list
             targets.RemoveAll(t => t == null || !IsTargetAlive(t));
         }
 
@@ -128,16 +115,13 @@ namespace Game.Defenses
             for (int i = 0; i < hitCount; i++)
             {
                 Collider hit = hits[i];
-                if (hit.GetComponent<Enemy>() != null)
-                {
-                    Transform targetTransform = hit.transform;
+                if (hit.GetComponent<Enemy>() == null) continue;
 
-                    if (IsTargetAlive(targetTransform) && !targets.Contains(targetTransform))
-                    {
-                        targets.Add(targetTransform);
-                        if (targets.Count >= maxTargets) break;
-                    }
-                }
+                Transform targetTransform = hit.transform;
+                if (!IsTargetAlive(targetTransform) || targets.Contains(targetTransform)) continue;
+
+                targets.Add(targetTransform);
+                if (targets.Count >= maxTargets) break;
             }
         }
 

@@ -19,7 +19,7 @@ namespace Game.Food
 
         public void Plant()
         {
-            selectedItem = InventoryManager.Instance.GetSelectedItem(false);
+            selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
             if (selectedItem == null || selectedItem.plantData == null) return;
 
             plantedData = selectedItem.plantData;
@@ -90,22 +90,15 @@ namespace Game.Food
         public string GetInteractText()
         {
             if (!isPlanted) return "Sow Seed";
-
             if (IsFullyGrown()) return "Harvest";
 
             int totalSeconds = Mathf.CeilToInt(growthTimer);
-            if (totalSeconds < 60)
-            {
-                return $"{totalSeconds}";
-            }
-            else
-            {
-                int minutes = totalSeconds / 60;
-                int seconds = totalSeconds % 60;
-                return $"{minutes}:{seconds:D2}";
-            }
-        }
+            if (totalSeconds < 60) return $"{totalSeconds}";
 
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return $"{minutes}:{seconds:D2}";
+        }
 
         public Transform GetTransform() => transform;
 
@@ -134,16 +127,16 @@ namespace Game.Food
                 currentStage = -1;
                 if (currentPlantInstance != null)
                     Destroy(currentPlantInstance);
-            }
-            else
-            {
-                plantedData = PlantRegistry.GetPlantByKey(data.plantName);
-                growthTimer = data.growthTimer;
-                currentStage = data.currentStage;
-                isPlanted = data.isPlanted;
 
-                UpdateVisual();
+                return;
             }
+
+            plantedData = PlantRegistry.GetPlantByKey(data.plantName);
+            growthTimer = data.growthTimer;
+            currentStage = data.currentStage;
+            isPlanted = data.isPlanted;
+
+            UpdateVisual();
         }
     }
 }

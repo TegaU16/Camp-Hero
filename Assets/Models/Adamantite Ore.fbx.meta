@@ -1,9 +1,19 @@
 fileFormatVersion: 2
-guid: fcaf0aa955cfd174ca4801ce736b5edc
+guid: 2174e087871c8b54c931b5b61a26a39f
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Adamantite Ore Mat
+    second: {fileID: 2100000, guid: 5bbf37ef78923824c9c0c6ecc6c9a713, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Adamantite Ore
+    second: {fileID: 2800000, guid: 76893160461037e45a1d01ca14c6aecf, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -71,8 +81,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

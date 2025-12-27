@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Mithril Sword
+      name: Mithril Sword Mat
     second: {fileID: 2100000, guid: 3fbef1458c8313f4e87176b1e5832269, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Mithril Sword
-    second: {fileID: 2800000, guid: 3d55c153c87958c48b439398953cdde2, type: 3}
+    second: {fileID: 2800000, guid: a219bf7d527979f40815ac0ff519244f, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

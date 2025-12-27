@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Mortar
   m_EditorClassIdentifier: 
-  itemTypes: 2
+  itemTypes: 1
   actionType: 1
-  maxStack: 5
+  maxStack: 20
   icon: {fileID: 21300000, guid: 491feebfe1dbf62459391caa8d81296b, type: 3}
   itemName: Mortar
   equippedPrefab: {fileID: 1221377613340557025, guid: 886aebf8910d87b47a24a0eaea3c5b28, type: 3}
@@ -22,7 +22,7 @@ MonoBehaviour:
   buildingGhost: {fileID: 290839573056755980, guid: 682ffcfd44ee4f64494297ff5a3e534d, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
-  attackDistance: 1
+  attackDistance: 3
   attackDamage:
   - 0
   - 0

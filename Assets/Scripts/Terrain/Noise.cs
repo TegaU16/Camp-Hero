@@ -32,12 +32,12 @@ namespace Game.Terrain
             };
         }
 
-        public void SetNoiseType(NoiseType t) { noiseType = t; }
-        public void SetFractalType(FractalType t) { fractalType = t; }
-        public void SetFractalOctaves(int o) { octaves = math.max(1, o); }
-        public void SetFractalGain(float g) { gain = g; }
-        public void SetLacunarity(float l) { lacunarity = l; }
-        public void SetFrequency(float f) { frequency = f; }
+        public void SetNoiseType(NoiseType t) => noiseType = t;
+        public void SetFractalType(FractalType t) => fractalType = t;
+        public void SetFractalOctaves(int o) => octaves = math.max(1, o);
+        public void SetFractalGain(float g) => gain = g;
+        public void SetLacunarity(float l) => lacunarity = l;
+        public void SetFrequency(float f) => frequency = f;
 
         // Sample 2D point (returns roughly in 0..1, depends on fractal type)
         public readonly float Sample(float2 p)
@@ -93,6 +93,7 @@ namespace Game.Terrain
             h ^= h >> 15;
             float ox = (h & 0xFFFF) / (float)65535f * 10000f;
             float oz = ((h >> 16) & 0xFFFF) / (float)65535f * 10000f;
+
             return new float2(ox, oz);
         }
     }

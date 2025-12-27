@@ -29,13 +29,9 @@ namespace Game.Upgrades
         private int ModifyDamage(int incomingDamage)
         {
             if (health.GetHealth() / (float)health.maxHealth > minHPPercentage
-                && incomingDamage >= health.GetHealth())
-            {
-                // Prevent death
-                return health.GetHealth() - 1;
-            }
+                && incomingDamage >= health.GetHealth()) return health.GetHealth() - 1;
 
-            return incomingDamage; // No modification
+            return incomingDamage;
         }
     }
 }

@@ -106,7 +106,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 92347587458306418}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7c5aad825351f845a558034981682db, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f1f12c3f8620e549bf60a20e73811d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SurfaceType
   surfaceType: 1
@@ -195,7 +195,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7847955872096266082}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfce9dfa74dd2264f93a3a3967f7b940, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e1eb0b11e9f54d4c9c716a3e6cfca16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   lootTable: {fileID: 11400000, guid: 8ee357e2221cd8a46be73081908921c4, type: 2}

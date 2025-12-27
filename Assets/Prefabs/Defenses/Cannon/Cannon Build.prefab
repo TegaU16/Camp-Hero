@@ -192,13 +192,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6834869226508100709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72d1a2b25beafd2429eb3cca0a614aac, type: 3}
+  m_Script: {fileID: 11500000, guid: 5516fd02d49e6f44fbf49da6c3d0cada, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   range: 10
   damage: 20
   fireRate: 1
-  rotationSpeed: 10
+  rotationSpeed: 5
   firePoint: {fileID: 8834070817164444102}
   projectilePrefab: {fileID: 309557753819694897, guid: d51470ba7fe6be3428772ed8778327b2, type: 3}
   shotSound: {fileID: 8300000, guid: d0dfe73fa36c421449dcf883d584b189, type: 3}
@@ -212,7 +212,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6834869226508100709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a70c7d6b58abcc4e9fbb00211771b0e, type: 3}
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetType: 4

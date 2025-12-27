@@ -8,11 +8,16 @@ namespace Game.Tutorial
         void OnEnable()
         {
             TutorialEventBus.OnTutorialTriggered += OnTutorialTriggered;
-            TutorialEventBus.OnTutorialTimedOut += (_) => CraftingManager.Instance.ClearHighlights();
-            TutorialEventBus.OnTutorialCompleted += (_) => CraftingManager.Instance.ClearHighlights();
+            TutorialEventBus.OnTutorialTimedOut += OnTutorialClosed;
+            TutorialEventBus.OnTutorialCompleted += OnTutorialClosed;
         }
 
-        void OnDisable() => TutorialEventBus.OnTutorialTriggered -= OnTutorialTriggered;
+        void OnDisable()
+        {
+            TutorialEventBus.OnTutorialTriggered -= OnTutorialTriggered;
+            TutorialEventBus.OnTutorialTimedOut -= OnTutorialClosed;
+            TutorialEventBus.OnTutorialCompleted -= OnTutorialClosed;
+        }
 
         private void OnTutorialTriggered(TutorialData data)
         {
@@ -24,6 +29,12 @@ namespace Game.Tutorial
 
             if (data.id == "suggest_crafting_recipe")
                 CraftingManager.Instance.HighlightSuggestedRecipe();
+        }
+
+        private void OnTutorialClosed(TutorialData data)
+        {
+            if (data.craftingRecipeHighlightData != null)
+                CraftingManager.Instance.ClearHighlights(data.craftingRecipeHighlightData);
         }
     }
 }

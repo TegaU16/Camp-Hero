@@ -45,7 +45,6 @@ namespace Game.AI.Enemies
         void Update()
         {
             if (!GameManager.Instance.IsGameManagerReady()) return;
-
             if (dayNightCycle != null && !dayNightCycle.IsNight()) return;
 
             maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
@@ -109,24 +108,23 @@ namespace Game.AI.Enemies
                 enemy = enemyPool.GetEnemy(selectedPrefab, spawnPos);
             }
 
-            if (enemy != null)
+            if (enemy == null) return;
+
+            enemy.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
+            currentEnemyCount++;
+
+            // If elite, spawn a few regular enemies nearby
+            if (enemy.enemyType == Enemy.EnemyType.Elite)
             {
-                enemy.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
-                currentEnemyCount++;
+                EnemyTier enemyTier = enemyPool.GetTierByPrefab(selectedPrefab);
 
-                // If elite, spawn a few regular enemies nearby
-                if (enemy.enemyType == Enemy.EnemyType.Elite)
+                if (enemyTier == null)
                 {
-                    EnemyTier enemyTier = enemyPool.GetTierByPrefab(selectedPrefab);
-
-                    if (enemyTier == null)
-                    {
-                        Debug.LogError($"Enemy tier for the prefab: {selectedPrefab.name} hasn't been assigned!");
-                        return;
-                    }
-
-                    SpawnEliteGroup(enemy.transform.position, enemyTier.regularsToSpawnWith);
+                    Debug.LogError($"Enemy tier for the prefab: {selectedPrefab.name} hasn't been assigned!");
+                    return;
                 }
+
+                SpawnEliteGroup(enemy.transform.position, enemyTier.regularsToSpawnWith);
             }
         }
 
@@ -148,10 +146,7 @@ namespace Game.AI.Enemies
             }
         }
 
-        public void DecreaseEnemyCount()
-        {
-            currentEnemyCount--;
-        }
+        public void DecreaseEnemyCount() => currentEnemyCount--;
 
         public void SetPlayer(GameObject player)
         {
@@ -172,16 +167,15 @@ namespace Game.AI.Enemies
             foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
             {
                 if (enemy == null) continue;
+                if (!enemy.TryGetComponent(out BreakableObject breakable)) continue;
+                if (!enemy.TryGetComponent(out PrefabID id)) continue;
 
-                if (enemy.TryGetComponent(out BreakableObject breakable) && enemy.TryGetComponent(out PrefabID id))
+                dataList.Add(new EnemySaveData
                 {
-                    dataList.Add(new EnemySaveData
-                    {
-                        prefabName = id.prefabKey,
-                        position = enemy.transform.position,
-                        currentHealth = breakable.GetHealth()
-                    });
-                }
+                    prefabName = id.prefabKey,
+                    position = enemy.transform.position,
+                    currentHealth = breakable.GetHealth()
+                });
             }
             return dataList;
         }
@@ -197,41 +191,39 @@ namespace Game.AI.Enemies
             BossHealthBarManager.Instance.ClearHealthBars();
 
             List<EnemySaveData> savedEnemies = SaveSystem.LoadEnemies(WorldSession.CurrentWorldName);
+            if (savedEnemies == null) return;
 
-            if (savedEnemies != null)
+            foreach (EnemySaveData data in savedEnemies)
             {
-                foreach (EnemySaveData data in savedEnemies)
+                GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabName);
+                if (prefab == null) continue;
+
+                Enemy enemy;
+                GameObject boss = null;
+
+                if (prefab.TryGetComponent(out Enemy e) && e.enemyType == Enemy.EnemyType.Boss)
                 {
-                    GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabName);
-                    if (prefab == null) continue;
-
-                    Enemy enemy;
-                    GameObject boss = null;
-
-                    if (prefab.TryGetComponent(out Enemy e) && e.enemyType == Enemy.EnemyType.Boss)
-                    {
-                        // Instantiate normally instead of using pool
-                        boss = Instantiate(prefab, data.position, Quaternion.identity);
-                        enemy = boss.GetComponent<Enemy>();
-                    }
-                    else
-                    {
-                        // Use pool for regular enemies
-                        enemy = enemyPool.GetEnemy(prefab, data.position);
-                    }
-
-                    // Restore health
-                    if (enemy.TryGetComponent(out BreakableObject breakable))
-                    {
-                        breakable.SetHealth(data.currentHealth);
-
-                        if (boss != null)
-                            BossHealthBarManager.Instance.SpawnBossHealthBar(boss);
-                    }
-
-                    // Register with manager
-                    EnemyManager.Instance.RegisterEnemy(enemy);
+                    // Instantiate normally instead of using pool
+                    boss = Instantiate(prefab, data.position, Quaternion.identity);
+                    enemy = boss.GetComponent<Enemy>();
                 }
+                else
+                {
+                    // Use pool for regular enemies
+                    enemy = enemyPool.GetEnemy(prefab, data.position);
+                }
+
+                // Restore health
+                if (enemy.TryGetComponent(out BreakableObject breakable))
+                {
+                    breakable.SetHealth(data.currentHealth);
+
+                    if (boss != null)
+                        BossHealthBarManager.Instance.SpawnBossHealthBar(boss);
+                }
+
+                // Register with manager
+                EnemyManager.Instance.RegisterEnemy(enemy);
             }
         }
     }

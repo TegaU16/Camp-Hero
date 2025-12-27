@@ -103,10 +103,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 881154247749051603}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc2632613433edb4f84d87ecf7132931, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d9e8697e2ffa55498851f970fea0844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  altarID: 
   requiredKey: {fileID: 11400000, guid: 527f2762549ff8a4dadc125dfe178d7b, type: 2}
   bossPrefab: {fileID: 5482173699686684518, guid: 4413e226929a8dd459149ec634acf873, type: 3}
   bossSpawnPoint: {fileID: 5211026046734186928}

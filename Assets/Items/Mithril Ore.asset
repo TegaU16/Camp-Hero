@@ -9,20 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34e9ababc4e5eb54a9892d3ae345d7d1, type: 3}
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Mithril Ore
   m_EditorClassIdentifier: 
-  itemTypes: 16
+  itemTypes: 17
   actionType: 0
   maxStack: 20
   icon: {fileID: 21300000, guid: 1a3a233ad0de1684c844a9a3175c5c3e, type: 3}
   itemName: Mithril Ore
-  equippedPrefab: {fileID: 9009731443215604923, guid: 58260c7a985d649479d1b6ee96a1d51e, type: 3}
-  itemDrop: {fileID: 2339103782091125912, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
+  equippedPrefab: {fileID: 5839194763466920450, guid: 58260c7a985d649479d1b6ee96a1d51e, type: 3}
+  itemDrop: {fileID: 1612894569515296370, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
-  attackDistance: 1
+  attackDistance: 3
   attackDamage:
   - 0
   - 0

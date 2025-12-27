@@ -765,29 +765,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 6133712532379057815}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cfcf6df288b572448d16c306ab7f8a1, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d3d375ae5f094b4599c877761fcd9c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 0
   enemyType: 0
-  meleeAttackRange: 1
+  meleeAttackRange: 2
   rangedAttackRange: 10
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
   enemyIcon: {fileID: 21300000, guid: 3d8c9985284833648b4c27b43e0129ae, type: 3}
-  breakableObject: {fileID: 3763461144154869274}
   rangedAttackScripts: []
-  moveSpeed: 2.2
+  moveSpeed: 4
   gravity: -9.8
-  preferredTargets: 0000000001000000040000000300000002000000
+  preferredTargets: 0000000001000000040000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
   repathDistanceThreshold: 1
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: 9c3dd35c6ad255f4ca6091c9c145ff2c, type: 2}
-  animator: {fileID: 627319165041851991}
+  animator: {fileID: 0}
 --- !u!114 &3763461144154869274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -839,7 +838,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6133712532379057815}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f09cee48568c548a211eaf747cd1fa, type: 3}
+  m_Script: {fileID: 11500000, guid: b179c12731e34bc44ad88a0f12e30afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetableLayer:
@@ -854,11 +853,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6133712532379057815}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 259e6c264ecf5ff479778d35cf881ab3, type: 3}
+  m_Script: {fileID: 11500000, guid: fafffb771d25a5540a0b32baed540c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 720
-  animator: {fileID: 627319165041851991}
   speedParam: Speed
   yLerpSpeed: 5
 --- !u!143 &8849756464623966720

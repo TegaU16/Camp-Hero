@@ -9,16 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 940435f3d6b1c0d46b968b0c17aabce5, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ebbe1a59d8d16a4eb5575dc5a06d2be, type: 3}
   m_Name: Grasslands
   m_EditorClassIdentifier: 
   biomeName: Grasslands
   noiseSettings:
-    baseScale: 0.12
-    persistence: 0.2
-    frequency: 0.3
+    baseScale: 0.05
+    persistence: 0.4
+    frequency: 0.6
     octaves: 4
-    lacunarity: 1.6
+    lacunarity: 2
     heightScale: 8
     useHeightCurve: 1
     heightCurve:
@@ -34,10 +34,10 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 1.1
+        time: 1.2
         value: 1
-        inSlope: 0
-        outSlope: 0
+        inSlope: 2
+        outSlope: 2
         tangentMode: 0
         weightedMode: 0
         inWeight: 0

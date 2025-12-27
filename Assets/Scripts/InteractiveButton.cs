@@ -44,13 +44,15 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     {
         if (!GetComponent<Button>().interactable || isPressed) return;
 
-        SetVisualState(visualProfile.hoverSprite, visualProfile.hoverTextColor, visualProfile.hoverOutlineColor, visualProfile.hoverUnderlayColor);
+        SetVisualState(
+            visualProfile.hoverSprite,
+            visualProfile.hoverTextColor,
+            visualProfile.hoverOutlineColor,
+            visualProfile.hoverUnderlayColor
+        );
     }
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        UpdateVisualState();
-    }
+    public void OnPointerExit(PointerEventData eventData) => UpdateVisualState();
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -71,11 +73,32 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private void UpdateVisualState()
     {
         if (isPressed)
-            SetVisualState(visualProfile.pressedSprite, visualProfile.pressedTextColor, visualProfile.pressedOutlineColor, visualProfile.pressedUnderlayColor);
+        {
+            SetVisualState(
+                visualProfile.pressedSprite,
+                visualProfile.pressedTextColor,
+                visualProfile.pressedOutlineColor,
+                visualProfile.pressedUnderlayColor
+            );
+        }
         else if (isSelected)
-            SetVisualState(visualProfile.selectedSprite, visualProfile.selectedTextColor, visualProfile.selectedOutlineColor, visualProfile.selectedUnderlayColor);
+        {
+            SetVisualState(
+                visualProfile.selectedSprite,
+                visualProfile.selectedTextColor,
+                visualProfile.selectedOutlineColor,
+                visualProfile.selectedUnderlayColor
+            );
+        }
         else
-            SetVisualState(visualProfile.unselectedSprite, visualProfile.unselectedTextColor, visualProfile.unselectedOutlineColor, visualProfile.unselectedUnderlayColor);
+        {
+            SetVisualState(
+                visualProfile.unselectedSprite,
+                visualProfile.unselectedTextColor,
+                visualProfile.unselectedOutlineColor,
+                visualProfile.unselectedUnderlayColor
+            );
+        }
     }
 
     private void SetVisualState(Sprite sprite, Color textColor, Color outlineColor, Color underlayColor)
@@ -87,17 +110,16 @@ public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         foreach (TextMeshProUGUI buttonText in buttonTexts)
         {
-            if (buttonText != null)
-            {
-                buttonText.color = textColor;
+            if (buttonText == null) continue;
 
-                // Update outline colour
-                buttonText.outlineColor = outlineColor;
-                buttonText.outlineWidth = outlineColor.a > 0 ? 0.2f : 0f;
+            buttonText.color = textColor;
 
-                // Update underlay color (requires underlay enabled in TMP shader)
-                buttonText.fontMaterial.SetColor("_UnderlayColor", underlayColor);
-            }
+            // Update outline colour
+            buttonText.outlineColor = outlineColor;
+            buttonText.outlineWidth = outlineColor.a > 0 ? 0.2f : 0f;
+
+            // Update underlay color (requires underlay enabled in TMP shader)
+            buttonText.fontMaterial.SetColor("_UnderlayColor", underlayColor);
         }
     }
 }
