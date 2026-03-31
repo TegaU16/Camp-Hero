@@ -43,7 +43,8 @@ namespace Game.AI.Enemies
 
         public void UnregisterTarget(Targetable target)
         {
-            activeTargets.Remove(target);
+            if (activeTargets.Contains(target))
+                activeTargets.Remove(target);
         }
 
         public List<Targetable> GetActiveTargets()

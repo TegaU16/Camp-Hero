@@ -5,15 +5,10 @@ ModelImporter:
   internalIDToNameTable: []
   externalObjects:
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Cannon Base Mat
-    second: {fileID: 2100000, guid: 4dbc2c8c63d572f4cbe02b141fdaa46c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Cannon Mat
-    second: {fileID: 2100000, guid: fd512e8519a9f7b42852b1ad62d46e8f, type: 2}
+      name: Cannon Head
+    second: {fileID: 2800000, guid: 5fa83068d656a78429d04e6e2f9ce7d8, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,8 +76,8 @@ ModelImporter:
     useFileScale: 1
     strictVertexDataChecks: 0
   tangentSpace:
-    normalSmoothAngle: 0
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0

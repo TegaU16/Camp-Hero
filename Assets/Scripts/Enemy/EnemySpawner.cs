@@ -44,7 +44,7 @@ namespace Game.AI.Enemies
 
         void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (dayNightCycle != null && !dayNightCycle.IsNight()) return;
 
             maxEnemies = CalculateMaxEnemies(dayNightCycle.GetCurrentDay());
@@ -65,11 +65,10 @@ namespace Game.AI.Enemies
 
             Vector3 candidatePos = player.transform.position + Random.onUnitSphere * spawnRadius;
 
-            int spawnPosX = Mathf.RoundToInt(candidatePos.x);
-            int spawnPosZ = Mathf.RoundToInt(candidatePos.z);
+            int spawnPosX = Mathf.FloorToInt(candidatePos.x);
+            int spawnPosZ = Mathf.FloorToInt(candidatePos.z);
 
             float height = Utility.GetHeightAt(spawnPosX, spawnPosZ);
-
             Vector3 spawnPos = new(spawnPosX, height, spawnPosZ);
 
             if (!VoxelGrid.Instance.IsWithinBorders(spawnPos)) return;
@@ -79,13 +78,11 @@ namespace Game.AI.Enemies
 
             int day = dayNightCycle.GetCurrentDay();
             List<EnemyTier> availableTiers = enemyPool.GetAvailableTiers(day);
-
             if (availableTiers.Count == 0) return;
-
-            GameObject selectedPrefab;
 
             // Decide if a rare enemy should spawn
             float roll = Random.value;
+            GameObject selectedPrefab;
 
             if (roll < blightSpawnChance)
                 selectedPrefab = enemyPool.GetTierPrefab(Enemy.EnemyType.Blight, day);
@@ -156,10 +153,7 @@ namespace Game.AI.Enemies
                 Debug.LogWarning("Player is null!");
         }
 
-        private int CalculateMaxEnemies(int currentDay)
-        {
-            return Mathf.Min(currentDay * 5, 50); // Cap at 50 enemies max
-        }
+        private int CalculateMaxEnemies(int currentDay) => Mathf.Min(currentDay * 5, 50); // Cap at 50 enemies max
 
         private List<EnemySaveData> GetAllEnemySaveData()
         {
@@ -167,14 +161,14 @@ namespace Game.AI.Enemies
             foreach (Enemy enemy in FindObjectsByType<Enemy>(FindObjectsSortMode.None))
             {
                 if (enemy == null) continue;
-                if (!enemy.TryGetComponent(out BreakableObject breakable)) continue;
+                if (enemy.breakableObject == null) continue;
                 if (!enemy.TryGetComponent(out PrefabID id)) continue;
 
                 dataList.Add(new EnemySaveData
                 {
                     prefabName = id.prefabKey,
                     position = enemy.transform.position,
-                    currentHealth = breakable.GetHealth()
+                    currentHealth = enemy.breakableObject.GetHealth()
                 });
             }
             return dataList;
@@ -214,9 +208,9 @@ namespace Game.AI.Enemies
                 }
 
                 // Restore health
-                if (enemy.TryGetComponent(out BreakableObject breakable))
+                if (enemy.breakableObject != null)
                 {
-                    breakable.SetHealth(data.currentHealth);
+                    enemy.breakableObject.SetHealth(data.currentHealth);
 
                     if (boss != null)
                         BossHealthBarManager.Instance.SpawnBossHealthBar(boss);

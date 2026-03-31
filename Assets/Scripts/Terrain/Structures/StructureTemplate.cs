@@ -7,7 +7,13 @@ namespace Game.Terrain.Structures
     public class StructureTemplate : ScriptableObject
     {
         public string structureName;
-        public List<GameObject> prefabParts;
-        public List<Vector3> localOffsets; // Same count as prefabParts
+        public List<PrefabPart> prefabParts;
+    }
+
+    [System.Serializable]
+    public struct PrefabPart
+    {
+        public GameObject prefab;
+        public Vector3 localOffset;
     }
 }

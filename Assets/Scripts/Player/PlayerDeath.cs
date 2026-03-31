@@ -1,6 +1,7 @@
-using System.Linq;
+using System.Collections;
 using Game.Inventory;
 using Game.Terrain.Structures.Trials;
+using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Game.Players
@@ -15,7 +16,9 @@ namespace Game.Players
         private Player player;
 
         public float deathDuration = 5f;
-        private PlayerDeathUI deathUI;
+        public float cameraMoveDuration = 2f;
+        [SerializeField] private Transform deathCameraPoint;
+        private bool isDead;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -23,12 +26,13 @@ namespace Game.Players
             characterController = GetComponent<CharacterController>();
             ragdollController = GetComponent<SimpleRagdollController>();
             player = GetComponent<Player>();
-
-            deathUI = FindFirstObjectByType<PlayerDeathUI>();
         }
 
         public void Die()
         {
+            if (isDead) return;
+            isDead = true;
+
             if (characterController != null)
                 characterController.enabled = false;
 
@@ -40,18 +44,47 @@ namespace Game.Players
             InventoryManager.Instance.ResetExtensions();
             InventoryManager.Instance.DropAllItems();
 
-            InteractableItemManager.Instance.ForceMergeAll();
-
-            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars)
             {
                 if (trialAltar != null && trialAltar.IsWaveInProgress())
                     trialAltar.FailTrial();
             }
 
-            if (deathUI != null)
-                StartCoroutine(deathUI.Show(deathDuration));
+            StartCoroutine(MoveCamera());
+
+            StartCoroutine(PlayerDeathUI.Instance.Show(deathDuration));
 
             Invoke(nameof(Despawn), deathDuration);
+        }
+
+        private IEnumerator MoveCamera()
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera == null) yield break;
+
+            if (mainCamera.TryGetComponent(out CinemachineBrain brain))
+                brain.enabled = false;
+
+            deathCameraPoint.GetPositionAndRotation(out Vector3 newPosition, out Quaternion newRotation);
+            mainCamera.transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
+
+            float elapsed = 0f;
+            while (elapsed < cameraMoveDuration)
+            {
+                elapsed += Time.deltaTime;
+                float tMove = Mathf.Clamp01(elapsed / cameraMoveDuration);
+
+                tMove = Mathf.SmoothStep(0, 1, tMove);
+
+                mainCamera.transform.SetPositionAndRotation(
+                    Vector3.Lerp(startPos, newPosition, tMove),
+                    Quaternion.Slerp(startRot, newRotation, tMove)
+                );
+
+                yield return null;
+            }
+
+            mainCamera.transform.SetPositionAndRotation(newPosition, newRotation);
         }
 
         private void Despawn()

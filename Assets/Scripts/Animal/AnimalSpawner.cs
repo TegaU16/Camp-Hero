@@ -13,17 +13,14 @@ namespace Game.AI.Animals
         private static readonly WaitForSeconds _waitForSeconds0_05 = new(0.05f);
         public static AnimalSpawner Instance;
 
-        [HideInInspector] public List<VoxelChunk> chunks = new();
-
-        public int clusterCount = 3;
-        public int animalsPerCluster = 5;
-        public float clusterRadius = 5f;
-        public LayerMask groundLayer;
+        [SerializeField] private int clusterCount = 3;
+        [SerializeField] private int animalsPerCluster = 5;
+        [SerializeField] private float clusterRadius = 5f;
 
         private readonly Dictionary<VoxelChunk, List<Animal>> chunkAnimals = new();
 
         [Header("Mob Limits")]
-        public int globalAnimalCap = 100;
+        [SerializeField] private int globalAnimalCap = 100;
         private int currentAnimalCount = 0;
 
         public int MaxAnimalsPerChunk => clusterCount * animalsPerCluster;
@@ -44,8 +41,7 @@ namespace Game.AI.Animals
                 chunkAnimals[chunk] = animalsList;
             }
 
-            if (animalsList.Count >= MaxAnimalsPerChunk)
-                yield break;
+            if (animalsList.Count >= MaxAnimalsPerChunk) yield break;
 
             Vector3 chunkOrigin = chunk.chunkObject.transform.position;
             float chunkSize = VoxelGrid.Instance.chunkSize;
@@ -66,8 +62,7 @@ namespace Game.AI.Animals
             float hashValue = (float)prng.NextDouble();
 
             // Combine both
-            if (noise * hashValue < 0.5f)
-                yield break;
+            if (noise * hashValue < 0.5f) yield break;
 
             for (int i = 0; i < clusterCount; i++)
             {
@@ -84,11 +79,6 @@ namespace Game.AI.Animals
                     (clusterCenter.z + 10000f) * 0.005f
                 );
 
-                Vector3 clusterOrigin = clusterCenter + Vector3.up * 100f;
-                if (!Physics.Raycast(clusterOrigin, Vector3.down, out RaycastHit hit, 200f, groundLayer)) continue;
-
-                clusterCenter.y = hit.point.y;
-
                 int animalsInCluster = Mathf.RoundToInt(animalsPerCluster * clusterNoise);
                 if (animalsInCluster <= 0) 
                     animalsInCluster = 1;
@@ -104,8 +94,8 @@ namespace Game.AI.Animals
 
                     Vector3 candidatePos = clusterCenter + offset;
 
-                    int spawnPosX = Mathf.RoundToInt(candidatePos.x);
-                    int spawnPosZ = Mathf.RoundToInt(candidatePos.z);
+                    int spawnPosX = Mathf.FloorToInt(candidatePos.x);
+                    int spawnPosZ = Mathf.FloorToInt(candidatePos.z);
 
                     float height = Utility.GetHeightAt(spawnPosX, spawnPosZ);
 
@@ -205,7 +195,7 @@ namespace Game.AI.Animals
             }
 
             System.Random prng = new(VoxelGrid.Instance.seed);
-            List<VoxelChunk> shuffledChunks = chunks.OrderBy(_ => prng.Next()).ToList();
+            List<VoxelChunk> shuffledChunks = VoxelGrid.Instance.chunks.OrderBy(_ => prng.Next()).ToList();
 
             foreach (VoxelChunk chunk in shuffledChunks)
                 StartCoroutine(SpawnAnimalsForChunk(chunk));

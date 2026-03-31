@@ -43,12 +43,10 @@ public class MinHeap<T> where T : IHeapItem<T>
         while (index > 0)
         {
             int parent = (index - 1) / 2;
-            if (items[index].CompareTo(items[parent]) < 0)
-            {
-                Swap(index, parent);
-                index = parent;
-            }
-            else break;
+            if (items[index].CompareTo(items[parent]) >= 0) break;
+
+            Swap(index, parent);
+            index = parent;
         }
     }
 
@@ -68,12 +66,10 @@ public class MinHeap<T> where T : IHeapItem<T>
             if (right <= lastIndex && items[right].CompareTo(items[smallest]) < 0)
                 smallest = right;
 
-            if (smallest != index)
-            {
-                Swap(index, smallest);
-                index = smallest;
-            }
-            else break;
+            if (smallest == index) break;
+
+            Swap(index, smallest);
+            index = smallest;
         }
     }
 

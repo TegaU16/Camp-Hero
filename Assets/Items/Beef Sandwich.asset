@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Beef Sandwich
   equippedPrefab: {fileID: 0}
   itemDrop: {fileID: 0}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 60
   plantData: {fileID: 0}
   fuelValue: 0

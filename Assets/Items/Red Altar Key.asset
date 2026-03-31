@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Red Altar Key
   equippedPrefab: {fileID: 6534713085935896001, guid: 35c6593b59a80ad4ea4351dce475eaa9, type: 3}
   itemDrop: {fileID: 8186282364528711524, guid: 25b97dd0f66bfde499c35bc1c99fcc45, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

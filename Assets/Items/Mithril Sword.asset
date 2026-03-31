@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Mithril Sword
   equippedPrefab: {fileID: 6177259187333782934, guid: c9b7efb607ab20a41bb332adccc6617b, type: 3}
   itemDrop: {fileID: 8475628114037023104, guid: ee2324911d668ce4c9519dc0d77434ef, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 3
-  toolType: 2
+  toolType: 4
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

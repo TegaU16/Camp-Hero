@@ -14,7 +14,7 @@ namespace Game.Crafting
     {
         public static CraftingManager Instance;
 
-        public CraftingUI craftingUI;
+        [SerializeField] private GameObject fullInventoryNotification;
 
         [Header("State")]
         public CraftingDatabase craftingDatabase;
@@ -28,10 +28,7 @@ namespace Game.Crafting
                 Destroy(gameObject);
         }
 
-        private void Start()
-        {
-            DOTween.Init();
-        }
+        private void Start() => DOTween.Init();
 
         public void TryUnlockRecipes(List<Item> discoveredItems)
         {
@@ -50,10 +47,10 @@ namespace Game.Crafting
             if (unlockedRecipes.Contains(recipe)) return;
 
             unlockedRecipes.Add(recipe);
-            craftingUI.SpawnCraftingItem(recipe);
+            CraftingUI.Instance.SpawnCraftingItem(recipe);
 
-            string id = $"{recipe.resultItem.itemName}_crafting";
-            TutorialData craftingRecipeTutorial = TutorialManager.Instance.GetTutorialData(id);
+            string tutorialID = $"{recipe.resultItem.itemName}_crafting";
+            TutorialData craftingRecipeTutorial = TutorialManager.Instance.GetTutorialData(tutorialID);
            
             if (craftingRecipeTutorial != null)
                 TutorialManager.Instance.ActivateTutorial(craftingRecipeTutorial);
@@ -64,7 +61,7 @@ namespace Game.Crafting
         /// </summary>
         public void Craft()
         {
-            CraftingItem selectedItem = craftingUI.selectedItem;
+            CraftingItem selectedItem = CraftingUI.Instance.selectedItem;
             if (selectedItem == null || !selectedItem.HasItems()) return;
 
             selectedItem.recipe.hasBeenCraftedBefore = true;
@@ -82,8 +79,17 @@ namespace Game.Crafting
         private IEnumerator DelayedAddCraftedItem(Item item)
         {
             yield return null; // wait 1 frame
-            InventoryManager.Instance.AddItem(item);
-            InventoryManager.Instance.EquipSelectedItem();
+
+            if (InventoryManager.Instance.IsInventoryFullForItem(item))
+            {
+                TextNotification fullInv = TextNotificationPool.Instance.GetTextNotification(fullInventoryNotification);
+                fullInv.gameObject.SetActive(true);
+                fullInv.Setup();
+                yield break;
+            }
+
+            Item itemWithAttribute = InventoryManager.Instance.SetAttributeForTool(item);
+            InventoryManager.Instance.AddItem(itemWithAttribute);
         }
 
         public void HighlightSpecificRecipes(CraftingRecipeHighlightTutorial data)
@@ -91,7 +97,6 @@ namespace Game.Crafting
             if (Time.time - data.lastTriggered < data.cooldown) return;
 
             data.lastTriggered = Time.time;
-
             List<CraftingItem> matches = new();
 
             // Find UI items matching the recipe(s)
@@ -147,7 +152,7 @@ namespace Game.Crafting
 
         private List<CraftingItem> GetUnlockedCraftingItems()
         {
-            CraftingItem[] items = craftingUI.craftingItemParent.transform.GetComponentsInChildren<CraftingItem>();
+            CraftingItem[] items = CraftingUI.Instance.craftingItemParent.transform.GetComponentsInChildren<CraftingItem>();
             return items.ToList();
         }
 
@@ -205,11 +210,10 @@ namespace Game.Crafting
         public void LoadCraftingProgress()
         {
             unlockedRecipes.Clear();
-            foreach (Transform child in craftingUI.craftingItemParent)
+            foreach (Transform child in CraftingUI.Instance.craftingItemParent)
                 Destroy(child.gameObject);
 
             CraftingSaveData saveData = SaveSystem.LoadCrafting(WorldSession.CurrentWorldName);
-
             if (saveData == null) return;
 
             foreach (string recipeName in saveData.unlockedRecipeIDs)
@@ -218,7 +222,7 @@ namespace Game.Crafting
                 if (recipe == null) continue;
 
                 unlockedRecipes.Add(recipe);
-                craftingUI.SpawnCraftingItem(recipe);
+                CraftingUI.Instance.SpawnCraftingItem(recipe);
             }
 
             foreach (CraftingRecipe recipe in craftingDatabase.allRecipes)

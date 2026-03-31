@@ -47,9 +47,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _Ambient: 0.5
-    - _Bevel: 0.5
+    - _Bevel: 0.613
     - _BevelClamp: 0
-    - _BevelOffset: 0
+    - _BevelOffset: -0.033
     - _BevelRoundness: 0
     - _BevelWidth: 0
     - _BumpFace: 0
@@ -79,7 +79,7 @@ Material:
     - _ScaleRatioC: 0.7386364
     - _ScaleX: 1
     - _ScaleY: 1
-    - _ShaderFlags: 0
+    - _ShaderFlags: 1
     - _Sharpness: 0
     - _SpecularPower: 2
     - _Stencil: 0

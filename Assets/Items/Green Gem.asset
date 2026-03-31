@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Green Gem
   equippedPrefab: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
   itemDrop: {fileID: 393741555877209843, guid: 0e0812481e3a90b48a63210cea208d34, type: 3}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

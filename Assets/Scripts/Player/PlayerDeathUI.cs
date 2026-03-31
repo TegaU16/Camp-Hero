@@ -7,11 +7,24 @@ namespace Game.Players
 {
     public class PlayerDeathUI : MonoBehaviour
     {
+        public static PlayerDeathUI Instance;
+
         public TextMeshProUGUI deathMessageText;
         public TextMeshProUGUI respawnCountdownText;
 
         [TextArea] public List<string> deathMessages;
         private int lastDeathMessageIndex = -1;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
 
         public IEnumerator Show(float deathDuration)
         {
@@ -24,7 +37,7 @@ namespace Game.Players
             }
             while (deathMessageIndex == lastDeathMessageIndex);
 
-            deathMessageText.text = deathMessages[deathMessageIndex];
+            deathMessageText.text = $"\"{deathMessages[deathMessageIndex]}\"";
             lastDeathMessageIndex = deathMessageIndex;
 
             float timer = deathDuration;

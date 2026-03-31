@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Wall
   equippedPrefab: {fileID: 6403017217164839949, guid: 3bbbbe702c4d32e45b29f4cd520ee9aa, type: 3}
   itemDrop: {fileID: 4617146028558147462, guid: aa7f46bb64c048a46a851429ba9d539c, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 4886152691077762485, guid: 0329728fdf78c7640b5b6b08ac4a319b, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 20

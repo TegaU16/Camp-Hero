@@ -53,12 +53,11 @@ namespace Game.Upgrades
 
         private IEnumerator BoostRoutine()
         {
-            float originalSpeed = animator.speed;
-            animator.speed = originalSpeed * speedMultiplier;
+            Utility.SetMultiplierSource(this, speedMultiplier, player.attackSpeedMultiplier);
 
             yield return new WaitForSeconds(duration);
 
-            animator.speed = originalSpeed;
+            Utility.RemoveMultiplierSource(this, player.attackSpeedMultiplier);
             activeRoutine = null;
         }
     }

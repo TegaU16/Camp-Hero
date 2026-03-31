@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Game.AI.Enemies;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static BreakableObject;
 
 namespace Game.Defenses
 {
@@ -17,7 +18,7 @@ namespace Game.Defenses
 
         protected override void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
 
             fireCooldown -= Time.deltaTime;
 
@@ -31,13 +32,13 @@ namespace Game.Defenses
             {
                 if (!IsTargetAlive(target)) continue;
 
-                Vector3 hitPoint;
-                Vector3 hitNormal;
+                Vector3 targetHitPoint;
+                Vector3 targetHitNormal;
 
                 if (!target.TryGetComponent(out CharacterController controller)) continue;
 
-                hitPoint = controller.ClosestPoint(transform.position);
-                hitNormal = (hitPoint - transform.position).normalized;
+                targetHitPoint = controller.ClosestPoint(transform.position);
+                targetHitNormal = (targetHitPoint - transform.position).normalized;
 
                 // Assign or reuse a beam for this target
                 if (!targetToBeam.ContainsKey(target))
@@ -65,7 +66,14 @@ namespace Game.Defenses
                 int wholeDamage = Mathf.FloorToInt(damageBuffer[target]);
                 if (wholeDamage > 0)
                 {
-                    breakable.TakeDamage(wholeDamage, crit: false, hitPoint, hitNormal);
+                    DamageInfo attackDamageInfo = new
+                    (
+                        damage: wholeDamage,
+                        hitPoint: targetHitPoint,
+                        hitNormal: targetHitNormal
+                    );
+
+                    breakable.TakeDamage(attackDamageInfo);
                     damageBuffer[target] -= wholeDamage;
                 }
 

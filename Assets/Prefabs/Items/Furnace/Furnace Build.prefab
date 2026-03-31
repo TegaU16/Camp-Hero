@@ -151,6 +151,7 @@ MonoBehaviour:
   selectedItem: {fileID: 0}
   smeltProgress: 0
   smeltDuration: 5
+  furnaceIcon: {fileID: 21300000, guid: 47848aab3f8fb5a478db4b5b048fb684, type: 3}
 --- !u!114 &3792563602136904646
 MonoBehaviour:
   m_ObjectHideFlags: 0

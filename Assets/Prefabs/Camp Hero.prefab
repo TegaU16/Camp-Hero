@@ -283,6 +283,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3728168631222752164}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6663310810414528503}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: d52a9fe4737833546bf4cbe1dd01709c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5044547013098763515}
@@ -863,3 +866,16 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 7911c9b7eda5ba04698a78e81a967f6d, type: 3}
   - {fileID: 8300000, guid: 2b1cfbc647dd3b24887ea1c21fde9656, type: 3}
   - {fileID: 8300000, guid: 080e182aab5b00346a930e0f026804b9, type: 3}
+--- !u!114 &-6663310810414528503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8748831185352778365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad730b9f3654cca4487b54ede5dd2a34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Players.PlayerDeath
+  deathDuration: 5

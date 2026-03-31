@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Flame Core
   equippedPrefab: {fileID: 7574062836452074001, guid: d0ede8c1ca45d084780362edc2f0a6ae, type: 3}
   itemDrop: {fileID: 8274967769957783326, guid: e194a4120d3bc1147940a919057a9c35, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

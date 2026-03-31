@@ -67,6 +67,13 @@ public class DamageArea : MonoBehaviour
         Collider[] hits = new Collider[20];
         int numHits = Physics.OverlapSphereNonAlloc(transform.position, radius, hits, targetLayer);
 
+        if (numHits == hits.Length)
+        {
+            Collider[] expandedArray = new Collider[numHits * 2];
+            numHits = Physics.OverlapSphereNonAlloc(transform.position, radius, expandedArray);
+            hits = expandedArray;
+        }
+
         for (int i = 0; i < numHits; i++)
         {
             Collider hit = hits[i];

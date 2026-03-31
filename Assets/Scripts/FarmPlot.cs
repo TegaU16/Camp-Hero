@@ -17,6 +17,9 @@ namespace Game.Food
 
         private Item selectedItem;
 
+        public Sprite farmPlotIcon;
+        public Sprite ObjectIcon => farmPlotIcon;
+
         public void Plant()
         {
             selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
@@ -39,6 +42,9 @@ namespace Game.Food
             {
                 growthTimer -= Time.deltaTime; // countdown
                 growthTimer = Mathf.Max(growthTimer, 0f);
+
+                string growthTime = GetGrowthTime();
+                InteractableItemManager.Instance.OnInteractTextChanged?.Invoke(growthTime);
             }
 
             int stageCount = plantedData.growthStages.Length;
@@ -46,20 +52,26 @@ namespace Game.Food
             int newStage = Mathf.FloorToInt(normalizedProgress * stageCount);
             newStage = Mathf.Clamp(newStage, 0, stageCount - 1);
 
-            if (newStage != currentStage)
-            {
-                currentStage = newStage;
-                UpdateVisual();
-            }
+            if (newStage == currentStage) return;
+
+            currentStage = newStage;
+            UpdateVisual();
         }
 
-        void UpdateVisual()
+        private void UpdateVisual()
         {
             if (currentPlantInstance != null)
                 Destroy(currentPlantInstance);
 
             if (currentStage >= 0 && plantedData.growthStages.Length > currentStage)
-                currentPlantInstance = Instantiate(plantedData.growthStages[currentStage], plantSpawnPoint.position, Quaternion.identity, plantSpawnPoint);
+            {
+                currentPlantInstance = Instantiate(
+                    plantedData.growthStages[currentStage],
+                    plantSpawnPoint.position,
+                    Quaternion.identity,
+                    plantSpawnPoint
+                );
+            }
         }
 
         private bool IsFullyGrown() => isPlanted && growthTimer <= 0f;
@@ -92,6 +104,12 @@ namespace Game.Food
             if (!isPlanted) return "Sow Seed";
             if (IsFullyGrown()) return "Harvest";
 
+            string growthTime = GetGrowthTime();
+            return growthTime;
+        }
+
+        private string GetGrowthTime()
+        {
             int totalSeconds = Mathf.CeilToInt(growthTimer);
             if (totalSeconds < 60) return $"{totalSeconds}";
 
@@ -118,18 +136,7 @@ namespace Game.Food
         public void LoadState(string json)
         {
             FarmPlotData data = JsonUtility.FromJson<FarmPlotData>(json);
-
-            if (string.IsNullOrEmpty(data.plantName))
-            {
-                plantedData = null;
-                isPlanted = false;
-                growthTimer = 0f;
-                currentStage = -1;
-                if (currentPlantInstance != null)
-                    Destroy(currentPlantInstance);
-
-                return;
-            }
+            if (data == null) return;
 
             plantedData = PlantRegistry.GetPlantByKey(data.plantName);
             growthTimer = data.growthTimer;

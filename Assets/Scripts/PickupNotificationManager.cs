@@ -24,24 +24,20 @@ public class PickupNotificationManager : MonoBehaviour
     public void ShowPickup(Item item, int count)
     {
         // Only stack if not fading
-        PickupNotification existing = activeNotifications.Find(n =>
-            n.Item == item && !n.IsFading
-        );
+        PickupNotification matchingNotification = activeNotifications.Find(n => n.Item == item && !n.IsFading);
 
-        if (existing != null)
+        if (matchingNotification != null)
         {
-            existing.AddCount(count);
-        }
-        else
-        {
-            PickupNotification newNotification = GetFromPool();
-
-            newNotification.CaptureBasePosition();
-            newNotification.Initialize(item, count, () => ReturnToPool(newNotification));
-
-            activeNotifications.Add(newNotification);
+            matchingNotification.AddCount(count);
+            return;
         }
 
+        PickupNotification newNotification = GetFromPool();
+
+        newNotification.CaptureBasePosition();
+        newNotification.Initialize(item, count, () => ReturnToPool(newNotification));
+
+        activeNotifications.Add(newNotification);
         RepositionNotifications();
     }
 
@@ -49,15 +45,14 @@ public class PickupNotificationManager : MonoBehaviour
     {
         PickupNotification notification;
 
-        if (notificationPool.Count > 0)
-        {
-            notification = notificationPool.Dequeue();
-            notification.gameObject.SetActive(true);
-        }
-        else
+        if (notificationPool.Count == 0)
         {
             notification = Instantiate(pickupPrefab, notificationsParent);
+            return notification;
         }
+
+        notification = notificationPool.Dequeue();
+        notification.gameObject.SetActive(true);
 
         return notification;
     }
@@ -65,10 +60,7 @@ public class PickupNotificationManager : MonoBehaviour
     private void ReturnToPool(PickupNotification notification)
     {
         if (activeNotifications.Contains(notification))
-        {
             activeNotifications.Remove(notification);
-            RepositionNotifications();
-        }
 
         notification.gameObject.SetActive(false);
         notificationPool.Enqueue(notification);
@@ -78,9 +70,9 @@ public class PickupNotificationManager : MonoBehaviour
     {
         for (int i = 0; i < activeNotifications.Count; i++)
         {
-            PickupNotification n = activeNotifications[i];
-            Vector2 targetPos = new(n.BaseAnchoredPos.x, n.BaseAnchoredPos.y + i * verticalSpacing);
-            n.MoveTo(targetPos);
+            PickupNotification notification = activeNotifications[i];
+            Vector2 targetPos = new(notification.BaseAnchoredPos.x, notification.BaseAnchoredPos.y + i * verticalSpacing);
+            notification.MoveTo(targetPos);
         }
     }
 }

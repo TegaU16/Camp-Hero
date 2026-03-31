@@ -59,7 +59,7 @@ public static class ItemSpawner
 
         if (spawnedObject.TryGetComponent(out InteractableItem interactable))
         {
-            interactable.item = item;
+            interactable.SetItem(item);
             interactable.itemCount = itemCount;
             interactable.owningChunk = chunk;
             interactable.EnablePickupAfterDelay(0.25f);

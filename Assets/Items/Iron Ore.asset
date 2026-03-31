@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Iron Ore
   equippedPrefab: {fileID: 1156680863850993675, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
   itemDrop: {fileID: 5609003839569157637, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

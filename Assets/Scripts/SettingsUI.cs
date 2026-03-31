@@ -4,19 +4,22 @@ using UnityEngine.UI;
 
 public class SettingsUI : MonoBehaviour
 {
-    public Slider masterVolumeSlider;
-    public Slider musicVolumeSlider;
-    public Slider sfxVolumeSlider;
-    public Slider chunkViewDistanceSlider;
-    public Slider qualitySlider;
+    [Header("Sliders")]
+    [SerializeField] private Slider masterVolumeSlider;
+    [SerializeField] private Slider musicVolumeSlider;
+    [SerializeField] private Slider sfxVolumeSlider;
+    [SerializeField] private Slider chunkViewDistanceSlider;
+    [SerializeField] private Slider qualitySlider;
 
-    public TextMeshProUGUI masterVolumeText;
-    public TextMeshProUGUI musicVolumeText;
-    public TextMeshProUGUI sfxVolumeText;
-    public TextMeshProUGUI chunkViewText;
-    public TextMeshProUGUI qualityText;
+    [Header("Texts")]
+    [SerializeField] private TextMeshProUGUI masterVolumeText;
+    [SerializeField] private TextMeshProUGUI musicVolumeText;
+    [SerializeField] private TextMeshProUGUI sfxVolumeText;
+    [SerializeField] private TextMeshProUGUI chunkViewText;
+    [SerializeField] private TextMeshProUGUI qualityText;
 
-    public Toggle fullscreenToggle;
+    [Header("Toggles")]
+    [SerializeField] private Toggle fullscreenToggle;
 
     private GameSettingsData originalSettings;
 
@@ -67,34 +70,44 @@ public class SettingsUI : MonoBehaviour
         fullscreenToggle.onValueChanged.RemoveAllListeners();
 
         // Add listeners
-        masterVolumeSlider.onValueChanged.AddListener(v => 
+        masterVolumeSlider.onValueChanged.AddListener(v =>
         {
             currentSettings.masterVolume = v;
-            masterVolumeText.text = $"{(int)(currentSettings.masterVolume * 100f)}%";
+            masterVolumeText.text = $"{(int)(v * 100f)}%";
+
+            SettingsManager.Instance.ApplySettings();
         });
 
         musicVolumeSlider.onValueChanged.AddListener(v =>
         {
             currentSettings.musicVolume = v;
-            musicVolumeText.text = $"{(int)(currentSettings.musicVolume * 100f)}%";
+            musicVolumeText.text = $"{(int)(v * 100f)}%";
+
+            SettingsManager.Instance.ApplySettings();
         });
 
         sfxVolumeSlider.onValueChanged.AddListener(v =>
         {
             currentSettings.sfxVolume = v;
-            sfxVolumeText.text = $"{(int)(currentSettings.sfxVolume * 100f)}%";
+            sfxVolumeText.text = $"{(int)(v * 100f)}%";
+
+            SettingsManager.Instance.ApplySettings();
         }); ;
 
         chunkViewDistanceSlider.onValueChanged.AddListener(v =>
         {
             currentSettings.chunkViewDistance = (int)v;
-            chunkViewText.text = $"{currentSettings.chunkViewDistance} Chunks";
+            chunkViewText.text = $"{v} Chunks";
+
+            SettingsManager.Instance.ApplySettings();
         });
 
         qualitySlider.onValueChanged.AddListener(v => 
         {
             currentSettings.qualityLevel = (int)v;
-            qualityText.text = $"Lv. {currentSettings.qualityLevel + 1}";
+            qualityText.text = $"Lv. {v + 1}";
+
+            SettingsManager.Instance.ApplySettings();
         });
 
         fullscreenToggle.onValueChanged.AddListener(v => currentSettings.fullscreen = v);

@@ -23,12 +23,15 @@ namespace Game.AI
         private readonly Func<Vector3Int, bool> isOccupied;
         private readonly int maxStepHeight;
 
+        private readonly Dictionary<Vector2Int, int> heightCache = new();
+        private readonly Dictionary<Vector3Int, bool> occupancyCache = new();
+
         private static readonly Vector3Int[] directions = {
-        new(1,0,0), new(-1,0,0),
-        new(0,0,1), new(0,0,-1),
-        new(1,0,1), new(-1,0,1),
-        new(1,0,-1), new(-1,0,-1)
-    };
+            new(1,0,0), new(-1,0,0),
+            new(0,0,1), new(0,0,-1),
+            new(1,0,1), new(-1,0,1),
+            new(1,0,-1), new(-1,0,-1)
+        };
 
         public GridAStar(Func<int, int, int, float> getHeight, Func<Vector3Int, bool> isOccupied, int maxStepHeight = 1)
         {
@@ -46,7 +49,7 @@ namespace Game.AI
             Node startNode = new(start)
             {
                 gCost = 0,
-                hCost = Heuristic(start, end)
+                hCost = Utility.ManhattanDistance(start, end)
             };
             openSet.Add(startNode);
             openMap[start] = startNode;
@@ -71,11 +74,8 @@ namespace Game.AI
 
                 foreach (Vector3Int neighbor in GetNeighbors(current.position))
                 {
-                    int heightDiff = neighbor.y - current.position.y;
-
                     if (closedSet.Contains(neighbor)) continue;
-
-                    if (isOccupied(neighbor)) continue;
+                    if (IsOccupiedCached(neighbor)) continue;
 
                     int tentativeG = current.gCost + 1;
 
@@ -84,7 +84,7 @@ namespace Game.AI
                         neighborNode = new Node(neighbor)
                         {
                             gCost = tentativeG,
-                            hCost = Heuristic(neighbor, end),
+                            hCost = Utility.ManhattanDistance(neighbor, end),
                             parent = current
                         };
                         openSet.Add(neighborNode);
@@ -102,8 +102,6 @@ namespace Game.AI
             return null;
         }
 
-        private int Heuristic(Vector3Int a, Vector3Int b) => (int)Vector3Int.Distance(a, b);
-
         private IEnumerable<Vector3Int> GetNeighbors(Vector3Int pos)
         {
             foreach (Vector3Int dir in directions)
@@ -111,17 +109,20 @@ namespace Game.AI
                 int nx = pos.x + dir.x;
                 int nz = pos.z + dir.z;
 
-                float surfaceY = getHeight(nx, 0, nz);
-                int ny = Mathf.RoundToInt(surfaceY);
+                int ny = GetCachedHeight(nx, nz);
 
                 int heightDiff = ny - pos.y;
                 if (Mathf.Abs(heightDiff) > maxStepHeight) continue;
 
                 Vector3Int neighbor = new(nx, ny, nz);
 
-                Vector3 mid = ScaleVector3(pos + neighbor, 0.5f);
-                Vector3Int midInt = Vector3Int.RoundToInt(mid);
-                if (isOccupied(midInt)) continue;
+                Vector3Int mid = new(
+                    (pos.x + neighbor.x) / 2,
+                    (pos.y + neighbor.y) / 2,
+                    (pos.z + neighbor.z) / 2
+                );
+
+                if (IsOccupiedCached(mid)) continue;
 
                 yield return neighbor;
             }
@@ -136,18 +137,29 @@ namespace Game.AI
                 path.Add(current.position);
                 current = current.parent;
             }
+
             path.Reverse();
             return path;
         }
 
-        private Vector3 ScaleVector3(Vector3 vector, float scale)
+        private int GetCachedHeight(int x, int z)
         {
-            Vector3 scaledVector = new(
-                vector.x * scale,
-                vector.y * scale,
-                vector.z * scale);
+            Vector2Int key = new(x, z);
+            if (heightCache.TryGetValue(key, out int h)) return h;
 
-            return scaledVector;
+            h = Mathf.RoundToInt(getHeight(x, 0, z));
+            heightCache[key] = h;
+
+            return h;
+        }
+
+        private bool IsOccupiedCached(Vector3Int pos)
+        {
+            if (occupancyCache.TryGetValue(pos, out bool occupied)) return occupied;
+
+            occupied = isOccupied(pos);
+            occupancyCache[pos] = occupied;
+            return occupied;
         }
     }
 }

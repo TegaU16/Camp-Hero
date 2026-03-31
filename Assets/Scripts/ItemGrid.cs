@@ -30,22 +30,22 @@ public static class ItemGrid
         if (!list.Contains(item))
             list.Add(item);
 
-        item.CurrentCell = cell;
+        item.currentCell = cell;
     }
 
     public static void Unregister(InteractableItem item)
     {
-        if (!grid.TryGetValue(item.CurrentCell, out List<InteractableItem> list)) return;
+        if (!grid.TryGetValue(item.currentCell, out List<InteractableItem> list)) return;
 
         list.Remove(item);
         if (list.Count == 0)
-            grid.Remove(item.CurrentCell);
+            grid.Remove(item.currentCell);
     }
 
     public static void UpdateItemCell(InteractableItem item)
     {
         Vector2Int newCell = GetCell(item.transform.position);
-        if (newCell == item.CurrentCell) return;
+        if (newCell == item.currentCell) return;
 
         Unregister(item);
         Register(item);

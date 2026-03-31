@@ -26,10 +26,6 @@ namespace Game.AI
         private Animator animator;
         [SerializeField] private string speedParam = "Speed";
 
-        // Y smoothing
-        [SerializeField] private float yLerpSpeed = 5f;
-        private float currentY;
-
         private Vector3Int directTarget;
         private bool isWalkingDirect = false;
 
@@ -50,14 +46,9 @@ namespace Game.AI
             pathIndex = 0;
             DesiredPosition = startWorldPos;
             velocity = Vector3.zero;
-
-            currentY = startWorldPos.y;
         }
 
-        public void RequestPath(Vector3Int targetGrid)
-        {
-            PathfinderManager.Instance.RequestPath(this, targetGrid);
-        }
+        public void RequestPath(Vector3Int targetGrid) => PathfinderManager.Instance.RequestPath(this, targetGrid);
 
         public void OnPathResult(List<Vector3Int> newPath)
         {
@@ -78,33 +69,30 @@ namespace Game.AI
         public bool CanWalkDirectly(Vector3Int from, Vector3Int to)
         {
             Vector3 dir = (to - from);
-            int steps = (int)Mathf.Max(Mathf.Abs(dir.x), Mathf.Abs(dir.z));
+            int steps = Mathf.Max(1, (int)Mathf.Max(Mathf.Abs(dir.x), Mathf.Abs(dir.z)));
             Vector3 step = dir / steps;
 
             Vector3 pos = from;
 
+            float previousHeight = Utility.GetHeightAt(from.x, from.z);
+
             for (int i = 0; i <= steps; i++)
             {
-                int x = Mathf.RoundToInt(pos.x);
-                int z = Mathf.RoundToInt(pos.z);
-                float height = Utility.GetHeightAt(x, z);
-                Vector3Int checkPos = new(x, Mathf.RoundToInt(height), z);
+                int x = Mathf.FloorToInt(pos.x);
+                int z = Mathf.FloorToInt(pos.z);
 
-                if (!VoxelGrid.Instance.IsWalkable(checkPos))
-                {
-                    Debug.Log($"[VoxelAgent] [{name}] {checkPos} is not walkable");
-                    return false;
-                }
+                float currentHeight = Utility.GetHeightAt(x, z);
+                Vector3Int checkPos = new(x, Mathf.RoundToInt(currentHeight), z);
+
+                if (!VoxelGrid.Instance.IsWalkable(checkPos)) return false;
 
                 if (i > 0)
                 {
-                    float heightDiff = Mathf.Abs(height - from.y);
-                    float heightThreshold = 10f;
-                    if (heightDiff > heightThreshold)
-                    {
-                        Debug.Log($"[VoxelAgent] [{name}] heightDiff is greater than 4. Height: {height}, From.y: {from.y}");
-                        return false;
-                    }
+                    // only upward step matters
+                    float stepHeight = currentHeight - previousHeight;
+                    if (stepHeight > 1f) return false;
+
+                    previousHeight = currentHeight;
                 }
 
                 pos += step;
@@ -119,18 +107,13 @@ namespace Game.AI
 
             if (trackingTarget != null && Time.time >= nextTrackingCheckTime)
             {
-                Vector3Int from = WorldToGrid(transform.position);
+                Vector3Int from = WorldToGrid(currentPos);
                 Vector3Int to = WorldToGrid(trackingTarget.position);
 
                 if (CanWalkDirectly(from, to))
-                {
                     SetDirectTarget(to);
-                }
                 else
-                {
                     RequestPath(to); // fallback to A*
-                    StopTracking();  // stop direct tracking temporarily
-                }
 
                 nextTrackingCheckTime = Time.time + directTrackingCheckInterval;
             }
@@ -138,7 +121,7 @@ namespace Game.AI
             if (HasPath)
             {
                 Vector3 next = GridToWorld(path[pathIndex]);
-                DesiredPosition = Vector3.Lerp(DesiredPosition, next, 0.2f);
+                DesiredPosition = next;
 
                 Vector2 flatCur = new(currentPos.x, currentPos.z);
                 Vector2 flatNext = new(next.x, next.z);
@@ -156,7 +139,7 @@ namespace Game.AI
             }
             else
             {
-                DesiredPosition = transform.position;
+                DesiredPosition = currentPos;
                 velocity = Vector3.zero;
             }
 
@@ -168,10 +151,7 @@ namespace Game.AI
 
             velocity = toTarget.magnitude > stoppingDistance ? toTarget.normalized : Vector3.zero;
 
-            float targetY = Utility.GetHeightAt(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.z)) + 1f;
-            currentY = Mathf.Lerp(currentY, targetY, yLerpSpeed * Time.deltaTime);
-
-            Vector3 faceDir = isWalkingDirect ? (directWorldTarget - transform.position) : velocity;
+            Vector3 faceDir = isWalkingDirect ? (directWorldTarget - currentPos) : velocity;
             faceDir.y = 0;
 
             if (faceDir.magnitude > 0.01f)
@@ -182,9 +162,11 @@ namespace Game.AI
             }
 
             float flatSpeed = new Vector2(velocity.x, velocity.z).magnitude;
-
             if (animator != null)
-                animator.SetFloat(speedParam, flatSpeed > 0.05f ? 1f : 0f, 0.2f, Time.deltaTime);
+            {
+                float animationSpeed = flatSpeed > 0.05f ? 1f : 0f;
+                animator.SetFloat(speedParam, animationSpeed, dampTime: 0.2f, Time.deltaTime);
+            }
         }
 
         public bool WantsToMove()
@@ -193,21 +175,13 @@ namespace Game.AI
             return flatSpeed > 0.05f || isWalkingDirect;
         }
 
-        public void StopPath()
-        {
-            CancelPath();
-        }
-
         private void UpdateDesired()
         {
             if (path != null && pathIndex < path.Count)
                 DesiredPosition = GridToWorld(path[pathIndex]);
         }
 
-        public float GetCurrentSpeedFraction()
-        {
-            return velocity.magnitude;
-        }
+        public float GetCurrentSpeedFraction() => velocity.magnitude;
 
         private Vector3 GridToWorld(Vector3Int gridPos)
         {
@@ -259,7 +233,5 @@ namespace Game.AI
 
             return direction.normalized;
         }
-
-        public float GetTargetY() => currentY;
     }
 }

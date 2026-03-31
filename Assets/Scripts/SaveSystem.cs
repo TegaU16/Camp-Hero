@@ -74,7 +74,11 @@ namespace Game.Saving
             for (int i = 0; i < chunk.objects.Count; i++)
             {
                 GameObject instance = chunk.objects[i];
-                if (instance == null) continue;
+                if (instance == null)
+                {
+                    Debug.Log("Skipped null object slot");
+                    continue;
+                }
 
                 string prefabKey = instance.GetComponent<PrefabID>().prefabKey;
 
@@ -96,10 +100,14 @@ namespace Game.Saving
 
             foreach (SpawnedObjectData spawnedObjectData in chunk.savedObjects)
             {
-                if (spawnedObjectData.instance != null)
-                    spawnedObjectData.SaveState(spawnedObjectData.instance);
-            }
+                if (spawnedObjectData.instance == null)
+                {
+                    Debug.LogWarning($"{spawnedObjectData.prefabID} instance is null");
+                    continue;
+                }
 
+                spawnedObjectData.SaveState(spawnedObjectData.instance);
+            }
 
             ChunkSaveData data = new()
             {

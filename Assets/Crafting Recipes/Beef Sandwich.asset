@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 652ce7b35ee134240b55748c1a5519d8, type: 3}
+  m_Name: Beef Sandwich
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Crafting.CraftingRecipe
+  resultItem: {fileID: 11400000, guid: 82fd37904b73d774e86de1a9eae6b262, type: 2}
+  requirements:
+  - requiredItem: {fileID: 11400000, guid: 102ce8e29e8706446a47f15c52b7b139, type: 2}
+    count: 1
+  - requiredItem: {fileID: 11400000, guid: 985f001b744027c47953a4f831952c61, type: 2}
+    count: 1
+  category: 0
+  source: -1
+  hasBeenCraftedBefore: 0
+  itemsRequiredToUnlock: []

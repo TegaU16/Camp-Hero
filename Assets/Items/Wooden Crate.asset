@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Wooden Crate
   m_EditorClassIdentifier: 
-  itemTypes: 9
+  itemTypes: 11
   actionType: 1
   maxStack: 20
   icon: {fileID: 21300000, guid: e432df3956a9d234e822bfac4a7d4808, type: 3}
   itemName: Wooden Crate
-  equippedPrefab: {fileID: 3494299805136151111, guid: 173fc638c1d74354c9e5c6dad1b88975, type: 3}
-  itemDrop: {fileID: 6645998381682210763, guid: aa3a799404fd97f44a998ca9862e58eb, type: 3}
-  buildingGhost: {fileID: 7423042443656293166, guid: 008134843eb16e84092c752de9e3acaa, type: 3}
+  equippedPrefab: {fileID: 4657048302479782554, guid: 173fc638c1d74354c9e5c6dad1b88975, type: 3}
+  itemDrop: {fileID: 8593776049626444901, guid: aa3a799404fd97f44a998ca9862e58eb, type: 3}
+  rarity: 0
+  buildingGhost: {fileID: 9157998315979104397, guid: 008134843eb16e84092c752de9e3acaa, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
   attackDistance: 3
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 10

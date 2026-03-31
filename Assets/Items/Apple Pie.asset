@@ -15,10 +15,11 @@ MonoBehaviour:
   itemTypes: 5
   actionType: 1
   maxStack: 20
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 3a447efeac025d64ca578a96ea4eabf7, type: 3}
   itemName: Apple Pie
-  equippedPrefab: {fileID: 0}
-  itemDrop: {fileID: 0}
+  equippedPrefab: {fileID: 5664158344143108352, guid: d7f867b0baccc9d4996881a90b7440f8, type: 3}
+  itemDrop: {fileID: 235783874575769188, guid: 222fe2e84d2824a4083d01b9ff75064c, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 40
   plantData: {fileID: 0}
   fuelValue: 0

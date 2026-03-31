@@ -41,7 +41,6 @@ namespace Game.Terrain
         public bool hasKeyStructure = false;
         public bool wasLoadedFromSave = false;
         public bool isLoading = false;
-        public bool isDirty = false;
 
         public MeshRenderer[] cachedRenderers;
         public Collider[] cachedColliders;

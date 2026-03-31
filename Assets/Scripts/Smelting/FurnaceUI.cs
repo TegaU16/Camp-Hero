@@ -29,7 +29,8 @@ namespace Game.Smelting
         public Image requiredImage;
         public TextMeshProUGUI requiredName;
 
-        [HideInInspector] public FurnaceUnit linkedFurnace;
+        private bool isOpen;
+        private FurnaceUnit linkedFurnace;
 
         // Start is called before the first frame update
         void Start()
@@ -42,23 +43,17 @@ namespace Game.Smelting
 
         public void Open(FurnaceUnit unit)
         {
+            if (isOpen) return;
+
+            isOpen = true;
             linkedFurnace = unit;
             gameObject.SetActive(true);
             InventoryManager.Instance.mainInventory.SetActive(true);
             InventoryManager.Instance.OnInventoryOpen();
 
-            linkedFurnace.inputSlot = inputSlot;
-            linkedFurnace.outputSlot = outputSlot;
-            linkedFurnace.fuelSlot = fuelSlot;
-
-            linkedFurnace.inputSlot.parentFurnace = linkedFurnace;
-            linkedFurnace.outputSlot.parentFurnace = linkedFurnace;
-            linkedFurnace.fuelSlot.parentFurnace = linkedFurnace;
-
-            linkedFurnace.inventorySlots.Clear();
-            linkedFurnace.inventorySlots.Add(linkedFurnace.inputSlot);
-            linkedFurnace.inventorySlots.Add(linkedFurnace.outputSlot);
-            linkedFurnace.inventorySlots.Add(linkedFurnace.fuelSlot);
+            linkedFurnace.inputSlot = this.inputSlot;
+            linkedFurnace.outputSlot = this.outputSlot;
+            linkedFurnace.fuelSlot = this.fuelSlot;
 
             linkedFurnace.LoadUI(); // Load furnace data into the UI
 
@@ -67,15 +62,20 @@ namespace Game.Smelting
 
             if (progressBar != null)
                 progressBar.fillAmount = linkedFurnace.smeltProgress;
-
-            InventoryManager.Instance.activeFurnace = linkedFurnace;
         }
 
         public void Close()
         {
+            if (!isOpen) return;
+
+            isOpen = false;
+
             if (linkedFurnace != null)
             {
-                linkedFurnace.SaveUI(); // Save the UI data back into furnace
+                linkedFurnace.SaveUI(inputSlot);
+                linkedFurnace.SaveUI(outputSlot);
+                linkedFurnace.SaveUI(fuelSlot);
+
                 linkedFurnace.inputSlot = null;
                 linkedFurnace.outputSlot = null;
                 linkedFurnace.fuelSlot = null;
@@ -90,7 +90,7 @@ namespace Game.Smelting
 
         private void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (linkedFurnace == null) return;
 
             if (fuelBar != null)
@@ -108,10 +108,11 @@ namespace Game.Smelting
             uiItem.itemImage.sprite = recipe.resultItem.icon;
         }
 
-        public void SetSelectedFurnaceItem(FurnaceItem furnaceItem = null, bool onOpened = false)
+        public void SetSelectedFurnaceItem(FurnaceItem furnaceItem = null)
         {
-            bool itemSelected = furnaceItem != null;
+            if (linkedFurnace == null) return;
 
+            bool itemSelected = furnaceItem != null;
             if (itemSelected)
             {
                 resultImage.sprite = furnaceItem.recipe.resultItem.icon;
@@ -124,12 +125,7 @@ namespace Game.Smelting
             recipeSection.SetActive(itemSelected);
             nullItemSelectText.SetActive(!itemSelected);
 
-            if (!onOpened)
-            {
-                FurnaceUnit furnaceUnit = linkedFurnace;
-                if (furnaceUnit != null)
-                    furnaceUnit.selectedItem = furnaceItem;
-            }
+            linkedFurnace.selectedItem = furnaceItem;
         }
 
         public void FilterByCategory(SmeltingCategory category, Button button)

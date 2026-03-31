@@ -10,12 +10,10 @@ namespace Game.Terrain.Structures
     {
         public static StructureManager Instance;
 
-        public List<StructureTemplate> structureTemplates;
+        [SerializeField] private List<StructureTemplate> structureTemplates;
+        [SerializeField] private List<WorldStructure> activeStructures = new();
 
-        public List<WorldStructure> activeStructures = new();
-        public LayerMask structureLayer;
-
-        [Range(0f, 0.5f)] public float outerRadius;
+        [Range(0f, 0.5f), SerializeField] private float outerRadius;
 
         private int chunkSize;
         private int gridSize;
@@ -23,7 +21,7 @@ namespace Game.Terrain.Structures
 
         private int seed;
 
-        public float minSpacing;
+        [SerializeField] private float minSpacing;
 
         private void Awake()
         {
@@ -122,27 +120,23 @@ namespace Game.Terrain.Structures
                 worldOrigin = origin
             };
 
-            int hash = origin.GetHashCode() ^ seed;
-            int rotationIndex = Mathf.Abs(hash) % 4;
-            Quaternion rotation = Quaternion.Euler(0, rotationIndex * 90f, 0);
-
             for (int i = 0; i < template.prefabParts.Count; i++)
             {
-                GameObject prefab = template.prefabParts[i];
+                PrefabPart prefabPart = template.prefabParts[i];
+                GameObject prefab = prefabPart.prefab;
+
                 if (prefab == null) continue;
 
-                Vector3 offset = i < template.localOffsets.Count ? template.localOffsets[i] : Vector3.zero;
-                Vector3 rotatedOffset = rotation * offset;
-                Vector3 partPosition = origin + rotatedOffset;
+                Vector3 partPosition = origin + prefabPart.localOffset;
 
-                int partPosX = Mathf.RoundToInt(partPosition.x);
-                int partPosZ = Mathf.RoundToInt(partPosition.z);
+                int partPosX = Mathf.FloorToInt(partPosition.x);
+                int partPosZ = Mathf.FloorToInt(partPosition.z);
 
                 float height = Utility.GetHeightAt(partPosX, partPosZ);
                 partPosition.y = height;
 
                 // Only keep valid placements
-                if (Utility.IsAreaFree(prefab, partPosition, VoxelGrid.Instance.IsOccupied)) continue;
+                if (Utility.AreaCheck(prefab, partPosition, VoxelGrid.Instance.IsOccupied)) continue;
 
                 // Add to saved objects WITHOUT instantiating
                 SpawnedObjectData data = new(partPosition, prefab, prefab)
@@ -156,16 +150,14 @@ namespace Game.Terrain.Structures
             return structure;
         }
 
-        private bool IsValidPlacement(Vector3 origin, StructureTemplate template, float tolerance = 0.1f, float maxSlope = 5f)
+        private bool IsValidPlacement(Vector3 origin, StructureTemplate template, float tolerance = 0.1f)
         {
             // Approximate structure footprint
             Bounds totalBounds = new(origin, Vector3.zero);
-            for (int i = 0; i < template.prefabParts.Count; i++)
+            foreach (PrefabPart prefabPart in template.prefabParts)
             {
-                if (template.prefabParts[i] == null) continue;
-
-                Vector3 offset = i < template.localOffsets.Count ? template.localOffsets[i] : Vector3.zero;
-                totalBounds.Encapsulate(new Bounds(origin + offset, Vector3.one * 2f));
+                if (prefabPart.prefab == null) continue;
+                totalBounds.Encapsulate(new Bounds(origin + prefabPart.localOffset, Vector3.one * 2f));
             }
 
             int minX = Mathf.FloorToInt(totalBounds.min.x / voxelSize);
@@ -188,12 +180,6 @@ namespace Game.Terrain.Structures
 
                     float h = heightMap[localX, localZ];
                     sampledHeights.Add(h);
-
-                    Vector3 worldPos = new(x * voxelSize, h + 10f, z * voxelSize);
-                    if (Physics.Raycast(worldPos, Vector3.down, out RaycastHit hit, 20f, VoxelGrid.Instance.groundLayer))
-                    {
-                        if (Vector3.Angle(hit.normal, Vector3.up) > maxSlope) return false;
-                    }
                 }
             }
 
@@ -201,7 +187,6 @@ namespace Game.Terrain.Structures
 
             float minH = sampledHeights.Min();
             float maxH = sampledHeights.Max();
-
             if (maxH - minH > tolerance) return false;
 
             foreach (float h in sampledHeights)

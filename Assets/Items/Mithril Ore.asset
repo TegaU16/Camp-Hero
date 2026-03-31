@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Mithril Ore
   equippedPrefab: {fileID: 5839194763466920450, guid: 58260c7a985d649479d1b6ee96a1d51e, type: 3}
   itemDrop: {fileID: 1612894569515296370, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

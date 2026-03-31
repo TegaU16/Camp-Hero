@@ -18,6 +18,16 @@ public class DayTextUI : MonoBehaviour
             canvasGroup = GetComponent<CanvasGroup>();
     }
 
+    private void Start()
+    {
+        DayNightCycle.Instance.OnDayAdvanced += ShowDay;
+    }
+
+    private void OnDestroy()
+    {
+        DayNightCycle.Instance.OnDayAdvanced -= ShowDay;
+    }
+
     public void ShowDay(int dayNumber)
     {
         string fullText = $"Day {dayNumber}";
@@ -28,8 +38,10 @@ public class DayTextUI : MonoBehaviour
         currentRoutine = StartCoroutine(TypeTextRoutine(fullText));
     }
 
-    private IEnumerator TypeTextRoutine(string fullText)
+    private IEnumerator TypeTextRoutine(string fullText, float delay = 3f)
     {
+        yield return new WaitForSeconds(delay);
+
         canvasGroup.alpha = 1f;
         dayText.text = "";
 

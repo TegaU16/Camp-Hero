@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using static BreakableObject;
 
 namespace Game.AI.Enemies.Attacks
 {
@@ -68,10 +69,18 @@ namespace Game.AI.Enemies.Attacks
                         }
                         else if (target.TryGetComponent(out BreakableObject breakable))
                         {
-                            Vector3 hitPoint = hit.collider.ClosestPoint(transform.position);
-                            Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                            Vector3 targetHitPoint = hit.collider.ClosestPoint(transform.position);
+                            Vector3 targetHitNormal = (targetHitPoint - transform.position).normalized;
 
-                            breakable.TakeDamage(wholeDamage, crit: false, hitPoint, hitNormal, true);
+                            DamageInfo attackDamageInfo = new
+                            (
+                                damage: wholeDamage,
+                                hitPoint: targetHitPoint,
+                                hitNormal: targetHitNormal,
+                                fromEnemy: true
+                            );
+
+                            breakable.TakeDamage(attackDamageInfo);
                         }
 
                         damageBuffer -= wholeDamage;

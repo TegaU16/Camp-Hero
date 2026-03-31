@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Adrenal Precision
   m_EditorClassIdentifier: Assembly-CSharp::StaminaBasedDamageUpgrade
   upgradeName: Adrenal Precision
-  description: Increased damage based on current stamina
+  description: Increased crit damage based on current stamina
   cost: 1
   staminaMultiplier: 0.5

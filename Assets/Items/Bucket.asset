@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
+  m_Name: Bucket
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Inventory.Item
+  itemTypes: 9
+  actionType: 1
+  maxStack: 20
+  icon: {fileID: 21300000, guid: e2f27666bde3c3949984b00888d69712, type: 3}
+  itemName: Bucket
+  equippedPrefab: {fileID: 2653853322997054123, guid: bc3bfd2d1fcdc3a45a32ee54e50093ab, type: 3}
+  itemDrop: {fileID: 4564519740139597801, guid: d915eeaaf41e83c4db25945cb7baf356, type: 3}
+  rarity: 1
+  buildingGhost: {fileID: 0}
+  buildingSize: {x: 1, y: 1}
+  attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
+  attackDistance: 3
+  attackDamage:
+  - 0
+  - 0
+  critChance: 2
+  critFactor: 2
+  toolLevel: 0
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
+  foodValue: 0
+  plantData: {fileID: 0}
+  fuelValue: 15
+  smeltRate: 0.01
+  output: {fileID: 0}
+  outputCount: 1

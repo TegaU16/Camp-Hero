@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Game;
 using Game.Players;
 using UnityEngine;
 
@@ -10,22 +10,19 @@ public class InteractableItemManager : MonoBehaviour
 
     private readonly List<InteractableItem> items = new();
 
-    // Batch processing indices
-    private int groundIndex = 0;
-    private int mergeIndex = 0;
+    public PlayerInteractor PlayerInteractor { get; private set; }
 
-    [Header("Performance Settings")]
-    public int itemsPerFrame = 200;      // how many ground checks per frame
-    public int mergesPerFrame = 100;     // how many merges per frame
+    [SerializeField] private int itemsPerFrame = 200;
+    [SerializeField] private int mergesPerFrame = 100;
+    [SerializeField] private float mergeInterval = 1f;
 
-    [Header("Intervals (seconds)")]
-    public float mergeInterval = 1f;     // only run merges every second
-    public float groundCheckInterval = 0.5f; // ground checks every half second
+    public RarityColorConfig rarityColorConfig;
 
-    private float mergeTimer = 0f;
-    private float groundCheckTimer = 0f;
+    private float mergeTimer;
+    private int updateIndex;
+    private int mergeIndex;
 
-    private PlayerInteractor playerInteractor;
+    public Action<string> OnInteractTextChanged;
 
     void Awake()
     {
@@ -43,85 +40,72 @@ public class InteractableItemManager : MonoBehaviour
 
     public void Unregister(InteractableItem item)
     {
-        if (items.Contains(item))
-            items.Remove(item);
+        items.Remove(item);
     }
 
     void Update()
     {
-        if (!GameManager.Instance.IsGameManagerReady()) return;
         if (items.Count == 0) return;
 
-        mergeTimer += Time.deltaTime;
-        groundCheckTimer += Time.deltaTime;
+        float dt = Time.deltaTime;
 
-        // Handle merging in small batches, only at set interval
-        if (mergeTimer >= mergeInterval)
-        {
-            int processed = 0;
-            while (processed < mergesPerFrame && mergeIndex < items.Count)
-            {
-                InteractableItem item = items[mergeIndex];
-                if (item != null && item.gameObject.activeInHierarchy)
-                    item.TryMergeNearby();
-
-                mergeIndex++;
-                processed++;
-            }
-
-            if (mergeIndex >= items.Count)
-            {
-                mergeIndex = 0;
-                CleanupList(); // cleanup after a full pass
-
-                if (playerInteractor != null)
-                    playerInteractor.RefreshInteractable();
-            }
-        }
-
-        // Handle ground checks in small batches, only at set interval
-        if (groundCheckTimer >= groundCheckInterval)
-        {
-            int processed = 0;
-            while (processed < itemsPerFrame && groundIndex < items.Count)
-            {
-                InteractableItem item = items[groundIndex];
-                if (item != null && item.gameObject.activeInHierarchy)
-                    item.CheckGround();
-
-                groundIndex++;
-                processed++;
-            }
-
-            if (groundIndex >= items.Count)
-            {
-                groundIndex = 0;
-                CleanupList();
-            }
-        }
+        ProcessItems(dt);
+        ProcessMerges();
     }
 
-    private void CleanupList() => items.RemoveAll(item => item == null);
-
-    /// <summary>
-    /// Optional utility: Force-update all items instantly
-    /// </summary>
-    public void ForceMergeAll()
+    private void ProcessItems(float dt)
     {
-        CleanupList();
-        foreach (InteractableItem item in items)
-        {
-            if (item == null) continue;
-            if (!item.gameObject.activeInHierarchy) continue;
+        int processed = 0;
 
-            item.TryMergeNearby();
+        while (processed < itemsPerFrame && updateIndex < items.Count)
+        {
+            InteractableItem item = items[updateIndex];
+
+            if (item != null && item.gameObject.activeInHierarchy)
+                item.ManagerUpdate(dt);
+
+            updateIndex++;
+            processed++;
+        }
+
+        if (updateIndex >= items.Count)
+        {
+            updateIndex = 0;
+            Cleanup();
         }
     }
+
+    private void ProcessMerges()
+    {
+        mergeTimer += Time.deltaTime;
+        if (mergeTimer < mergeInterval) return;
+
+        mergeTimer = 0;
+        int processed = 0;
+
+        while (processed < mergesPerFrame && mergeIndex < items.Count)
+        {
+            InteractableItem item = items[mergeIndex];
+
+            if (item != null && item.gameObject.activeInHierarchy)
+                item.TryMergeNearby();
+
+            mergeIndex++;
+            processed++;
+        }
+
+        if (mergeIndex < items.Count) return;
+
+        mergeIndex = 0;
+        Cleanup();
+    }
+
+    private void Cleanup() => items.RemoveAll(i => i == null);
 
     public void SetPlayer(GameObject player)
     {
         if (player == null) return;
 
-        playerInteractor = player.GetComponent<PlayerInteractor>();
+        PlayerInteractor = player.GetComponent<PlayerInteractor>();
     }
 }

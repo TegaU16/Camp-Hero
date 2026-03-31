@@ -11,8 +11,6 @@ public class DamagePopupPool : MonoBehaviour
 
     private readonly Queue<GameObject> popupPool = new();
 
-    public Camera MainCamera { get; private set; }
-
     private void Awake()
     {
         Instance = this;

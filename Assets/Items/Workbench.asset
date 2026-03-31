@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Workbench
   m_EditorClassIdentifier: 
-  itemTypes: 9
+  itemTypes: 11
   actionType: 1
   maxStack: 20
   icon: {fileID: 21300000, guid: 0e9a4f653240a6f4689ecd8fd1d3d849, type: 3}
   itemName: Workbench
   equippedPrefab: {fileID: 355295075366670682, guid: 5243595402559ee47b44042115473154, type: 3}
   itemDrop: {fileID: 4095905134582184355, guid: 46e983bed0785a94faa8cc16252dc27f, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 3664823562989333235, guid: 368b46f5c94262044bb0652fecea17a2, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 10

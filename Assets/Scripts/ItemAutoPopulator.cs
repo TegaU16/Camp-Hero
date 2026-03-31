@@ -28,6 +28,8 @@ public static class ItemAutoPopulator
             new[] { "Assets/Prefabs" }
         );
 
+        AutoPopulateToolType(item);
+
         EditorUtility.SetDirty(item);
     }
 
@@ -44,6 +46,20 @@ public static class ItemAutoPopulator
         }
 
         return null;
+    }
+
+    private static void AutoPopulateToolType(Item item)
+    {
+        string name = item.itemName.ToLower();
+
+        item.toolType = 0; // Nothing
+
+        if (name.Contains("pickaxe"))
+            item.toolType = ToolType.Pickaxe;
+        else if (name.Contains("axe"))
+            item.toolType = ToolType.Axe;
+        else if (name.Contains("sword"))
+            item.toolType = ToolType.Sword;
     }
 
     [MenuItem("Tools/Items/Auto-Populate All Items")]

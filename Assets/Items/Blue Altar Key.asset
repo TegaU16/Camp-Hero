@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Blue Altar Key
   equippedPrefab: {fileID: 4110093609405898637, guid: 13281746556461749bf42f4764bddd58, type: 3}
   itemDrop: {fileID: 8943332425134238589, guid: ee6fc9c1aacfee94c8417f3f338feb23, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

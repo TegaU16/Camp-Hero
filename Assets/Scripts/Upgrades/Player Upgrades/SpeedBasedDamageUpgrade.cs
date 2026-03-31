@@ -18,7 +18,6 @@ namespace Game.Upgrades
         {
             this.player = player;
             combat = player.GetComponent<PlayerCombat>();
-
             if (combat == null) return;
 
             updateRoutine = player.StartCoroutine(UpdateDamageBonus());
@@ -29,8 +28,7 @@ namespace Game.Upgrades
             if (updateRoutine != null)
                 player.StopCoroutine(updateRoutine);
 
-            if (combat != null)
-                combat.RemoveDamageMultiplierSource(this);
+            Utility.RemoveMultiplierSource(this, player.damageMultiplier);
         }
 
         private IEnumerator UpdateDamageBonus()
@@ -44,7 +42,7 @@ namespace Game.Upgrades
                 float bonusMultiplier = 1f + speedRatio * speedMultiplier;
 
                 // Register or update this upgrade’s contribution
-                combat.SetDamageMultiplierSource(this, bonusMultiplier);
+                Utility.SetMultiplierSource(this, bonusMultiplier, player.damageMultiplier);
 
                 yield return null;
             }

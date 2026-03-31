@@ -22,7 +22,7 @@ namespace Game.AI
 
         private int nextRequestId = 1;
 
-        private CancellationTokenSource cts;
+        private CancellationTokenSource cancellationTokenSource;
 
         private void Awake()
         {
@@ -38,19 +38,19 @@ namespace Game.AI
 
         private void StartWorker()
         {
-            cts = new CancellationTokenSource();
+            cancellationTokenSource = new CancellationTokenSource();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    await ProcessQueueAsync(cts.Token);
+                    await ProcessQueueAsync(cancellationTokenSource.Token);
                 }
                 catch (System.Exception ex)
                 {
                     Debug.LogError("[PathfinderManager] Worker fatal crash: " + ex);
                 }
-            }, cts.Token);
+            }, cancellationTokenSource.Token);
         }
 
         public void RequestPath(VoxelAgent agent, Vector3Int targetGrid)
@@ -90,16 +90,18 @@ namespace Game.AI
                     if (request != null)
                     {
                         lock (queueLock)
-                            if (latestRequests.TryGetValue(request.Agent, out PathRequest latest) && latest.RequestId != request.RequestId) continue;
+                        {
+                            if (latestRequests.TryGetValue(request.Agent, out PathRequest latest) &&
+                                latest.RequestId != request.RequestId) continue;
+                        }
 
-                        if (!IsWalkable(request.Start))
+                        if (!VoxelGrid.Instance.IsWalkable(request.Start))
                             request.Start = FindNearestUnblocked(request.Start);
 
-                        if (!IsWalkable(request.Target))
+                        if (!VoxelGrid.Instance.IsWalkable(request.Target))
                             request.Target = FindNearestUnblocked(request.Target);
 
                         GridAStar astar = BuildLocalPathfinder();
-
                         if (astar == null) continue;
 
                         List<Vector3Int> path = null;
@@ -169,11 +171,11 @@ namespace Game.AI
 
         private void OnDestroy()
         {
-            cts?.Cancel();
-            cts?.Dispose();
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
         }
 
-        // --- Helpers and structs ---
+        // --- Helpers and strucancellationTokenSource ---
         public GridAStar BuildLocalPathfinder()
         {
             GridAStar astar = new(
@@ -185,11 +187,9 @@ namespace Game.AI
             return astar;
         }
 
-        public bool IsWalkable(Vector3Int pos) => VoxelGrid.Instance.IsWalkable(pos);
-
         public Vector3Int FindNearestUnblocked(Vector3Int center, int maxRadius = 5)
         {
-            if (IsWalkable(center)) return center;
+            if (VoxelGrid.Instance.IsWalkable(center)) return center;
 
             Queue<Vector3Int> queue = new();
             HashSet<Vector3Int> visited = new();
@@ -201,11 +201,11 @@ namespace Game.AI
 
             // 4-connected neighbors (N, S, E, W) + diagonals for 8-connected
             Vector3Int[] directions = {
-        new(1,0,0), new(-1,0,0),
-        new(0,0,1), new(0,0,-1),
-        new(1,0,1), new(-1,0,1),
-        new(1,0,-1), new(-1,0,-1)
-    };
+                new(1,0,0), new(-1,0,0),
+                new(0,0,1), new(0,0,-1),
+                new(1,0,1), new(-1,0,1),
+                new(1,0,-1), new(-1,0,-1)
+            };
 
             while (queue.Count > 0 && radius <= maxRadius)
             {
@@ -218,12 +218,11 @@ namespace Game.AI
                     foreach (Vector3Int dir in directions)
                     {
                         Vector3Int neighbor = current + dir;
-
                         if (visited.Contains(neighbor)) continue;
 
                         visited.Add(neighbor);
 
-                        if (IsWalkable(neighbor)) return neighbor;
+                        if (VoxelGrid.Instance.IsWalkable(neighbor)) return neighbor;
 
                         queue.Enqueue(neighbor);
                     }
@@ -235,8 +234,7 @@ namespace Game.AI
             return center; // fallback if nothing found
         }
 
-        private Vector3Int WorldToGrid(Vector3 pos) =>
-            new(Mathf.RoundToInt(pos.x), 0, Mathf.RoundToInt(pos.z));
+        private Vector3Int WorldToGrid(Vector3 pos) => new(Mathf.RoundToInt(pos.x), 0, Mathf.RoundToInt(pos.z));
 
         private class PathRequest
         {

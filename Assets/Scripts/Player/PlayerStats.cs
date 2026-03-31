@@ -20,14 +20,22 @@ namespace Game.Players
         }
 
         [System.Serializable]
-        public class UpgradeBase<T> where T : UpgradeEffect
+        public abstract class UpgradeBase
         {
             [HideInInspector] public bool purchased;
             public GameObject upgradeButtonObj;
+
+            public abstract string UpgradeName { get; }
+            public abstract int Cost { get; }
+        }
+
+        [System.Serializable]
+        public class UpgradeBase<T> : UpgradeBase where T : UpgradeEffect
+        {
             public T effect;
 
-            public string UpgradeName => effect.upgradeName;
-            public int Cost => effect.cost;
+            public override string UpgradeName => effect.upgradeName;
+            public override int Cost => effect.cost;
         }
 
         [System.Serializable]

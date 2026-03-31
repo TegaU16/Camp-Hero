@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Apple
   equippedPrefab: {fileID: 3770081862213670232, guid: 5dec247537bdc1245ac21f8a00be9296, type: 3}
   itemDrop: {fileID: 5996018733791518837, guid: 64b2915a0b493aa4ca61c50c727c6316, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,10 +30,13 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 5
   plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
-  output: {fileID: 0}
+  output: {fileID: 11400000, guid: dc65bcdc064df6f4a8614d6f11c07a23, type: 2}
   outputCount: 1

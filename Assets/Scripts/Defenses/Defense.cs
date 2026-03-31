@@ -20,7 +20,7 @@ namespace Game.Defenses
 
         protected virtual void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
 
             fireCooldown -= Time.deltaTime;
 

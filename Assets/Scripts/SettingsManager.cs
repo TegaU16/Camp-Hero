@@ -28,12 +28,14 @@ public class SettingsManager : MonoBehaviour
 
     public void ApplySettings()
     {
-        // Apply volume
-        audioMixer.SetFloat("MasterVolume", Mathf.Log10(currentSettings.masterVolume) * 20);
-        audioMixer.SetFloat("MusicVolume", Mathf.Log10(currentSettings.musicVolume) * 20);
-        audioMixer.SetFloat("SFXVolume", Mathf.Log10(currentSettings.sfxVolume) * 20);
+        float master = Mathf.Log10(Mathf.Max(currentSettings.masterVolume, 0.0001f)) * 20f;
+        float music = Mathf.Log10(Mathf.Max(currentSettings.musicVolume, 0.0001f)) * 20f;
+        float sfx = Mathf.Log10(Mathf.Max(currentSettings.sfxVolume, 0.0001f)) * 20f;
 
-        // Apply graphics
+        audioMixer.SetFloat("MasterVolume", master);
+        audioMixer.SetFloat("MusicVolume", music);
+        audioMixer.SetFloat("SFXVolume", sfx);
+
         QualitySettings.SetQualityLevel(currentSettings.qualityLevel);
         Screen.fullScreen = currentSettings.fullscreen;
     }

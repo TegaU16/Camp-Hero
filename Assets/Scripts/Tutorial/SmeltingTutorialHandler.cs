@@ -16,7 +16,7 @@ namespace Game.Tutorial
                 return;
             }
 
-            if (data.id == "suggest_crafting_recipe")
+            if (data.id == "suggest_smelting_recipe")
                 FurnaceManager.Instance.HighlightSuggestedRecipe();
         }
     }

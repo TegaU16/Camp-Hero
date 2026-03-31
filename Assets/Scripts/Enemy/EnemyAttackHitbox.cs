@@ -27,7 +27,7 @@ namespace Game.AI.Enemies
         // Called by animation event
         void PerformHit()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (enemyScript == null) return;
             if (!TryGetComponent(out BoxCollider box)) return;
 

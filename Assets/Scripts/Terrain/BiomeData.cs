@@ -10,7 +10,5 @@ namespace Game.Terrain
         public NoiseSettings noiseSettings;
         public List<GameObject> treePrefabs = new();
         public List<GameObject> rockPrefabs = new();
-        public List<GameObject> treeClusterPrefabs = new();
-        public List<GameObject> rockClusterPrefabs = new();
     }
 }

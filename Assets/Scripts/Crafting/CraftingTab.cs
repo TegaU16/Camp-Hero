@@ -6,14 +6,15 @@ namespace Game.Crafting
     [RequireComponent(typeof(Button))]
     public class CraftingTab : MonoBehaviour
     {
-        public CraftingCategory category;
+        [SerializeField] private CraftingCategory category;
 
         private void Start()
         {
             Button button = GetComponent<Button>();
             button.onClick.AddListener(() =>
             {
-                CraftingManager.Instance.craftingUI.FilterByCategory(category, button);
+                CraftingUI.Instance.SetSelectedCategory(category, button);
+                CraftingUI.Instance.FilterByCategory(category, button);
             });
         }
     }

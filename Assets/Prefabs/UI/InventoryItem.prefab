@@ -243,6 +243,4 @@ MonoBehaviour:
   countText: {fileID: 1262538140333989386}
   padding: 6
   image: {fileID: 0}
-  canvasGroup: {fileID: -6159798652041902910}
   isBeingDragged: 0
-  originalParentSlot: {fileID: 0}

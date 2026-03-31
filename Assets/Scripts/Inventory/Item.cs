@@ -1,5 +1,6 @@
 using Game.Food;
 using Game.Players;
+using Game.StatusEffects;
 using UnityEngine;
 
 namespace Game.Inventory
@@ -19,6 +20,7 @@ namespace Game.Inventory
         [Header("Both")]
         public GameObject equippedPrefab;
         public GameObject itemDrop;
+        public Rarity rarity;
 
         [Header("Only Building")]
         public GameObject buildingGhost;
@@ -34,6 +36,9 @@ namespace Game.Inventory
         [Header("Tool")]
         public int toolLevel;
         public ToolType toolType;
+        [HideInInspector] public ToolAttribute toolAttribute;
+        public Item[] itemsToPair;
+        public StatusEffect statusEffect;
 
         [Header("Food")]
         public float foodValue;
@@ -53,12 +58,12 @@ namespace Game.Inventory
     [System.Flags]
     public enum ItemType
     {
-        None = 0,
         General = 1 << 0,
         Building = 1 << 1,
         Food = 1 << 2,
         Fuel = 1 << 3,
-        Smelting = 1 << 4
+        Smelting = 1 << 4,
+        Reforging = 1 << 5
     }
 
     public enum ActionType
@@ -67,11 +72,19 @@ namespace Game.Inventory
         Action
     }
 
+    [System.Flags]
     public enum ToolType
     {
-        Axe,
-        Pickaxe,
-        Sword,
-        None
+        Axe = 1 << 0,
+        Pickaxe = 1 << 1,
+        Sword = 1 << 2
+    }
+
+    public enum Rarity
+    {
+        Common,
+        Uncommon,
+        Rare,
+        Epic
     }
 }

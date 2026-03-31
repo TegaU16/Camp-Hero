@@ -8,27 +8,34 @@ namespace Game.AI.Enemies
     {
         public static EnemyPool Instance;
 
-        public DayNightCycle dayNightCycle;
-        public List<EnemyTier> enemyTiers;
+        [SerializeField] private List<EnemyTier> enemyTiers;
 
         private readonly Dictionary<GameObject, Queue<Enemy>> pools = new();
         private readonly Dictionary<GameObject, int> currentPoolSizes = new();
 
-        public Vector3 poolGraveyardPosition = new(0, -1000, 0);
+        [SerializeField] private Vector3 poolGraveyardPosition = new(0, -1000, 0);
 
         [Tooltip("How much the pool increases per day (as a multiplier). Example: 0.1 = 10% more per day.")]
-        public float dailyGrowthRate = 0.1f;
+        [SerializeField] private float dailyGrowthRate = 0.1f;
+
         [Tooltip("Maximum allowed pool size multiplier (to prevent infinite growth).")]
-        public float maxGrowthMultiplier = 3f;
+        [SerializeField] private float maxGrowthMultiplier = 3f;
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Instance = this;
         }
 
         void Start()
         {
-            InitializePools(GameManager.Instance != null ? dayNightCycle.GetCurrentDay() : 1);
+            DayNightCycle.Instance.OnDayAdvanced += AdjustPoolsForNewDay;
+            InitializePools(GameManager.Instance != null ? DayNightCycle.Instance.GetCurrentDay() : 1);
         }
 
         public void InitializePools(int currentDay)
@@ -72,12 +79,10 @@ namespace Game.AI.Enemies
 
             Queue<Enemy> pool = pools[prefab];
 
-            // 🔁 Expand pool if empty (lazy growth)
             if (pool.Count == 0)
             {
                 Enemy newEnemy = CreatePooledEnemy(prefab);
                 currentPoolSizes[prefab]++;
-                Debug.Log($"Pool for {prefab.name} expanded dynamically (size: {currentPoolSizes[prefab]})");
                 return PrepareEnemy(newEnemy, spawnPosition);
             }
 

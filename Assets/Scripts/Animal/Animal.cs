@@ -65,7 +65,7 @@ namespace Game.AI.Animals
 
         void FixedUpdate()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
 
             if (!IsActiveAI)
             {
@@ -74,42 +74,33 @@ namespace Game.AI.Animals
             }
 
             currentGridPos = WorldToGrid(myTransform.position);
-
             agent.UpdateAgent();
 
-            Vector3 move;
-
-            if (agent.WantsToMove())
-            {
-                move = agent.GetMovementThisFrame();
-
-                if (characterController.isGrounded)
-                {
-                    if (verticalVelocity < 0)
-                        verticalVelocity = -1f;
-                }
-                else
-                {
-                    verticalVelocity += gravity * Time.fixedDeltaTime;
-                }
-
-                move.y = verticalVelocity;
-
-                move += knockbackVelocity;
-                knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
-
-                characterController.Move(move * Time.fixedDeltaTime);
-
-                float speed = agent.GetCurrentSpeedFraction();
-                animator.SetFloat("Speed", speed, 0.2f, Time.fixedDeltaTime);
-            }
-            else
+            if (!agent.WantsToMove())
             {
                 verticalVelocity = 0f;
                 knockbackVelocity = Vector3.zero;
 
                 animator.SetFloat("Speed", 0f, 0.2f, Time.fixedDeltaTime);
+                return;
             }
+
+            Vector3 move = agent.GetMovementThisFrame();
+
+            if (!characterController.isGrounded)
+                verticalVelocity += gravity * Time.fixedDeltaTime;
+            else if (verticalVelocity < 0)
+                verticalVelocity = -1f;
+
+            move.y = verticalVelocity;
+
+            move += knockbackVelocity;
+            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
+
+            characterController.Move(move * Time.fixedDeltaTime);
+
+            float speed = agent.GetCurrentSpeedFraction();
+            animator.SetFloat("Speed", speed, 0.2f, Time.fixedDeltaTime);
         }
 
         void OnAnimatorMove()
@@ -198,7 +189,7 @@ namespace Game.AI.Animals
         {
             PathfinderManager pfm = PathfinderManager.Instance;
 
-            if (!pfm.IsWalkable(targetGrid))
+            if (!VoxelGrid.Instance.IsWalkable(targetGrid))
             {
                 Vector3Int fallback = pfm.FindNearestUnblocked(targetGrid);
                 targetGrid = fallback;
@@ -222,9 +213,9 @@ namespace Game.AI.Animals
 
         private Vector3Int WorldToGrid(Vector3 worldPos)
         {
-            int x = Mathf.RoundToInt(worldPos.x);
-            int z = Mathf.RoundToInt(worldPos.z);
-            int y = Mathf.RoundToInt(Utility.GetHeightAt(x, z));
+            int x = Mathf.FloorToInt(worldPos.x);
+            int z = Mathf.FloorToInt(worldPos.z);
+            int y = Mathf.FloorToInt(Utility.GetHeightAt(x, z));
 
             return new Vector3Int(x, y, z);
         }
@@ -243,7 +234,7 @@ namespace Game.AI.Animals
             target.z = Mathf.Clamp(target.z, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
 
             float height = Utility.GetHeightAt(target.x, target.z);
-            target.y = Mathf.RoundToInt(height);
+            target.y = Mathf.FloorToInt(height);
 
             return target;
         }

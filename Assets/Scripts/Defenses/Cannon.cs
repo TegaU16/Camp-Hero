@@ -8,7 +8,7 @@ namespace Game.Defenses
 
         protected override void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             base.Update();
 
             if (currentTarget != null && rotatingPart != null)

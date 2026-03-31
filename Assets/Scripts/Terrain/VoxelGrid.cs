@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Game.AI.Animals;
@@ -9,11 +10,13 @@ using Game.Saving;
 using Game.Storage;
 using Game.Terrain.Structures;
 using Game.Terrain.Structures.Trials;
+using Game.Tutorial;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using static UnityEngine.UI.Image;
 
 namespace Game.Terrain
 {
@@ -22,7 +25,7 @@ namespace Game.Terrain
         private static readonly WaitForSeconds _waitForSeconds0_2 = new(0.2f);
         public static VoxelGrid Instance;
 
-        [System.Flags]
+        [Flags]
         public enum VoxelState
         {
             None = 0,
@@ -45,7 +48,9 @@ namespace Game.Terrain
 
         [HideInInspector] public bool worldGenerated = false;
 
+        public LayerMask interactableLayer;
         public LayerMask groundLayer;
+        [SerializeField] private string naturalObjectsTag = "Natural";
         private Vector3 worldCenter;
         private float terrainWidth;
 
@@ -64,6 +69,7 @@ namespace Game.Terrain
         public WorldGenerationProgress OnProgress;
 
         private Coroutine visibilityCoroutine;
+        private static readonly Collider[] hitBuffer = new Collider[64];
 
         [Header("World Dimensions")]
         public int chunkSize = 16;
@@ -72,6 +78,10 @@ namespace Game.Terrain
         public float maxHeight = 5f;
         public float heightOffset = 0.5f;
         [Range(0f, 0.5f)] public float outerRadius;
+
+        [Header("Tutorials")]
+        public TutorialData pickStoneTutorial;
+        public GameObject stoneTutorialPrefab;
 
         private void Awake()
         {
@@ -87,11 +97,12 @@ namespace Game.Terrain
             worldCenter = new(terrainWidth / 2f, 0f, terrainWidth / 2f);
         }
 
+        #region World Generation
+
         public void SetWorld(int worldSeed, string name)
         {
             if (worldGenerated) return;
 
-            AnimalSpawner.Instance.groundLayer = groundLayer;
             seed = worldSeed;
             worldName = name;
 
@@ -127,8 +138,6 @@ namespace Game.Terrain
 
                     Vector2Int chunkKey = new(x, z);
                     chunkMap[chunkKey] = chunk;
-
-                    AnimalSpawner.Instance.chunks.Add(chunk);
 
                     GenerateChunkTerrain(chunk, chunkPosition);
 
@@ -180,6 +189,8 @@ namespace Game.Terrain
 
             worldGenerated = true;
             OnProgress?.Invoke(1f);
+
+            StartCoroutine(StartPickStoneTutorial(waitTime: 5f));
         }
 
         private IEnumerator LoadChunksRoutine(string worldName)
@@ -187,7 +198,7 @@ namespace Game.Terrain
             string chunksDir = Path.Combine(Application.persistentDataPath, "Worlds", worldName, "chunks");
             if (!Directory.Exists(chunksDir))
             {
-                Debug.LogWarning($"No chunk folder found for world '{worldName}'. Generating new world.");
+                UnityEngine.Debug.LogWarning($"No chunk folder found for world '{worldName}'. Generating new world.");
                 yield return StartCoroutine(GenerateTerrain());
                 yield break;
             }
@@ -195,7 +206,7 @@ namespace Game.Terrain
             string[] files = Directory.GetFiles(chunksDir, "*.json");
             if (files.Length == 0)
             {
-                Debug.LogWarning($"No saved chunks found for world '{worldName}'. Generating new world.");
+                UnityEngine.Debug.LogWarning($"No saved chunks found for world '{worldName}'. Generating new world.");
                 yield return StartCoroutine(GenerateTerrain());
                 yield break;
             }
@@ -218,7 +229,7 @@ namespace Game.Terrain
                 ChunkSaveData data = SaveSystem.LoadChunk(worldName, chunkPos);
                 if (data == null)
                 {
-                    Debug.LogWarning($"Failed to load chunk at {chunkPos}. Skipping.");
+                    UnityEngine.Debug.LogWarning($"Failed to load chunk at {chunkPos}. Skipping.");
                     continue;
                 }
 
@@ -239,10 +250,9 @@ namespace Game.Terrain
                 LoadChunkObjects(chunk, data);
 
                 chunks.Add(chunk);
-                chunkMap[new Vector2Int(
-                    (int)data.chunkPosition.x / chunkSize,
-                    (int)data.chunkPosition.z / chunkSize)] = chunk;
-                AnimalSpawner.Instance.chunks.Add(chunk);
+
+                Vector2Int chunkKey = new((int)data.chunkPosition.x / chunkSize, (int)data.chunkPosition.z / chunkSize);
+                chunkMap[chunkKey] = chunk;
 
                 currentStep++;
                 OnProgress?.Invoke((float)currentStep / totalSteps);
@@ -262,11 +272,70 @@ namespace Game.Terrain
             OnProgress?.Invoke(1f);
         }
 
+        #endregion
+
+        #region Tutorial
+
+        private IEnumerator StartPickStoneTutorial(float waitTime)
+        {
+            yield return new WaitForSeconds(waitTime);
+
+            if (pickStoneTutorial == null) yield break;
+            if (!stoneTutorialPrefab.TryGetComponent(out PrefabID prefabID)) yield break;
+
+            GameObject closestStone = FindClosestObject(prefabID.prefabKey, interactableLayer);
+            if (closestStone == null) yield break;
+
+            Collider col = closestStone.GetComponent<Collider>();
+            float offset = col ? col.bounds.extents.y : 0.5f;
+
+            ObjectHighlightTutorialData stoneHighlightData = new()
+            {
+                target = closestStone,
+                yOffset = offset
+            };
+
+            pickStoneTutorial.objectHighlightData = stoneHighlightData;
+
+            TutorialManager.Instance.RegisterTutorial(pickStoneTutorial);
+            TutorialManager.Instance.ActivateTutorial(pickStoneTutorial);
+        }
+
+        private GameObject FindClosestObject(string prefabKey, LayerMask layer)
+        {
+            if (prefabKey == null) return null;
+
+            float radius = chunkSize * 2f;
+            int hitCount = Physics.OverlapSphereNonAlloc(playerTransform.position, radius, hitBuffer, layer);
+
+            Transform closest = null;
+            float closestSqrDist = Mathf.Infinity;
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider hit = hitBuffer[i];
+                if (!hit.TryGetComponent(out PrefabID hitObjectID)) continue;
+                if (hitObjectID.prefabKey != prefabKey) continue;
+
+                float sqrDist = (hit.transform.position - playerTransform.position).sqrMagnitude;
+                if (sqrDist >= closestSqrDist) continue;
+
+                closestSqrDist = sqrDist;
+                closest = hit.transform;
+            }
+
+            return closest ? closest.gameObject : null;
+        }
+
+        #endregion
+
+        #region Spawn Objects
+
         private void SpawnCampfireAtCenter()
         {
             if (campFirePrefab == null)
             {
-                Debug.LogError("Campfire prefab is null!");
+                UnityEngine.Debug.LogError("Campfire prefab is null!");
                 return;
             }
 
@@ -283,7 +352,7 @@ namespace Game.Terrain
 
             if (GameManager.Instance == null)
             {
-                Debug.LogError("[Campfire] GameManager.Instance is null!");
+                UnityEngine.Debug.LogError("[Campfire] GameManager.Instance is null!");
                 return;
             }
 
@@ -300,7 +369,7 @@ namespace Game.Terrain
 
             if (!chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk))
             {
-                Debug.LogError($"[Campfire] No chunk found at key {chunkKey}");
+                UnityEngine.Debug.LogError($"[Campfire] No chunk found at key {chunkKey}");
                 return;
             }
 
@@ -321,11 +390,9 @@ namespace Game.Terrain
                 float distance = Vector3.Distance(worldCenter, chunk.chunkObject.transform.position);
                 bool withinView = distance < (chunkViewDistance * chunkSize);
 
-                // Generate object data (positions, prefab choices, etc.)
                 if (!chunk.objectsGenerated)
                     GenerateObjectDataForChunk(chunk);
 
-                // Only instantiate visible ones
                 if (withinView && !chunk.objectsInstantiated)
                 {
                     InstantiateChunkObjects(chunk);
@@ -340,12 +407,15 @@ namespace Game.Terrain
                 OnProgress?.Invoke((float)chunkIndex / totalChunks);
 
                 // Small delay to prevent stutter
-                if (chunkIndex % 2 == 0) // every 2 chunks
-                    yield return null;
-            }
+                if (chunkIndex % 2 == 0) yield return null; // every 2 chunks
+			}
 
             visibilityCoroutine ??= StartCoroutine(UpdateChunkVisibility());
         }
+
+        #endregion
+
+        #region Chunk Save/Load
 
         public void SaveAllChunks(string worldName)
         {
@@ -353,13 +423,45 @@ namespace Game.Terrain
                 SaveSystem.SaveChunk(worldName, chunk);
         }
 
+        private void LoadChunkObjects(VoxelChunk chunk, ChunkSaveData savedData)
+        {
+            chunk.objects.Clear();
+            chunk.savedObjectPositions.Clear();
+
+            if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0)
+            {
+                chunk.savedObjects = new List<SpawnedObjectData>();
+                chunk.objectsGenerated = true;
+                chunk.objectsInstantiated = false;
+                return;
+            }
+
+            chunk.savedObjects = new List<SpawnedObjectData>(savedData.spawnedObjects);
+
+            foreach (SpawnedObjectData objData in chunk.savedObjects)
+            {
+                chunk.savedObjectPositions.Add(objData.position);
+                Vector3Int spawnKey = Utility.WorldToVoxelCoord(objData.position);
+                chunk.savedObjectPositionsInt.Add(spawnKey);
+            }
+
+            chunk.structureSpawned = true;
+            chunk.objectsGenerated = true;
+            chunk.objectsInstantiated = false;
+            chunk.hasNaturalObjects = true;
+        }
+
+        #endregion
+
+        #region Terrain Generation
+
         public void GenerateChunkTerrain(VoxelChunk chunk, Vector3 chunkPosition)
         {
             // --- Select biome and get its noise settings ---
             BiomeData biome = SelectBiome(chunkPosition);
             if (biome == null)
             {
-                Debug.LogWarning("Biome not found at " + chunkPosition + " - using default settings.");
+                UnityEngine.Debug.LogWarning("Biome not found at " + chunkPosition + " - using default settings.");
                 // fallback default
                 biome = ScriptableObject.CreateInstance<BiomeData>();
                 biome.noiseSettings = new NoiseSettings();
@@ -574,7 +676,231 @@ namespace Game.Terrain
             outHeightMap.Dispose();
         }
 
-        // === OBJECT GENERATION ===
+        #endregion
+
+        #region Terrain Preview
+
+        public void GeneratePreviewChunk(
+            GameObject targetObject,
+            BiomeData biome,
+            Vector3 chunkPosition,
+            int customChunkSize,
+            int customSeed)
+        {
+            seed = customSeed;
+
+            VoxelChunk previewChunk = new(targetObject, customChunkSize);
+
+            GenerateChunkTerrainPreview(previewChunk, chunkPosition, biome, customChunkSize);
+        }
+
+        public void GenerateChunkTerrainPreview(VoxelChunk chunk, Vector3 chunkPosition, BiomeData biome, int customChunkSize)
+        {
+            chunk.biome = biome;
+
+            // Map biome.noiseSettings to BurstNoise / NoiseLayer
+            NoiseSettings biomeNoiseSettings = biome.noiseSettings;
+
+            // Build a single NoiseLayer for this chunk (B1)
+            NoiseLayer[] managedLayer = new NoiseLayer[1];
+
+            BurstNoise burstNoise = BurstNoise.Default(seed);
+
+            burstNoise.SetFrequency(biomeNoiseSettings.frequency);
+            burstNoise.SetFractalOctaves(biomeNoiseSettings.octaves);
+            burstNoise.SetLacunarity(biomeNoiseSettings.lacunarity);
+            burstNoise.SetFractalGain(biomeNoiseSettings.persistence);
+
+            NoiseLayer nl = new()
+            {
+                noise = burstNoise,
+                offset = new float3(0, 0, 0),
+                scale = biomeNoiseSettings.baseScale,
+                weight = 1f
+            };
+
+            managedLayer[0] = nl;
+
+            // Bake into NativeArray<NoiseLayer> (TempJob lifetime)
+            NativeArray<NoiseLayer> bakedLayers = new(1, Allocator.TempJob);
+            bakedLayers[0] = managedLayer[0];
+
+            // --- Allocate native arrays for noise & height ---
+            int total = customChunkSize * customChunkSize;
+            NativeArray<float> noiseNative = new(total, Allocator.TempJob);
+
+            // Prepare height curve table if needed
+            NativeArray<float> curveTable = new(256, Allocator.TempJob);
+            if (biomeNoiseSettings.useHeightCurve && biomeNoiseSettings.heightCurve != null)
+            {
+                // Bake animation curve into 256 samples
+                for (int i = 0; i < 256; i++)
+                {
+                    float t = i / 255f;
+                    curveTable[i] = biomeNoiseSettings.heightCurve.Evaluate(t);
+                }
+            }
+            else
+            {
+                // keep as zeros (will not be used)
+                for (int i = 0; i < 256; i++)
+                    curveTable[i] = 0f;
+            }
+
+            // --- Schedule noise job ---
+            NoiseMapJob2D noiseJob = new()
+            {
+                size = new int2(customChunkSize, customChunkSize),
+                worldOffset = new float2(chunkPosition.x, chunkPosition.z),
+                layers = bakedLayers,
+                noiseOut = noiseNative
+            };
+
+            JobHandle noiseHandle = noiseJob.Schedule(total, 64);
+
+            // New voxel count array
+            NativeArray<float> heights = new(total, Allocator.TempJob);
+            int maxStackHeight = Mathf.CeilToInt(biomeNoiseSettings.heightScale / voxelSize);
+
+            // --- Schedule height generation job ---
+            GenerateHeightMapJob heightJob = new()
+            {
+                noiseIn = noiseNative,
+                useHeightCurve = biomeNoiseSettings.useHeightCurve,
+                heightCurve = curveTable,
+                heightExponent = biomeNoiseSettings.heightExponent,
+                heightMultiplier = biomeNoiseSettings.heightScale,
+                heightOffset = this.heightOffset,
+
+                heightOut = heights
+            };
+
+            JobHandle heightHandle = heightJob.Schedule(total, 64, noiseHandle);
+
+            // Mesh arrays (same as before)
+            int maxFaces = total * maxStackHeight * 5; // conservative estimate
+            NativeArray<float3> vertsNative = new(maxFaces * 4, Allocator.TempJob);
+            NativeArray<int> trisNative = new(maxFaces * 6, Allocator.TempJob);
+            NativeArray<float2> uvsNative = new(maxFaces * 4, Allocator.TempJob);
+            NativeArray<uint> colsNative = new(maxFaces * 4, Allocator.TempJob);
+            NativeArray<float3> normsNative = new(maxFaces * 4, Allocator.TempJob);
+            NativeArray<int> outVertCount = new(1, Allocator.TempJob);
+            NativeArray<int> outTriCount = new(1, Allocator.TempJob);
+            NativeArray<float> outHeightMap = new(customChunkSize * customChunkSize, Allocator.TempJob);
+
+            MeshBuildJob meshJob = new()
+            {
+                chunkSizeX = customChunkSize,
+                chunkSizeZ = customChunkSize,
+                voxelSize = voxelSize,
+                voxelHeights = heights, // use the new integer array
+
+                outVertices = vertsNative,
+                outTriangles = trisNative,
+                outUVs = uvsNative,
+                outColors = colsNative,
+                outNormals = normsNative,
+                outVertCount = outVertCount,
+                outTriCount = outTriCount,
+                outHeightMap = outHeightMap
+            };
+
+            JobHandle meshHandle = meshJob.Schedule(heightHandle);
+            meshHandle.Complete();
+
+            chunk.heightMap = new float[customChunkSize, customChunkSize];
+
+            for (int z = 0; z < customChunkSize; z++)
+            {
+                for (int x = 0; x < customChunkSize; x++)
+                {
+                    int i = x * customChunkSize + z;
+                    chunk.heightMap[x, z] = outHeightMap[i];
+                }
+            }
+
+            // --- Read back and create managed mesh arrays ---
+            int vertCount = outVertCount[0];
+            int triCount = outTriCount[0];
+
+            vertCount = math.min(vertCount, vertsNative.Length);
+            triCount = math.min(triCount, trisNative.Length);
+
+            Vector3[] meshVerts = new Vector3[vertCount];
+            Vector3[] meshNormals = new Vector3[vertCount];
+            Vector2[] meshUVs = new Vector2[vertCount];
+            Color32[] meshColors = new Color32[vertCount];
+
+            for (int i = 0; i < vertCount; i++)
+            {
+                float3 v = vertsNative[i];
+                meshVerts[i] = new Vector3(v.x, v.y, v.z);
+
+                float3 n = normsNative[i];
+                meshNormals[i] = new Vector3(n.x, n.y, n.z);
+
+                float2 uv = uvsNative[i];
+                meshUVs[i] = new Vector2(uv.x, uv.y);
+
+                uint c = colsNative[i];
+                byte r = (byte)(c & 0xFF);
+                byte g = (byte)((c >> 8) & 0xFF);
+                byte b = (byte)((c >> 16) & 0xFF);
+                byte a = (byte)((c >> 24) & 0xFF);
+                meshColors[i] = new Color32(r, g, b, a);
+            }
+
+            int[] meshTris = new int[triCount];
+            for (int i = 0; i < triCount; i++)
+                meshTris[i] = trisNative[i];
+
+            Mesh mesh = new()
+            {
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
+                vertices = meshVerts,
+                triangles = meshTris,
+                uv = meshUVs,
+                colors32 = meshColors,
+                normals = meshNormals
+            };
+            mesh.RecalculateBounds();
+
+            if (!chunk.chunkObject.TryGetComponent(out MeshFilter mf))
+                mf = chunk.chunkObject.AddComponent<MeshFilter>();
+
+            if (mf.sharedMesh != null)
+                DestroyImmediate(mf.sharedMesh);
+
+            mf.sharedMesh = mesh;
+
+            if (!chunk.chunkObject.TryGetComponent(out MeshRenderer mr))
+                mr = chunk.chunkObject.AddComponent<MeshRenderer>();
+
+            mr.sharedMaterial = voxelMaterial;
+
+            chunk.chunkObject.SetActive(true);
+            chunk.generatedMesh = mesh;
+
+            // --- Dispose native arrays ---
+            noiseNative.Dispose();
+            bakedLayers.Dispose();
+            curveTable.Dispose();
+            heights.Dispose();
+
+            vertsNative.Dispose();
+            trisNative.Dispose();
+            uvsNative.Dispose();
+            colsNative.Dispose();
+            normsNative.Dispose();
+            outVertCount.Dispose();
+            outTriCount.Dispose();
+            outHeightMap.Dispose();
+        }
+
+        #endregion
+
+        #region Object Generation
+
         private void GenerateObjectDataForChunk(VoxelChunk chunk)
         {
             if (!chunk.structureSpawned)
@@ -590,6 +916,8 @@ namespace Game.Terrain
 
             float minDistanceFromCenter = 10f;
             float maxDistanceFromCenter = terrainWidth * outerRadius;
+
+            // Stopwatch sw = Stopwatch.StartNew();
 
             for (int cx = 0; cx < chunkSize; cx++)
             {
@@ -629,45 +957,65 @@ namespace Game.Terrain
                     bool tooClose = false;
                     foreach (Vector3 existing in chunk.savedObjectPositions)
                     {
-                        if (Vector3.Distance(spawnPosition, existing) < minSpacing)
-                        {
-                            tooClose = true;
-                            break;
-                        }
+                        if (Vector3.Distance(spawnPosition, existing) >= minSpacing) continue;
+
+                        tooClose = true;
+                        break;
                     }
 
                     if (tooClose) continue;
 
                     GameObject prefab = SelectDeterministicObjectPrefab(cx, cz, seed, chunk);
-                    if (prefab != null)
-                    {
-                        SpawnedObjectData data = new(spawnPosition, prefab, prefab);
-                        Utility.AddObjectDataToChunk(data, spawnPosition, chunk);
-                        GenerateClusterData(spawnPosition, chunk, prefab);
-                    }
-                }
+                    if (prefab == null) continue;
+
+					SpawnedObjectData data = new(spawnPosition, prefab, prefab);
+					Utility.AddObjectDataToChunk(data, spawnPosition, chunk);
+				}
             }
+
+            /*sw.Stop();
+            UnityEngine.Debug.Log($"Chunk {chunk.chunkObject.name} object data took {sw.ElapsedMilliseconds} ms");*/
 
             chunk.objectsGenerated = true;
         }
 
         private void ValidateSavedObjects(VoxelChunk chunk)
         {
-            // Create a safe new list to store only valid object data
+            Stopwatch total = Stopwatch.StartNew();
+
+            long prefabLookupTime = 0;
+            long areaCheckTime = 0;
+
             List<SpawnedObjectData> valid = new();
 
             foreach (SpawnedObjectData data in chunk.savedObjects)
             {
+                Stopwatch sw = Stopwatch.StartNew();
                 GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabID);
+                sw.Stop();
+                prefabLookupTime += sw.ElapsedTicks;
+
                 if (!prefab) continue;
 
-                // If area is NOT free, skip it (remove)
-                if (Utility.IsAreaFree(prefab, data.position, IsOccupied)) continue;
+                sw.Restart();
+                bool blocked = Utility.AreaCheck(prefab, data.position, IsOccupied);
+                sw.Stop();
+                areaCheckTime += sw.ElapsedTicks;
+
+                if (blocked) continue;
 
                 valid.Add(data);
             }
 
             chunk.savedObjects = valid;
+
+            total.Stop();
+
+            UnityEngine.Debug.Log(
+                $"ValidateSavedObjects | Total: {total.ElapsedMilliseconds} ms | " +
+                $"PrefabLookup: {prefabLookupTime / (double)Stopwatch.Frequency * 1000:F2} ms | " +
+                $"AreaCheck: {areaCheckTime / (double)Stopwatch.Frequency * 1000:F2} ms"
+            );
         }
 
         private void InstantiateChunkObjects(VoxelChunk chunk)
@@ -685,11 +1033,25 @@ namespace Game.Terrain
                 obj.transform.parent = chunk.chunkObject.transform;
                 data.instance = obj;
 
-                ISaveableObject saveable = obj.GetComponent<ISaveableObject>();
-                if (!string.IsNullOrEmpty(data.savedStateJson))
-                    saveable?.LoadState(data.savedStateJson); // Attempt to load data if it exists
+                if (obj.CompareTag(naturalObjectsTag))
+                {
+                    int hash = data.position.GetHashCode() ^ seed;
+                    int rotationIndex = Mathf.Abs(hash) % 4;
+                    Quaternion rotation = Quaternion.Euler(0, rotationIndex * 90f, 0);
+                    obj.transform.rotation = rotation;
+                }
 
+                if (!string.IsNullOrEmpty(data.savedStateJson))
+                {
+                    MultiSaveData multiData = JsonUtility.FromJson<MultiSaveData>(data.savedStateJson);
+                    ISaveableObject[] saveables = obj.GetComponents<ISaveableObject>();
+
+                    for (int i = 0; i < saveables.Length && i < multiData.states.Count; i++)
+                        saveables[i].LoadState(multiData.states[i]);
+                }
+               
                 chunk.objects.Add(obj);
+
                 if (data.structureRef != null)
                 {
                     StorageUnit storage = obj.GetComponentInChildren<StorageUnit>();
@@ -699,190 +1061,43 @@ namespace Game.Terrain
                         if (!string.IsNullOrEmpty(data.savedStateJson))
                             storage.LoadState(data.savedStateJson);
                         else if (storage.TryGetComponent(out LootTableReference lootRef) && lootRef.lootTable != null)
-                            storage.items = lootRef.lootTable.GetRandomLoot();
+                            storage.items = lootRef.lootTable.GetRandomLoot().ToArray();
                     }
 
                     MarkVoxelArea(obj, buildable: false);
+
+                    continue;
                 }
-                else if (obj.TryGetComponent(out GemAltar _))
+
+                if (obj.TryGetComponent(out GemAltar _))
                 {
                     MarkVoxelArea(obj, buildable: false);
+                    continue;
                 }
-                else if (obj.GetComponentInChildren<TrialAltar>() != null)
+
+                if (obj.GetComponentInChildren<TrialAltar>() != null)
                 {
                     MarkVoxelArea(obj, walkable: true, buildable: false);
+                    continue;
                 }
-                else if (obj.TryGetComponent(out Campfire _))
+
+                if (obj.TryGetComponent(out Campfire _))
                 {
                     GameManager.Instance.SetCampfire(obj);
                     MarkVoxelArea(obj, buildable: false);
+                    continue;
                 }
-                else
-                {
-                    if (obj.TryGetComponent(out BreakableObject breakable))
-                        breakable.owningChunk = chunk;
 
-                    if (obj.TryGetComponent(out InteractableItem interactable))
-                    {
-                        interactable.owningChunk = chunk;
+                if (obj.TryGetComponent(out BreakableObject breakable))
+                    breakable.owningChunk = chunk;
 
-                        if (interactable.itemCount == 0)
-                            interactable.itemCount = 1;
-                    }
+                if (obj.TryGetComponent(out InteractableItem interactable))
+                    interactable.owningChunk = chunk;
 
-                    MarkVoxelArea(obj);
-                }
+                MarkVoxelArea(obj);
             }
 
             chunk.objectsInstantiated = true;
-        }
-
-        private void SetChunkObjectVisibility(VoxelChunk chunk, bool visible)
-        {
-            foreach (SpawnedObjectData data in chunk.savedObjects)
-            {
-                if (data.instance == null) continue;
-
-                foreach (Renderer renderer in data.instance.GetComponentsInChildren<Renderer>())
-                    renderer.enabled = visible;
-
-                foreach (Collider collider in data.instance.GetComponentsInChildren<Collider>())
-                    collider.enabled = visible;
-            }
-        }
-
-        private void GenerateClusterData(Vector3 centerPosition, VoxelChunk chunk, GameObject parentPrefab)
-        {
-            int hash = Utility.PositionHash((int)centerPosition.x, (int)centerPosition.z, seed);
-            System.Random rng = new(hash);
-
-            int clusterCount = rng.Next(2, 6);
-            float clusterRadius = 1.5f;
-
-            for (int i = 0; i < clusterCount; i++)
-            {
-                float angle = (float)(rng.NextDouble() * Mathf.PI * 2);
-                float distance = (float)rng.NextDouble() * clusterRadius;
-
-                float worldX = centerPosition.x + Mathf.Cos(angle) * distance;
-                float worldZ = centerPosition.z + Mathf.Sin(angle) * distance;
-
-                int vx = Mathf.FloorToInt(worldX);
-                int vz = Mathf.FloorToInt(worldZ);
-
-                if (IsOccupied(new Vector3Int(vx, 0, vz))) continue;
-
-                float height = Utility.GetHeightAt(vx, vz);
-                Vector3 finalPosition = new(worldX, height, worldZ);
-
-                if (!IsWithinBorders(finalPosition)) continue;
-
-                bool tooClose = chunk.savedObjectPositions.Any(p => Vector3.Distance(p, finalPosition) < 0.3f);
-
-                if (tooClose) continue;
-
-                GameObject smallPrefab = SelectSmallObjectPrefab(parentPrefab, chunk);
-                if (smallPrefab != null)
-                {
-                    SpawnedObjectData data = new(finalPosition, smallPrefab, smallPrefab);
-                    Utility.AddObjectDataToChunk(data, finalPosition, chunk);
-                }
-            }
-        }
-
-        private IEnumerator UpdateChunkVisibility()
-        {
-            while (true)
-            {
-                if (playerTransform != null)
-                {
-                    Vector3 playerPos = playerTransform.position;
-
-                    foreach (VoxelChunk chunk in chunks)
-                    {
-                        float dist = Vector3.Distance(playerPos, chunk.chunkObject.transform.position);
-                        bool shouldBeVisible = dist < (chunkViewDistance * chunkSize);
-
-                        if (shouldBeVisible)
-                        {
-                            if (!chunk.objectsInstantiated)
-                                InstantiateChunkObjects(chunk);
-
-                            SetChunkObjectVisibility(chunk, true);
-                        }
-                        else if (chunk.objectsInstantiated)
-                        {
-                            SetChunkObjectVisibility(chunk, false);
-                        }
-                    }
-                }
-
-                yield return _waitForSeconds0_2;
-            }
-        }
-
-        private GameObject SelectSmallObjectPrefab(GameObject parentObject, VoxelChunk chunk)
-        {
-            if (!parentObject.TryGetComponent(out ObjectCategory category)) return null;
-
-            switch (category.objectType)
-            {
-                case ObjectType.Tree:
-                    if (chunk.biome.treeClusterPrefabs != null && chunk.biome.treeClusterPrefabs.Count > 0)
-                        return chunk.biome.treeClusterPrefabs[UnityEngine.Random.Range(0, chunk.biome.treeClusterPrefabs.Count)];
-                    break;
-
-                case ObjectType.Rock:
-                    if (chunk.biome.rockClusterPrefabs != null && chunk.biome.rockClusterPrefabs.Count > 0)
-                        return chunk.biome.rockClusterPrefabs[UnityEngine.Random.Range(0, chunk.biome.rockClusterPrefabs.Count)];
-                    break;
-            }
-
-            return null;
-        }
-
-        public void RemoveObjectFromChunk(VoxelChunk chunk, GameObject instance)
-        {
-            if (chunk == null) return;
-            if (instance == null) return;
-            if (!chunk.objects.Contains(instance)) return;
-
-            // Remove from set
-            SpawnedObjectData spawnedObjectData = chunk.savedObjects.FirstOrDefault(x => x.instance == instance);
-            chunk.savedObjects.Remove(spawnedObjectData);
-
-            Destroy(instance);
-            chunk.objects.Remove(instance);
-
-            chunk.isDirty = true;
-        }
-
-        private void LoadChunkObjects(VoxelChunk chunk, ChunkSaveData savedData)
-        {
-            chunk.objects.Clear();
-            chunk.savedObjectPositions.Clear();
-
-            if (savedData.spawnedObjects == null || savedData.spawnedObjects.Count == 0)
-            {
-                chunk.savedObjects = new List<SpawnedObjectData>();
-                chunk.objectsGenerated = true;
-                chunk.objectsInstantiated = false;
-                return;
-            }
-
-            chunk.savedObjects = new List<SpawnedObjectData>(savedData.spawnedObjects);
-
-            foreach (SpawnedObjectData objData in chunk.savedObjects)
-            {
-                chunk.savedObjectPositions.Add(objData.position);
-                Vector3Int spawnKey = Utility.WorldToVoxelCoord(objData.position);
-                chunk.savedObjectPositionsInt.Add(spawnKey);
-            }
-
-            chunk.structureSpawned = true;
-            chunk.objectsGenerated = true;
-            chunk.objectsInstantiated = false;
-            chunk.hasNaturalObjects = true;
         }
 
         private bool ShouldSpawnObject(int x, int z, int seed, Vector3 chunkPosition)
@@ -916,25 +1131,71 @@ namespace Game.Terrain
             return allPrefabs[randomIndex];
         }
 
-        public Vector3 CalculatePositionOffset(int x, int z, int seed)
+        #endregion
+
+        #region Chunk/Object Handling
+
+        private void SetChunkObjectVisibility(VoxelChunk chunk, bool visible)
         {
-            float frequency = 0.35f;
-            float amplitude = voxelSize * 4f;
+            if (!chunk.objectsInstantiated) return;
 
-            // Smooth base offset (clusters)
-            float noiseX = Mathf.PerlinNoise((x + seed) * frequency, (z + seed) * frequency);
-            float noiseZ = Mathf.PerlinNoise((x + seed + 1337) * frequency, (z + seed + 9999) * frequency);
-            float offsetX = (noiseX - 0.5f) * amplitude;
-            float offsetZ = (noiseZ - 0.5f) * amplitude;
+            foreach (SpawnedObjectData data in chunk.savedObjects)
+            {
+                if (data.instance == null) continue;
 
-            // Add chaotic hash jitter (kills streaks)
-            int hash = x * 73856093 ^ z * 19349663 ^ seed;
-            System.Random rng = new(hash);
-            float jitterX = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
-            float jitterZ = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
+                foreach (Renderer renderer in data.instance.GetComponentsInChildren<Renderer>())
+                    renderer.enabled = visible;
 
-            return new Vector3(offsetX + jitterX, 0f, offsetZ + jitterZ);
+                foreach (Collider collider in data.instance.GetComponentsInChildren<Collider>())
+                    collider.enabled = visible;
+            }
         }
+
+        private IEnumerator UpdateChunkVisibility()
+        {
+            while (playerTransform == null)
+                yield return null;
+
+            while (true)
+            {
+                Vector3 playerPos = playerTransform.position;
+
+                foreach (VoxelChunk chunk in chunks)
+				{
+                    float dist = Vector3.Distance(playerPos, chunk.chunkObject.transform.position);
+                    bool shouldBeVisible = dist < (chunkViewDistance * chunkSize);
+
+                    if (!shouldBeVisible)
+                    {
+                        SetChunkObjectVisibility(chunk, visible: false);
+                        continue;
+                    }
+
+                    InstantiateChunkObjects(chunk);
+                    SetChunkObjectVisibility(chunk, visible: true);
+                }
+
+				yield return _waitForSeconds0_2;
+            }
+        }
+
+        public void RemoveObjectFromChunk(VoxelChunk chunk, GameObject instance)
+        {
+            if (chunk == null) return;
+            if (instance == null) return;
+            if (!chunk.objects.Contains(instance)) return;
+
+            // Remove from set
+            SpawnedObjectData spawnedObjectData = chunk.savedObjects.FirstOrDefault(x => x.instance == instance);
+            chunk.savedObjects.Remove(spawnedObjectData);
+
+            Destroy(instance);
+            chunk.objects.Remove(instance);
+        }
+
+        #endregion
+
+        #region Borders
 
         private void CreateWorldBorders()
         {
@@ -945,16 +1206,28 @@ namespace Game.Terrain
             float wallHeight = 50f;
 
             // Positive Z wall
-            CreateBorderWall(new Vector3(worldCenter.x, wallHeight / 2, terrainSize - borderOffset), new Vector3(innerSize, wallHeight, 1));
+            CreateBorderWall(
+                new Vector3(worldCenter.x, wallHeight / 2, terrainSize - borderOffset),
+                new Vector3(innerSize, wallHeight, 1)
+            );
 
             // Negative Z wall
-            CreateBorderWall(new Vector3(worldCenter.x, wallHeight / 2, borderOffset), new Vector3(innerSize, wallHeight, 1));
+            CreateBorderWall(
+                new Vector3(worldCenter.x, wallHeight / 2, borderOffset),
+                new Vector3(innerSize, wallHeight, 1)
+            );
 
             // Positive X wall
-            CreateBorderWall(new Vector3(terrainSize - borderOffset, wallHeight / 2, worldCenter.z), new Vector3(1, wallHeight, innerSize));
+            CreateBorderWall(
+                new Vector3(terrainSize - borderOffset, wallHeight / 2, worldCenter.z),
+                new Vector3(1, wallHeight, innerSize)
+            );
 
             // Negative X wall
-            CreateBorderWall(new Vector3(borderOffset, wallHeight / 2, worldCenter.z), new Vector3(1, wallHeight, innerSize));
+            CreateBorderWall(
+                new Vector3(borderOffset, wallHeight / 2, worldCenter.z),
+                new Vector3(1, wallHeight, innerSize)
+            );
         }
 
         private void CreateBorderWall(Vector3 position, Vector3 scale)
@@ -977,6 +1250,10 @@ namespace Game.Terrain
             return (Mathf.Abs(position.x - worldCenter.x) <= halfInner &&
                     Mathf.Abs(position.z - worldCenter.z) <= halfInner);
         }
+
+        #endregion
+
+        #region Voxel States
 
         public bool IsOccupied(Vector3Int pos) =>
             voxelStates.TryGetValue(pos, out VoxelState state) && state.HasFlag(VoxelState.Occupied);
@@ -1031,6 +1308,10 @@ namespace Game.Terrain
             }
         }
 
+        #endregion
+
+        #region Biome
+
         private BiomeData SelectBiome(Vector3 chunkPosition)
         {
             float biomeNoise = GenerateBiomeNoise(chunkPosition.x, chunkPosition.z);
@@ -1051,21 +1332,57 @@ namespace Game.Terrain
             return Mathf.PerlinNoise((x + seed) * scale, (z + seed) * scale) * 2f - 1f;
         }
 
+        #endregion
+
+        #region Position Calculations
+
+        private Vector3 CalculatePositionOffset(int x, int z, int seed)
+        {
+            float frequency = 0.35f;
+            float amplitude = voxelSize * 4f;
+
+            // Smooth base offset (clusters)
+            float noiseX = Mathf.PerlinNoise((x + seed) * frequency, (z + seed) * frequency);
+            float noiseZ = Mathf.PerlinNoise((x + seed + 1337) * frequency, (z + seed + 9999) * frequency);
+            float offsetX = (noiseX - 0.5f) * amplitude;
+            float offsetZ = (noiseZ - 0.5f) * amplitude;
+
+            // Add chaotic hash jitter (kills streaks)
+            int hash = x * 73856093 ^ z * 19349663 ^ seed;
+            System.Random rng = new(hash);
+            float jitterX = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
+            float jitterZ = (float)(rng.NextDouble() - 0.5) * voxelSize * chunkSize / 2f;
+
+            return new Vector3(offsetX + jitterX, 0f, offsetZ + jitterZ);
+        }
+
         public Vector3 GetDefaultSpawnPosition()
         {
             Vector3 defaultSpawn = GameManager.Instance.campFireInstance.transform.position + new Vector3(2, 0, 2);
-            float height = Utility.GetHeightAt((int)defaultSpawn.x, (int)defaultSpawn.z);
+            int spawnX = Mathf.FloorToInt(defaultSpawn.x);
+            int spawnZ = Mathf.FloorToInt(defaultSpawn.z);
+
+            float height = Utility.GetHeightAt(spawnX, spawnZ);
             defaultSpawn.y = height;
 
             return defaultSpawn;
         }
 
+        #endregion
+
+        #region Set Player
+
         public void SetPlayer(GameObject player)
         {
-            if (player != null)
-                playerTransform = player.transform;
+            UnityEngine.Debug.Log("Set Player called");
+            if (player == null) return;
+            playerTransform = player.transform;
         }
+
+        #endregion
     }
+
+    #region Terrain Burst
 
     [BurstCompile]
     public struct NoiseMapJob2D : IJobParallelFor
@@ -1313,4 +1630,6 @@ namespace Game.Terrain
             tri += 6;
         }
     }
+
+    #endregion
 }

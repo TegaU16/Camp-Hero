@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Inventory;
 using Game.Saving;
 using Game.Tutorial;
@@ -21,7 +22,10 @@ namespace Game.Smelting
 
         private void Awake()
         {
-            Instance = this;
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
         }
 
         public void TryUnlockRecipes(List<Item> discoveredItems)
@@ -39,6 +43,12 @@ namespace Game.Smelting
 
             unlockedRecipes.Add(recipe);
             furnaceUI.AddUnlockedRecipe(recipe);
+
+            string tutorialID = $"{recipe.resultItem.itemName}_smelting";
+            TutorialData smeltingRecipeTutorial = TutorialManager.Instance.GetTutorialData(tutorialID);
+
+            if (smeltingRecipeTutorial != null)
+                TutorialManager.Instance.ActivateTutorial(smeltingRecipeTutorial);
         }
 
         public void HighlightSpecificRecipes(SmeltingRecipeHighlightTutorial data)
@@ -46,7 +56,6 @@ namespace Game.Smelting
             if (Time.time - data.lastTriggered < data.cooldown) return;
 
             data.lastTriggered = Time.time;
-
             List<FurnaceItem> matches = new();
 
             // Find UI items matching the recipe(s)
@@ -100,13 +109,7 @@ namespace Game.Smelting
         }
 
         private List<FurnaceItem> GetUnlockedFurnaceItems()
-        {
-            List<FurnaceItem> items = new();
-            foreach (FurnaceItem item in furnaceUI.furnaceItemParent.transform.GetComponentsInChildren<FurnaceItem>())
-                items.Add(item);
-
-            return items;
-        }
+            => furnaceUI.furnaceItemParent.transform.GetComponentsInChildren<FurnaceItem>().ToList();
 
         private void AnimateRecipeHighlight(FurnaceItem item)
         {

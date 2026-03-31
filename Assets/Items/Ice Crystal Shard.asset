@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Ice Crystal Shard
   equippedPrefab: {fileID: 7423836066518595543, guid: f64bac7732c658f4887b22cb0c84ab80, type: 3}
   itemDrop: {fileID: 7838755196610609500, guid: c2c7a09f0945ad74a9520e1acf7f45c6, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

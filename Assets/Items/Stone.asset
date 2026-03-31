@@ -15,10 +15,11 @@ MonoBehaviour:
   itemTypes: 1
   actionType: 0
   maxStack: 20
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ce4e631952918dd4fb395b9b27b97605, type: 3}
   itemName: Stone
   equippedPrefab: {fileID: 4040467214724443855, guid: 290edec923b17fd4293a2b9ee402ae23, type: 3}
   itemDrop: {fileID: 4703379712838663912, guid: d6c00442f4a24554a94ab64ad01f331b, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 11400000, guid: fe3d6ed991e0ada418cd1f3f4dd182d4, type: 2}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

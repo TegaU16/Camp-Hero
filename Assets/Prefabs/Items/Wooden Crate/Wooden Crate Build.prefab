@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &7764935935896770175
+--- !u!1001 &8347095507277077980
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,67 +8,51 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.15
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.15
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.15
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -90
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-      propertyPath: m_ConstrainProportionsScale
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_Name
       value: Wooden Crate Build
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - target: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
@@ -76,51 +60,34 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -8259663833804451448}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+      addedObject: {fileID: 98324193285603338}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5533347837397351334}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+      addedObject: {fileID: 5937733823493676193}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3400036947727156519}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+      addedObject: {fileID: 1411224309377135264}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 918358421896733505}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
+      addedObject: {fileID: 2366533852390740527}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1792373571265464625}
-  m_SourcePrefab: {fileID: 100100000, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
---- !u!1 &7423042443656293166 stripped
+      addedObject: {fileID: 3057029765357466432}
+  m_SourcePrefab: {fileID: 100100000, guid: 2e84150f58883894182b5a687131f024, type: 3}
+--- !u!1 &9157998315979104397 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0d362a32f81f77c4faa61b1ebd2a775a, type: 3}
-  m_PrefabInstance: {fileID: 7764935935896770175}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e84150f58883894182b5a687131f024, type: 3}
+  m_PrefabInstance: {fileID: 8347095507277077980}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-8259663833804451448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7423042443656293166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e039c3fb1ef0f8a488cc74463ebabd37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chestName: Wooden Crate
-  maxSlots: 14
-  isOpen: 0
-  items: []
-  inventorySlots: []
---- !u!65 &5533347837397351334
+--- !u!65 &98324193285603338
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7423042443656293166}
+  m_GameObject: {fileID: 9157998315979104397}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -133,22 +100,65 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.3999999, y: 2.4000006, z: 2.0000005}
-  m_Center: {x: 0, y: 1.4210855e-14, z: 1.0000002}
---- !u!114 &3400036947727156519
+  m_Size: {x: 0.68000025, y: 0.34, z: 0.48000017}
+  m_Center: {x: 0.00082473474, y: 0.0069405586, z: -0.0010309222}
+--- !u!114 &5937733823493676193
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7423042443656293166}
+  m_GameObject: {fileID: 9157998315979104397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e039c3fb1ef0f8a488cc74463ebabd37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Storage.StorageUnit
+  chestName: Storage Chest
+  maxSlots: 16
+  items: []
+  inventorySlots: []
+  storageUnitIcon: {fileID: 0}
+--- !u!114 &1411224309377135264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157998315979104397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.AI.Enemies.Targetable
+  targetType: 2
+--- !u!114 &2366533852390740527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157998315979104397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabID
+  prefabKey: wooden_crate
+--- !u!114 &3057029765357466432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157998315979104397}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfec55e08befe0642b547dc4e31ccef2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreakableObject
   damagePopupPrefab: {fileID: 4004969092803386888, guid: 29bcf5f671faaa74ebdf152503ec5859, type: 3}
-  baseHealth: 50
+  baseHealth: 20
   expDropped: 0
   drops:
   - drop: {fileID: 11400000, guid: a12f5a7808ef6804ea15a32761bf90a3, type: 2}
@@ -160,29 +170,3 @@ MonoBehaviour:
   objectLevel: 0
   torsoBone: {fileID: 0}
   bounceCooldown: 0.2
---- !u!114 &918358421896733505
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7423042443656293166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 651bbb641466a124fbfb9b7c91335f33, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetType: 2
---- !u!114 &1792373571265464625
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7423042443656293166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prefabKey: wooden_crate

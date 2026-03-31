@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Adamantite Axe
   equippedPrefab: {fileID: 8419697881675228604, guid: 26e5f9e6899a029449ec581ac1bee47c, type: 3}
   itemDrop: {fileID: 1594266282575450657, guid: 111b3314de704e14c81d3cad55e4b0ae, type: 3}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 4
-  toolType: 0
+  toolType: 1
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 1392e31e79a279a4480ef92733410e09, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

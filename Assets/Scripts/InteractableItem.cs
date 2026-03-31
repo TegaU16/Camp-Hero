@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Game.Inventory;
 using Game.Players;
@@ -11,46 +12,115 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Item item;
     [HideInInspector] public int itemCount = 1;
-
-    private bool isInteracted = false;
-    private bool canPickup = true;
-    private bool isMerging = false;
+    [SerializeField] private float outlineWidth = 5f;
 
     public int maxItemCount = 100;
+
+    private bool isInteracted;
+    private bool canPickup = true;
 
     private Rigidbody rb;
 
     [HideInInspector] public VoxelChunk owningChunk;
+    [HideInInspector] public Vector2Int currentCell;
 
-    [HideInInspector] public Vector2Int CurrentCell;
+    private bool isSleeping;
+    private float sleepTimer;
+
+    private const float SleepDelay = 3f;
+    private const float SleepVelocityThreshold = 0.05f;
 
     private static readonly List<InteractableItem> mergeBuffer = new();
 
+    public Sprite ObjectIcon => item.icon;
+
     private void Start()
     {
-        if (!TryGetComponent(out Rigidbody rigidBody)) return;
+        if (!TryGetComponent(out Rigidbody rb)) return;
 
-        rb = rigidBody;
+        this.rb = rb;
         rb.linearDamping = 2f;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
     }
 
     private void OnEnable()
     {
+        StartCoroutine(RegisterNextFrame());
+    }
+
+    IEnumerator RegisterNextFrame()
+    {
+        yield return null;
+
         ItemGrid.Register(this);
         InteractableItemManager.Instance.Register(this);
+
+        foreach (InteractableItem nearby in ItemGrid.GetNearby(transform.position))
+            nearby.Wake();
     }
 
-    private void OnDisable() 
+    private void OnDisable()
     {
         ItemGrid.Unregister(this);
-        if (InteractableItemManager.HasInstance) 
-            InteractableItemManager.Instance.Unregister(this); 
+
+        if (InteractableItemManager.HasInstance)
+            InteractableItemManager.Instance.Unregister(this);
     }
 
-    private void Update()
+    public void ManagerUpdate(float deltaTime)
+    {
+        if (isSleeping) return;
+
+        UpdateGrid();
+        CheckGround();
+        CheckSleep(deltaTime);
+    }
+
+    private void UpdateGrid()
     {
         ItemGrid.UpdateItemCell(this);
+    }
+
+    private void CheckSleep(float dt)
+    {
+        if (rb == null) return;
+
+        if (rb.linearVelocity.sqrMagnitude < SleepVelocityThreshold)
+            sleepTimer += dt;
+        else
+            sleepTimer = 0f;
+
+        if (sleepTimer > SleepDelay)
+            Sleep();
+    }
+
+    private void Sleep()
+    {
+        if (isSleeping) return;
+
+        isSleeping = true;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        InteractableItemManager.Instance.Unregister(this);
+    }
+
+    public void Wake()
+    {
+        if (!isSleeping) return;
+
+        isSleeping = false;
+        sleepTimer = 0f;
+
+        if (rb != null)
+            rb.isKinematic = false;
+
+        InteractableItemManager.Instance.Register(this);
     }
 
     public void CheckGround()
@@ -58,6 +128,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         if (transform.position.y >= -0.1f) return;
 
         Vector3 origin = transform.position + Vector3.up * 100f;
+
         if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
         {
             Destroy(gameObject);
@@ -73,47 +144,28 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         transform.position = hit.point + Vector3.up * 0.25f;
     }
 
-    public void Interact()
-    {
-        if (isInteracted || !canPickup) return;
-        isInteracted = true;
-
-        bool added = InventoryManager.Instance.AddItem(item, itemCount);
-
-        itemCount = InventoryManager.Instance.LastRemainingCount;
-        InventoryManager.Instance.EquipSelectedItem();
-
-        if (!added) return;
-
-        foreach (Quest quest in QuestManager.Instance.GetActiveQuests())
-            quest.OnItemCollected(item);
-
-        DestroyInteractableItem(this);
-    }
-
     public void TryMergeNearby()
     {
-        if (rb == null) return;
-        if (isMerging) return;
+        if (isSleeping || rb == null) return;
 
-        isMerging = true;
         mergeBuffer.Clear();
 
         foreach (InteractableItem other in ItemGrid.GetNearby(transform.position))
         {
-            if (other == this || other.rb == null || other.item.itemName != item.itemName || other.isMerging) continue;
+            if (other == this) continue;
+            if (other.item != item) continue;
 
-            int totalItemCount = itemCount + other.itemCount;
+            int total = itemCount + other.itemCount;
 
-            if (totalItemCount <= maxItemCount)
+            if (total <= maxItemCount)
             {
-                itemCount = totalItemCount;
-                other.isMerging = true;   // mark so it won't be processed
+                itemCount = total;
                 mergeBuffer.Add(other);
             }
             else
             {
                 int transferable = maxItemCount - itemCount;
+
                 if (transferable > 0)
                 {
                     itemCount += transferable;
@@ -126,24 +178,38 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
         foreach (InteractableItem merged in mergeBuffer)
         {
-            merged.gameObject.SetActive(false); // triggers OnDisable -> unregister
+            merged.gameObject.SetActive(false);
             DestroyInteractableItem(merged);
         }
-
-        isMerging = false;
     }
 
     private void DestroyInteractableItem(InteractableItem interactable)
     {
-        // Notify interactor if needed
-        PlayerInteractor interactor = FindAnyObjectByType<PlayerInteractor>();
+        PlayerInteractor interactor = InteractableItemManager.Instance.PlayerInteractor;
+
         if (interactor != null && interactor.CurrentInteractable == interactable.GetComponent<IInteractable>())
             interactor.ClearInteractable();
 
         VoxelGrid.Instance.RemoveObjectFromChunk(interactable.owningChunk, interactable.gameObject);
-        interactable.owningChunk.isDirty = true;
 
         Destroy(interactable.gameObject);
+    }
+
+    public void Interact()
+    {
+        if (isInteracted || !canPickup) return;
+
+        isInteracted = true;
+
+        bool added = InventoryManager.Instance.AddItem(item, itemCount);
+        itemCount = InventoryManager.Instance.LastRemainingCount;
+
+        if (!added) return;
+
+        foreach (Quest quest in QuestManager.Instance.GetActiveQuests())
+            quest.OnItemCollected(item);
+
+        DestroyInteractableItem(this);
     }
 
     public void EnablePickupAfterDelay(float delay)
@@ -154,9 +220,24 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
     private void EnablePickup() => canPickup = true;
 
-    public string GetInteractText() => $"Press E to pick up {itemCount}x {item.itemName}";
-
     public Transform GetTransform() => transform;
+
+    public string GetInteractText()
+    {
+        IInteractable interactable = this;
+        return $"{item.itemName}\n({itemCount}x)\n{interactable.InteractKeyText}";
+    }
+
+    public void SetItem(Item newItem)
+    {
+        item = newItem;
+        if (item == null) return;
+        if (!TryGetComponent(out Outline outline)) return;
+        
+        Color outlineColor = InteractableItemManager.Instance.rarityColorConfig.GetColor(item.rarity);
+        outline.OutlineColor = outlineColor;
+        outline.OutlineWidth = outlineWidth;
+    }
 
     public string SaveState()
     {
@@ -170,6 +251,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
     public void LoadState(string json)
     {
         InteractableItemData data = JsonUtility.FromJson<InteractableItemData>(json);
+
         if (data == null) return;
 
         item = ItemRegistry.GetItemByName(data.itemName);

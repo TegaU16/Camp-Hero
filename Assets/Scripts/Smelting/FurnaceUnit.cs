@@ -1,37 +1,24 @@
-using System.Collections.Generic;
 using Game.Inventory;
-using Game.Registries;
+using Game.Saving;
+using Game.Storage;
 using UnityEngine;
 
 namespace Game.Smelting
 {
-    [System.Serializable]
-    public class FurnaceSlot
+    public class FurnaceUnit : StorageContainer, ISaveableObject, IInteractable
     {
-        public string itemName;
-        public int count;
+        private enum SlotIndex
+        {
+            Input,
+            Output,
+            Fuel
+        }
 
-        [System.NonSerialized]
-        public Item item;
-
-        public void SyncNameFromItem() => itemName = item != null ? item.name : null;
-
-        public void ResolveItemFromName() => item = ItemRegistry.GetItemByName(itemName);
-    }
-
-    public class FurnaceUnit : MonoBehaviour, ISaveableObject, IInteractable
-    {
         public FuelComponent fuel = new();
-        public FurnaceSlot inputData = new();
-        public FurnaceSlot outputData = new();
-        public FurnaceSlot fuelData = new();
-
-        [HideInInspector] public List<FurnaceSlot> furnaceSlots = new();
 
         [HideInInspector] public InventorySlot inputSlot;
         [HideInInspector] public InventorySlot outputSlot;
         [HideInInspector] public InventorySlot fuelSlot;
-        [HideInInspector] public List<InventorySlot> inventorySlots = new();
 
         [HideInInspector] public FurnaceItem selectedItem;
 
@@ -40,116 +27,137 @@ namespace Game.Smelting
         public float smeltDuration = 5f;
         private float smeltRate;
 
+        public Sprite furnaceIcon;
+        public Sprite ObjectIcon => furnaceIcon;
+
+        private int Input => (int)SlotIndex.Input;
+        private int Output => (int)SlotIndex.Output;
+        private int Fuel => (int)SlotIndex.Fuel;
+
+        public Item InputItem => GetItemFromSlot(Input);
+        public Item OutputItem => GetItemFromSlot(Output);
+        public Item FuelItem => GetItemFromSlot(Fuel);
+
+        private bool suppressSave;
+
+        private void Awake()
+        {
+            items = new ItemData[3];
+        }
+
         private void Start()
         {
-            smeltRate = 1.0f / smeltDuration;
-
-            furnaceSlots.Add(inputData);
-            furnaceSlots.Add(outputData);
-            furnaceSlots.Add(fuelData);
+            smeltRate = 1f / smeltDuration;
+            InventoryManager.Instance.OnInventoryItemChanged += SaveUI;
         }
 
         private void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
 
-            if (inputSlot != null)
-                SaveUI();
-
-            if (fuelData.item.fuelValue + fuel.currentFuel <= fuel.maxFuel && fuelData.item != null && fuelData.count > 0)
+            if (ShouldAddFuel())
             {
-                fuel.AddFuel(fuelData.item);
-                fuelData.count--;
+                fuel.AddFuel(FuelItem);
+                items[Fuel].count--;
 
-                if (fuelData.count <= 0)
-                    fuelData.item = null;
+                if (items[Fuel].count <= 0)
+                    items[Fuel] = null;
 
-                if (inputSlot != null)
-                    LoadUI();
+                RefreshSlot(fuelSlot, items[Fuel]);
             }
 
-            if (fuel.currentFuel <= 0 || inputData.item == null || inputData.count <= 0) return;
+            if (!ShouldConsumeFuel()) return;
 
             fuel.Consume(Time.deltaTime * fuel.fuelUseRate);
             smeltProgress += smeltRate * Time.deltaTime;
 
-            if (smeltProgress >= 1.0f)
+            if (smeltProgress >= 1f)
             {
                 SmeltItem();
                 smeltProgress = 0f;
             }
         }
 
+        private bool ShouldAddFuel()
+        {
+            return items[Fuel] != null &&
+                   items[Fuel].count > 0 &&
+                   FuelItem != null &&
+                   FuelItem.fuelValue + fuel.currentFuel <= fuel.maxFuel;
+        }
+
+        private bool ShouldConsumeFuel()
+        {
+            bool hasFuel = fuel.currentFuel > 0f;
+            if (!hasFuel) return false;
+
+            bool hasInput = InputItem != null && items[Input].count > 0;
+            if (!hasInput) return false;
+
+            if (OutputItem == null || items[Output].count == 0) return true;
+
+            string matchingOutputName = InputItem.output.itemName;
+            bool hasMatchingOutput = OutputItem.itemName == matchingOutputName && items[Output].count < OutputItem.maxStack;
+            if (!hasMatchingOutput) return false;
+
+            return true;
+        }
+
         private void SmeltItem()
         {
-            if (inputData.item == null) return;
+            if (items[Input] == null || InputItem == null) return;
 
-            SmeltingRecipe recipe = FurnaceManager.Instance.smeltingDatabase.GetRecipeByInput(inputData.item);
-            if (recipe != null)
-                recipe.hasBeenSmeltedBefore = true;
+            Item result = InputItem.output;
 
-            if (outputData.item == null)
-            {
-                outputData.item = inputData.item.output;
-                outputData.count = inputData.item.outputCount;
-            }
-            else if (outputData.item == inputData.item.output)
-            {
-                outputData.count += inputData.item.outputCount;
-            }
+            if (OutputItem != null && OutputItem != result) return;
 
-            inputData.count--;
-            if (inputData.count <= 0)
-                inputData.item = null;
+            if (items[Output] == null)
+                items[Output] = new ItemData();
 
-            if (inputSlot != null)
-                LoadUI();
+            items[Output].itemName = result.itemName;
+            items[Output].count += InputItem.outputCount;
+
+            items[Input].count--;
+
+            if (items[Input].count <= 0)
+                items[Input] = null;
+
+            suppressSave = true;
+
+            RefreshSlot(inputSlot, items[Input]);
+            RefreshSlot(outputSlot, items[Output]);
+
+            suppressSave = false;
         }
 
         public float GetFuelRatio() => fuel?.GetFuelRatio() ?? 0f;
 
         public void LoadUI()
         {
-            LoadSlot(inputData, inputSlot);
-            LoadSlot(outputData, outputSlot);
-            LoadSlot(fuelData, fuelSlot);
+            suppressSave = true;
+
+            RefreshSlot(inputSlot, items[Input]);
+            RefreshSlot(outputSlot, items[Output]);
+            RefreshSlot(fuelSlot, items[Fuel]);
+
+            suppressSave = false;
         }
 
-        public void SaveUI()
+        public void SaveUI(InventorySlot changedSlot = null)
         {
-            SaveSlot(inputSlot, ref inputData);
-            SaveSlot(outputSlot, ref outputData);
-            SaveSlot(fuelSlot, ref fuelData);
+            if (suppressSave) return;
+
+            if (changedSlot == inputSlot)
+                SaveSlot(inputSlot, Input);
+
+            else if (changedSlot == outputSlot)
+                SaveSlot(outputSlot, Output);
+
+            else if (changedSlot == fuelSlot)
+                SaveSlot(fuelSlot, Fuel);
         }
 
-        private void LoadSlot(FurnaceSlot data, InventorySlot slot)
-        {
-            slot.ClearSlot();
-
-            if (data.item != null && data.count > 0)
-                InventoryManager.Instance.SpawnNewItem(data.item, slot, data.count);
-        }
-
-        private void SaveSlot(InventorySlot slot, ref FurnaceSlot data)
-        {
-            InventoryItem item = slot.GetComponentInChildren<InventoryItem>();
-            if (item != null && item.item != null)
-            {
-                data.item = item.item;
-                data.count = item.count;
-            }
-            else
-            {
-                data.item = null;
-                data.count = 0;
-            }
-        }
-
-        public void Interact()
-        {
-            FurnaceManager.Instance.furnaceUI.Open(this);
-            InventoryManager.Instance.mainInventory.SetActive(true);
-        }
+        public void Interact() => FurnaceManager.Instance.furnaceUI.Open(this);
 
         public string GetInteractText() => "Use Furnace";
 
@@ -157,20 +165,29 @@ namespace Game.Smelting
 
         public string SaveState()
         {
-            inputData.SyncNameFromItem();
-            outputData.SyncNameFromItem();
-            fuelData.SyncNameFromItem();
+            FurnaceSaveData data = new()
+            {
+                input = items[Input],
+                output = items[Output],
+                fuel = items[Fuel],
+                smeltProgress = smeltProgress,
+                currentFuel = fuel.currentFuel
+            };
 
-            return JsonUtility.ToJson(this);
+            return JsonUtility.ToJson(data);
         }
 
         public void LoadState(string json)
         {
-            JsonUtility.FromJsonOverwrite(json, this);
+            FurnaceSaveData data = JsonUtility.FromJson<FurnaceSaveData>(json);
+            if (data == null) return;
 
-            inputData.ResolveItemFromName();
-            outputData.ResolveItemFromName();
-            fuelData.ResolveItemFromName();
+            items[Input] = data.input;
+            items[Output] = data.output;
+            items[Fuel] = data.fuel;
+
+            smeltProgress = data.smeltProgress;
+            fuel.currentFuel = data.currentFuel;
         }
     }
 }

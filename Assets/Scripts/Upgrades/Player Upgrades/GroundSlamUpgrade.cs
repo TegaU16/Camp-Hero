@@ -2,6 +2,7 @@ using Game.AI.Enemies;
 using Game.Players;
 using Game.StatusEffects;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Upgrades
 {
@@ -9,7 +10,7 @@ namespace Game.Upgrades
     public class GroundSlamUpgrade : ActiveUpgradeEffect
     {
         [Header("Slam Settings")]
-        public int damage = 50;
+        public int slamDamage = 50;
         public float radius = 5f;
         public StunEffect stun;
         public string slamAnimationTrigger = "Ground Slam";
@@ -62,7 +63,12 @@ namespace Game.Upgrades
                 Collider hit = hits[i];
                 if (!hit.TryGetComponent(out Enemy enemy) || !hit.TryGetComponent(out BreakableObject breakable)) continue;
 
-                breakable.TakeDamage(damage, crit: false);
+                DamageInfo slamDamageInfo = new
+                (
+                    damage: slamDamage
+                );
+
+                breakable.TakeDamage(slamDamageInfo);
 
                 if (stun != null)
                     stun.Apply(enemy);

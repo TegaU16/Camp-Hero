@@ -1,5 +1,6 @@
 using Game.Players;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Upgrades
 {
@@ -31,8 +32,14 @@ namespace Game.Upgrades
 
         private void OnThornsHit(int currentDamage, BreakableObject breakable)
         {
-            float thornsDamage = currentDamage * thornsDamageRatio;
-            breakable.TakeDamage((int)thornsDamage, crit: false);
+            int thornsDamage = (int)(currentDamage * thornsDamageRatio);
+
+            DamageInfo thornsDamageInfo = new
+            (
+                damage: thornsDamage
+            );
+
+            breakable.TakeDamage(thornsDamageInfo);
         }
     }
 }

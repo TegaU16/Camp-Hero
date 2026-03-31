@@ -14,11 +14,11 @@ namespace Game.Level
         private int maxExp = 100;
         private int currentExp = 0;
         private int maxLevelWithPointsGiven;
-        public GameObject expBar;
-        public TextMeshProUGUI levelText;
-        public PlayerStatsManager playerStatsManager;
-        public GameObject levelUpPopupPrefab;
-        public AudioClip levelUpSound;
+
+        [SerializeField] private GameObject expBar;
+        [SerializeField] private TextMeshProUGUI levelText;
+        [SerializeField] private GameObject levelUpPopupPrefab;
+        [SerializeField] private AudioClip levelUpSound;
         [SerializeField] private Canvas worldCanvas;
 
         public delegate void LevelUpDelegate(int newLevel);
@@ -92,7 +92,7 @@ namespace Game.Level
                 goldenPointsToAdd = 0;
             }
 
-            playerStatsManager.AddPoints(regularPointsToAdd, goldenPointsToAdd);
+            PlayerStatsManager.Instance.AddPoints(regularPointsToAdd, goldenPointsToAdd);
 
             if (GameManager.Instance.playerInstance.TryGetComponent(out Player player))
             {
@@ -137,7 +137,7 @@ namespace Game.Level
 
         private void UpdateMaxExp()
         {
-            maxExp = (int)Mathf.Round(100 * level * Mathf.Pow(1.3f, level - 1));
+            maxExp = MaxExpForLevel(level);
 
             if (expBar != null && expBar.TryGetComponent(out Slider expSlider))
                 expSlider.maxValue = maxExp;
@@ -175,11 +175,13 @@ namespace Game.Level
         public int GetTotalExp()
         {
             int sumMax = 0;
-            for (int i = 0; i < level - 1; i++)
-                sumMax += (int)Mathf.Round(100 * level * Mathf.Pow(1.3f, i));
+            for (int i = 0; i < level; i++)
+                sumMax += MaxExpForLevel(i);
 
             int totalExp = currentExp + sumMax;
             return totalExp;
         }
+
+        private int MaxExpForLevel(int level) => (int)Mathf.Round(100 * level * Mathf.Pow(1.05f, level - 1));
     }
 }

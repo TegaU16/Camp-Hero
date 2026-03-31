@@ -8,7 +8,6 @@ namespace Game.StatusEffects
     {
         public float tickSpeed = 1f;
         public float damagePerTick = 2f;
-        public bool noTimer;
 
         public override void Apply(Enemy target) => target.ApplyBurn(this);
 

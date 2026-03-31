@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Raw Beef
   equippedPrefab: {fileID: 6931524597629100174, guid: 8a3f747699da3334292eef5ad36a9619, type: 3}
   itemDrop: {fileID: 1672656946408486178, guid: d380fe42786ae984b808b2fd275a28b7, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,10 +30,13 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 5
   plantData: {fileID: 0}
   fuelValue: 0
   smeltRate: 0.01
-  output: {fileID: 0}
+  output: {fileID: 11400000, guid: 985f001b744027c47953a4f831952c61, type: 2}
   outputCount: 1

@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Iron Axe
   equippedPrefab: {fileID: 8142341619756156903, guid: 948de5810501e2942998b8be966b7ff2, type: 3}
   itemDrop: {fileID: 8706993344553825615, guid: 10251b8a21f05544d985b38051886b31, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 2
-  toolType: 0
+  toolType: 1
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

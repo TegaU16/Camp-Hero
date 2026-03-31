@@ -2,10 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using Game.Players;
+using Game.Registries;
 using Game.StatusEffects;
 using Game.Terrain.Structures.Trials;
 using UnityEngine;
 using Worlds;
+using static BreakableObject;
 
 namespace Game.AI.Enemies
 {
@@ -17,14 +19,14 @@ namespace Game.AI.Enemies
     public class Enemy : MonoBehaviour
     {
         // -------------------- ENUMS --------------------
-        public enum State { Idle, Chasing, Attacking, RangedAttacking, Dead }
+        public enum State { Idle, Chasing, Attacking, RangedAttacking, Staggered, Dead }
         public enum AttackType { Melee, Ranged, Mixed }
         public enum EnemyType { Regular, Elite, Blight, Boss }
 
         // -------------------- STATE --------------------
         [Header("State")]
         private State currentState = State.Idle;
-        public AttackType attackType = AttackType.Melee;
+        [SerializeField] private AttackType attackType = AttackType.Melee;
         public EnemyType enemyType = EnemyType.Regular;
 
         private bool isActive;
@@ -40,14 +42,18 @@ namespace Game.AI.Enemies
         // -------------------- COMBAT --------------------
         [Header("Combat Settings")]
         public float meleeAttackRange = 2f;
-        public float rangedAttackRange = 10f;
-        public float attackCooldown = 2f;
-        public int damage = 10;
-        public float knockbackForce = 5f;
+        [SerializeField] private float rangedAttackRange = 10f;
+        [SerializeField] private float attackCooldown = 2f;
+        [SerializeField] private int damage = 10;
+        [SerializeField] private float knockbackForce = 5f;
+        [SerializeField] private int poise;
+
+        private int poiseStack;
+        private bool pendingTargetReassign;
 
         [Header("Combat References")]
         public Sprite enemyIcon;
-        private BreakableObject breakableObject;
+        [HideInInspector] public BreakableObject breakableObject;
         [SerializeField] private List<MonoBehaviour> rangedAttackScripts = new();
 
         private IRangedAttackBehavior currentRangedAttack;
@@ -88,7 +94,7 @@ namespace Game.AI.Enemies
 
         // -------------------- SCORING --------------------
         [Header("Scoring Weights")]
-        public EnemyPersonality personality;
+        [SerializeField] private EnemyPersonality personality;
 
         // -------------------- REFERENCES --------------------
         private VoxelAgent agent;
@@ -101,6 +107,12 @@ namespace Game.AI.Enemies
         private readonly Dictionary<BurnEffect, Coroutine> activeBurns = new();
         private readonly Dictionary<SlowEffect, Coroutine> activeSlows = new();
         private readonly Dictionary<StunEffect, Coroutine> activeStuns = new();
+        private readonly Dictionary<PoisonEffect, Coroutine> activePoisons = new();
+
+        // -------------------- PARTICLE EFFECTS --------------------
+        [Header("Effects")]
+        [SerializeField] private ParticleEffectScaler particleEffectScaler;
+        [SerializeField] private ParticleSystem deathEffect;
 
         private void Awake()
         {
@@ -130,7 +142,6 @@ namespace Game.AI.Enemies
             else
             {
                 campfireTarget = GameObject.FindGameObjectWithTag("Campfire").transform;
-                currentTarget = campfireTarget;
             }
 
             currentState = State.Chasing;
@@ -139,22 +150,14 @@ namespace Game.AI.Enemies
             Init(myTransform.position);
         }
 
-        private void OnEnable()
-        {
-            if (EnemyManager.Instance != null)
-                EnemyManager.Instance.RegisterEnemy(this);
-        }
+        private void OnEnable() => EnemyManager.Instance.RegisterEnemy(this);
 
-        private void OnDisable()
-        {
-            if (EnemyManager.Instance != null)
-                EnemyManager.Instance.UnregisterEnemy(this);
-        }
+        private void OnDisable() => EnemyManager.Instance.UnregisterEnemy(this);
 
         private void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
-            if (currentState == State.Dead) return;
+            if (!GameManager.Instance.IsGameActive) return;
+            if (currentState == State.Dead || currentState == State.Staggered) return;
 
             ValidateTarget(EnemyManager.Instance.GetActiveTargets());
             float distanceToTarget = Vector3.Distance(myTransform.position, currentTarget.position);
@@ -175,23 +178,28 @@ namespace Game.AI.Enemies
             if (currentState != State.Idle) return;
 
             if (currentTarget == null)
-            {
                 AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
-                if (currentTarget == null)
-                    currentTarget = campfireTarget;
-            }
 
             SetChasing();
         }
 
         private void FixedUpdate()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (!isActive || currentState == State.Dead) return;
             if (!characterController.enabled) return;
 
-            agent.UpdateAgent();
+            if (currentState == State.Staggered)
+            {
+                if (!characterController.isGrounded)
+                    verticalVelocity += gravity * Time.fixedDeltaTime;
 
+                Vector3 enemyMove = Time.fixedDeltaTime * verticalVelocity * Vector3.up;
+                characterController.Move(enemyMove);
+                return;
+            }
+
+            agent.UpdateAgent();
             Vector3 move = Vector3.zero;
 
             if (agent.WantsToMove() && (currentState == State.Idle || currentState == State.Chasing))
@@ -203,15 +211,10 @@ namespace Game.AI.Enemies
             }
 
             // Apply vertical forces regardless of agent movement
-            if (characterController.isGrounded)
-            {
-                if (verticalVelocity < 0)
-                    verticalVelocity = 0f;
-            }
-            else
-            {
+            if (!characterController.isGrounded)
                 verticalVelocity += gravity * Time.fixedDeltaTime;
-            }
+            else if (verticalVelocity < 0f)
+                verticalVelocity = 0f;
 
             move.y = verticalVelocity;
 
@@ -223,6 +226,52 @@ namespace Game.AI.Enemies
             Vector3 displacement = moveSpeed * Time.fixedDeltaTime * move;
             characterController.Move(displacement);
         }
+
+        #region Stagger
+
+        // Called by animation event
+        private void ExitStagger()
+        {
+            currentState = State.Idle;
+
+            if (!pendingTargetReassign)
+            {
+                SetChasing();
+                return;
+            }
+
+            currentTarget = null;
+            AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
+
+            pendingTargetReassign = false;
+
+            SetChasing();
+        }
+
+        public void ApplyStagger(int poiseDamage)
+        {
+            if (currentState == State.Dead) return;
+
+            poiseStack += poiseDamage;
+            if (poiseStack < poise) return;
+
+            poiseStack -= poise;
+            currentState = State.Staggered;
+
+            // Stop movement immediately
+            agent.StopTracking();
+            agent.CancelPath();
+            verticalVelocity = 0f;
+            knockbackVelocity = Vector3.zero;
+
+            animator.SetTrigger("Stagger");
+
+            pendingTargetReassign = true;
+        }
+
+        #endregion
+
+        #region Chasing
 
         private void HandleChasing(float distanceToTarget)
         {
@@ -254,12 +303,18 @@ namespace Game.AI.Enemies
 
             if (ShouldResetPath(distanceToTarget))
             {
-                frozenPathTarget = new(-999, 0, -999); // reset frozen path
+                ResetFrozenPath();
                 TryRequestPath(GetTargetGridPosition(currentTarget.position));
             }
 
             HandleAttackTrigger(distanceToTarget);
         }
+
+        public void SetChasing() => currentState = State.Chasing;
+
+        #endregion
+
+        #region Combat
 
         private void HandleAttacking(float distanceToTarget)
         {
@@ -283,13 +338,12 @@ namespace Game.AI.Enemies
                 attackTimer = 0f;
             }
 
-            if (distanceToTarget > meleeAttackRange + 0.5f)
-            {
-                ResetMovement();
-                isAttacking = false;
-                SetChasing();
-                TryRequestPath(GetTargetGridPosition(currentTarget.position));
-            }
+            if (distanceToTarget <= meleeAttackRange + 0.5f) return;
+
+            ResetMovement();
+            isAttacking = false;
+            SetChasing();
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
         }
 
         private void HandleRangedAttacking(float distanceToTarget)
@@ -328,13 +382,12 @@ namespace Game.AI.Enemies
                 attackTimer = 0f;
             }
 
-            if (distanceToTarget > rangedAttackRange + 1f)
-            {
-                ResetMovement();
-                isAttacking = false;
-                SetChasing();
-                TryRequestPath(GetTargetGridPosition(currentTarget.position));
-            }
+            if (distanceToTarget <= rangedAttackRange + 1f) return;
+
+            ResetMovement();
+            isAttacking = false;
+            SetChasing();
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
         }
 
         private void HandleAttackTrigger(float distanceToTarget)
@@ -352,145 +405,9 @@ namespace Game.AI.Enemies
             }
         }
 
-        private void TryRequestPath(Vector3Int targetGrid)
-        {
-            Vector3Int from = GetTargetGridPosition(myTransform.position);
-
-            if (agent.CanWalkDirectly(from, targetGrid))
-            {
-                frozenPathTarget = new(-999, 0, -999);
-                agent.StartTracking(currentTarget);
-                return;
-            }
-
-            float timeSinceLast = Time.time - lastPathRequestTime;
-            float distToFrozen = Vector3Int.Distance(targetGrid, frozenPathTarget);
-
-            if (frozenPathTarget == new Vector3Int(-999, 0, -999) ||
-                distToFrozen >= minTargetMovementThreshold ||
-                timeSinceLast >= pathRequestCooldown)
-            {
-                frozenPathTarget = targetGrid;
-                agent.StopTracking();
-                agent.RequestPath(frozenPathTarget);
-                lastPathRequestTime = Time.time;
-            }
-        }
-
-        private Vector3Int GetTargetGridPosition(Vector3 worldPos)
-        {
-            int x = Mathf.RoundToInt(worldPos.x);
-            int z = Mathf.RoundToInt(worldPos.z);
-            float y = Utility.GetHeightAt(x, z);
-
-            return new Vector3Int(x, Mathf.RoundToInt(y), z);
-        }
-
-        private void ValidateTarget(List<Targetable> potentialTargets)
-        {
-            bool targetIsInvalid = currentTarget == null || !currentTarget.gameObject.activeInHierarchy;
-
-            if (targetIsInvalid)
-            {
-                nextTargetSwitchTime = 0f;
-                AssignBestTarget(potentialTargets);
-
-                if (campfireTarget == null)
-                {
-                    GameObject campfire = GameObject.FindGameObjectWithTag("Campfire");
-                    if (campfire != null)
-                        campfireTarget = campfire.transform;
-                }
-
-                if (currentTarget == null)
-                    currentTarget = campfireTarget;
-
-                frozenPathTarget = new(-999, 0, -999);
-
-                SetChasing();
-
-                TryRequestPath(GetTargetGridPosition(currentTarget.position));
-            }
-            else if (Time.time >= nextTargetSwitchTime)
-            {
-                nextTargetSwitchTime = 0f;
-                AssignBestTarget(potentialTargets);
-            }
-        }
-
-        public void Init(Vector3 spawnPos)
-        {
-            // Guard against reinitialization
-            if (isActive) return;
-            if (agent == null || characterController == null) return;
-
-            latestSpawnPos = spawnPos;
-
-            // Reset pathfinding state (no exceptions expected in normal conditions)
-            agent.CancelPath();
-            agent.Init(spawnPos);
-
-            // Temporarily disable CharacterController for safe repositioning
-            bool wasEnabled = characterController.enabled;
-            if (wasEnabled)
-                characterController.enabled = false;
-
-            myTransform.position = spawnPos;
-
-            if (wasEnabled)
-                characterController.enabled = true;
-
-            // Reset motion and animation state
-            ResetAnimatorPose();
-            verticalVelocity = 0f;
-            knockbackVelocity = Vector3.zero;
-
-            isActive = true;
-            justSpawned = true;
-            isAttacking = false;
-
-            // Target assignment
-            List<Targetable> activeTargets = EnemyManager.Instance != null ? EnemyManager.Instance.GetActiveTargets() : null;
-            if (activeTargets != null && activeTargets.Count > 0)
-                AssignBestTarget(activeTargets);
-            else
-                currentTarget = campfireTarget; // fallback
-
-            if (currentTarget == null) return; // No valid target found — don't chase or path
-
-            // Begin chasing and request initial path
-            SetChasing();
-            Vector3Int targetPos = GetTargetGridPosition(currentTarget.position);
-            TryRequestPath(targetPos);
-        }
-
-        public void ApplyKnockback(Vector3 dir, float strength)
-        {
-            knockbackVelocity = dir.normalized * strength;
-        }
-
-        public void OnAttacked(Transform attacker)
-        {
-            recentAttacker = attacker;
-            lastAttackedTime = Time.time;
-
-            nextTargetSwitchTime = 0f;
-            AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
-        }
-
-        private void OnAnimatorMove()
-        {
-            if (!justSpawned) return;
-
-            characterController.enabled = false;
-            myTransform.position = latestSpawnPos;
-            characterController.enabled = true;
-            justSpawned = false;
-        }
-
         private void BeginMeleeAttack()
         {
-            agent.StopPath();
+            agent.CancelPath();
             animator.SetFloat("Speed", 0f);
             currentState = State.Attacking;
 
@@ -500,7 +417,7 @@ namespace Game.AI.Enemies
 
         private void BeginRangedAttack()
         {
-            agent.StopPath();
+            agent.CancelPath();
             animator.SetFloat("Speed", 0f);
             currentState = State.RangedAttacking;
 
@@ -530,105 +447,15 @@ namespace Game.AI.Enemies
                 SetChasing();
         }
 
-        public void ResetMovement()
+        public void ApplyKnockback(Vector3 dir, float strength) => knockbackVelocity = dir.normalized * strength;
+
+        public void OnAttacked(Transform attacker)
         {
-            moveSpeed = cachedMoveSpeed;
-        }
+            recentAttacker = attacker;
+            lastAttackedTime = Time.time;
 
-        // ===== ENEMY STATUS EFFECTS =====
-        public void ApplySlow(SlowEffect slowEffect) 
-        {
-            if (activeSlows.ContainsKey(slowEffect)) return;
-
-            Coroutine routine = StartCoroutine(SlowRoutine(slowEffect));
-            activeSlows[slowEffect] = routine;
-        }
-
-        public void StopSlow(SlowEffect slowEffect)
-        {
-            if (!activeSlows.TryGetValue(slowEffect, out Coroutine routine)) return;
-
-            StopCoroutine(routine);
-            ModifySpeed(1f);
-            activeSlows.Remove(slowEffect);
-        }
-
-        public void ModifySpeed(float factor)
-        {
-            if (factor == 1f)
-                ResetMovement();
-            else
-                moveSpeed *= factor;
-
-            if (animator != null && animator.enabled)
-                animator.speed = factor;
-        }
-
-        private IEnumerator SlowRoutine(SlowEffect slowEffect)
-        {
-            ModifySpeed(slowEffect.slowFactor);
-
-            if (!slowEffect.noTimer)
-            {
-                yield return new WaitForSeconds(slowEffect.duration);
-                ModifySpeed(1f);
-            }
-        }
-
-        public void ApplyBurn(BurnEffect burnEffect)
-        {
-            if (activeBurns.ContainsKey(burnEffect)) return;
-
-            Coroutine routine = StartCoroutine(BurnRoutine(burnEffect));
-            activeBurns[burnEffect] = routine;
-        }
-
-        public void StopBurn(BurnEffect burnEffect)
-        {
-            if (!activeBurns.TryGetValue(burnEffect, out Coroutine routine)) return;
-
-            StopCoroutine(routine);
-            activeBurns.Remove(burnEffect);
-        }
-
-        private IEnumerator BurnRoutine(BurnEffect burnEffect)
-        {
-            float elapsed = 0f;
-
-            if (breakableObject.GetHealth() <= 0) yield break;
-
-            while (elapsed < burnEffect.duration)
-            {
-                breakableObject.TakeDamage(
-                    Mathf.RoundToInt(burnEffect.damagePerTick), 
-                    crit: false, 
-                    transform.position, 
-                    Vector3.zero
-                );
-
-                yield return new WaitForSeconds(burnEffect.tickSpeed);
-
-                if (!burnEffect.noTimer)
-                    elapsed += burnEffect.tickSpeed;
-            }
-
-            activeBurns.Remove(burnEffect);
-        }
-
-        public void ApplyStun(StunEffect stunEffect)
-        {
-            if (activeStuns.ContainsKey(stunEffect)) return;
-
-            Coroutine routine = StartCoroutine(StunRoutine(stunEffect));
-            activeStuns[stunEffect] = routine;
-        }
-
-        private IEnumerator StunRoutine(StunEffect stunEffect)
-        {
-            ModifySpeed(0f);
-            yield return new WaitForSeconds(stunEffect.duration);
-            ModifySpeed(1f);
-            activeStuns.Remove(stunEffect);
+            nextTargetSwitchTime = 0f;
+            AssignBestTarget(EnemyManager.Instance.GetActiveTargets());
         }
 
         public void DealDamage()
@@ -639,16 +466,18 @@ namespace Game.AI.Enemies
             float meleeAttackRangeBuffer = 0.5f;
             if (distance > meleeAttackRange + meleeAttackRangeBuffer) return;
 
-            float damageWithMultiplier = DifficultyManager.Instance.GetDamageMultiplier() * damage;
+            float poisonMult = GetPoisonDamageMult();
+
+            float damageWithMultiplier = DifficultyManager.Instance.GetDamageMultiplier() * damage * poisonMult;
             int finalDamage = (int)damageWithMultiplier;
 
             if (currentTarget.TryGetComponent(out Health targetHealth))
             {
                 targetHealth.TakeDamage(finalDamage);
+                Vector3 knockbackDir = (currentTarget.position - myTransform.position).normalized;
 
                 if (currentTarget.TryGetComponent(out CharacterController targetCC))
                 {
-                    Vector3 knockbackDir = (currentTarget.position - myTransform.position).normalized;
                     knockbackDir.y = 0.5f;
 
                     if (targetCC.enabled)
@@ -656,114 +485,151 @@ namespace Game.AI.Enemies
                 }
                 else if (currentTarget.TryGetComponent(out Rigidbody targetRb))
                 {
-                    Vector3 knockbackDir = (currentTarget.position - myTransform.position).normalized;
                     targetRb.AddForce(knockbackDir * knockbackForce, ForceMode.Impulse);
                 }
+
+                return;
             }
-            else if (currentTarget.GetComponentInParent<BreakableObject>() is BreakableObject targetBreakable)
+
+            BreakableObject targetBreakable = currentTarget.GetComponentInParent<BreakableObject>();
+            if (targetBreakable == null) return;
+
+            Vector3 targetHitPoint = targetBreakable.GetComponent<Collider>().ClosestPoint(transform.position);
+            Vector3 targetHitNormal = (targetHitPoint - transform.position).normalized;
+
+            DamageInfo attackDamageInfo = new
+            (
+                damage: finalDamage,
+                hitPoint: targetHitPoint,
+                hitNormal: targetHitNormal,
+                fromEnemy: true
+            );
+
+            targetBreakable.TakeDamage(attackDamageInfo);
+        }
+
+        private float GetPoisonDamageMult()
+        {
+            if (activePoisons.Count == 0) return 1f;
+
+            float finalMult = 1f;
+            foreach (PoisonEffect effect in activePoisons.Keys)
+                finalMult *= effect.attackDamageMult;
+
+            return finalMult;
+        }
+
+        #endregion
+
+        #region Pathfinding
+
+        private void TryRequestPath(Vector3Int targetGrid)
+        {
+            Vector3Int from = GetTargetGridPosition(myTransform.position);
+
+            if (agent.CanWalkDirectly(from, targetGrid))
             {
-                Vector3 hitPoint = targetBreakable.GetComponent<Collider>().ClosestPoint(transform.position);
-                Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                ResetFrozenPath();
+                agent.StartTracking(currentTarget);
+                return;
+            }
 
-                targetBreakable.TakeDamage(finalDamage, crit: false, hitPoint, hitNormal, fromEnemy: true);
+            float timeSinceLast = Time.time - lastPathRequestTime;
+            float distToFrozen = Vector3Int.Distance(targetGrid, frozenPathTarget);
+
+            if (frozenPathTarget == new Vector3Int(-999, 0, -999) ||
+                distToFrozen >= minTargetMovementThreshold ||
+                timeSinceLast >= pathRequestCooldown)
+            {
+                frozenPathTarget = targetGrid;
+                agent.StopTracking();
+                agent.RequestPath(frozenPathTarget);
+                lastPathRequestTime = Time.time;
             }
         }
 
-        public void Die()
+        private Vector3Int GetTargetGridPosition(Vector3 worldPos)
         {
-            if (currentState == State.Dead) return;
+            int x = Mathf.FloorToInt(worldPos.x);
+            int z = Mathf.FloorToInt(worldPos.z);
+            float y = Utility.GetHeightAt(x, z);
 
-            StopAllCoroutines();
-
-            currentState = State.Dead;
-            isActive = false;
-            animator.enabled = false;
-
-            if (ragdollController != null)
-                ragdollController.EnableRagdoll();
-
-            WorldSession.CurrentRunStats.totalEnemiesDefeated++;
-
-            if (enemyType == EnemyType.Elite)
-                WorldSession.CurrentRunStats.eliteEnemiesDefeated++;
-
-            if (enemyType == EnemyType.Blight)
-                WorldSession.CurrentRunStats.blightEnemiesDefeated++;
-
-            // Play a sound or spawn a death effect here
-
-            Invoke(nameof(Despawn), 5f);
+            return new Vector3Int(x, Mathf.RoundToInt(y), z);
         }
 
-        private void Despawn()
+        private void ResetFrozenPath() => frozenPathTarget = new(-999, 0, -999);
+
+        private bool ShouldResetPath(float distanceToTarget)
         {
-            EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
-            if (spawner != null && !TryGetComponent<TrialEnemyMarker>(out _))
-                spawner.DecreaseEnemyCount();
-
-            if (breakableObject != null)
-                breakableObject.DestroyObject();
-
-            EnemyPool.Instance.ReturnEnemy(this);
-            gameObject.SetActive(false);
+            return distanceToTarget > Mathf.Max(meleeAttackRange, rangedAttackRange)
+                    && currentTarget != null
+                    && !agent.HasPath
+                    && Time.time - lastPathRequestTime > 1f;
         }
 
-        public void SetChasing() => currentState = State.Chasing;
+        #endregion
+
+        #region Targeting
+
+        private void ValidateTarget(List<Targetable> potentialTargets)
+        {
+            if (Time.time >= nextTargetSwitchTime)
+            {
+                nextTargetSwitchTime = 0f;
+                AssignBestTarget(potentialTargets);
+                return;
+            }
+
+            if (currentTarget != null && currentTarget.gameObject.activeInHierarchy) return;
+
+            nextTargetSwitchTime = 0f;
+            AssignBestTarget(potentialTargets);
+
+            ResetFrozenPath();
+            SetChasing();
+            TryRequestPath(GetTargetGridPosition(currentTarget.position));
+        }
 
         public void AssignBestTarget(List<Targetable> potentialTargets)
         {
-            // Debug.Log($"{name} AssignBestTarget() called. CurrentState={currentState}, CurrentTarget={(currentTarget != null ? currentTarget.name : null)}");
-
             if (currentState == State.Attacking || currentState == State.RangedAttacking) return;
             if (Time.time < nextTargetSwitchTime) return;
 
             Transform bestTarget = null;
             float bestScore = float.MinValue;
 
-            foreach (Targetable t in potentialTargets)
+            foreach (Targetable target in potentialTargets)
             {
-                if (t == null || !t.gameObject.activeInHierarchy) continue;
-                if (blockedTargets.Contains(t.transform)) continue;
+                if (target == null || !target.gameObject.activeInHierarchy) continue;
+                if (blockedTargets.Contains(target.transform)) continue;
 
-                TargetScore ts = CreateTargetScore(t.transform);
+                TargetScore ts = CreateTargetScore(target.transform);
                 float score = personality.CalculateScore(ts);
 
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestTarget = t.transform;
-                }
+                if (score <= bestScore) continue;
+
+                bestScore = score;
+                bestTarget = target.transform;
             }
 
-            /*if (bestTarget != null)
-                Debug.Log($"{name} picked BEST target: {bestTarget.name} with score {bestScore}");
-            else
-                Debug.Log($"{name} found no valid targets. Falling back to campfire: {(campfireTarget != null ? campfireTarget.name : null)}");*/
-
-            bool bestTargetAvailable = bestTarget != null && bestTarget != currentTarget;
-            bool campfireTargetAvailable = campfireTarget != null && campfireTarget != currentTarget;
-
-            if (bestTargetAvailable)
+            if (bestTarget != null)
                 currentTarget = bestTarget;
-            else if (campfireTargetAvailable)
+            else if (campfireTarget != null)
                 currentTarget = campfireTarget;
 
-            frozenPathTarget = new(-999, 0, -999);
+            ResetFrozenPath();
             SetChasing();
             agent.StartTracking(currentTarget);
             nextTargetSwitchTime = Time.time + targetStickTime;
             TryRequestPath(GetTargetGridPosition(currentTarget.position));
-
-            // Debug.Log($"{name} chasing target: {(currentTarget != null ? currentTarget.name : null)} at {(currentTarget != null ? currentTarget.position : null)}");
         }
 
         private int GetTargetPriority(Targetable.TargetType type)
         {
-            if (preferredTargets != null && preferredTargets.Count > 0)
-            {
-                int index = preferredTargets.IndexOf(type);
-                if (index >= 0) return index;
-            }
+            if (preferredTargets == null || preferredTargets.Count <= 0) return int.MinValue;
+
+            int index = preferredTargets.IndexOf(type);
+            if (index >= 0) return index;
 
             return int.MinValue;
         }
@@ -806,23 +672,275 @@ namespace Game.AI.Enemies
             };
         }
 
-        public State GetCurrentState()
+        #endregion
+
+        #region Init
+
+        public void Init(Vector3 spawnPos)
         {
-            return currentState;
+            // Guard against reinitialization
+            if (isActive) return;
+            if (agent == null || characterController == null) return;
+
+            latestSpawnPos = spawnPos;
+
+            // Reset pathfinding state (no exceptions expected in normal conditions)
+            agent.CancelPath();
+            agent.Init(spawnPos);
+
+            // Temporarily disable CharacterController for safe repositioning
+            bool wasEnabled = characterController.enabled;
+            if (wasEnabled)
+                characterController.enabled = false;
+
+            myTransform.position = spawnPos;
+
+            if (wasEnabled)
+                characterController.enabled = true;
+
+            // Reset motion and animation state
+            ResetAnimatorPose();
+            verticalVelocity = 0f;
+            knockbackVelocity = Vector3.zero;
+
+            isActive = true;
+            justSpawned = true;
+            isAttacking = false;
+            poiseStack = 0;
+
+            // Target assignment
+            List<Targetable> activeTargets = EnemyManager.Instance != null ? EnemyManager.Instance.GetActiveTargets() : null;
+            if (activeTargets != null && activeTargets.Count > 0)
+                AssignBestTarget(activeTargets);
+            else
+                currentTarget = campfireTarget; // fallback
+
+            if (currentTarget == null) return; // No valid target found — don't chase or path
+
+            // Begin chasing and request initial path
+            SetChasing();
+            Vector3Int targetPos = GetTargetGridPosition(currentTarget.position);
+            TryRequestPath(targetPos);
         }
+
+        #endregion
+
+        private void OnAnimatorMove()
+        {
+            if (!justSpawned) return;
+
+            characterController.enabled = false;
+            myTransform.position = latestSpawnPos;
+            characterController.enabled = true;
+            justSpawned = false;
+        }
+
+        public void ResetMovement() => moveSpeed = cachedMoveSpeed;
+
+        #region Status Effects
+
+        public void ModifySpeed(float factor)
+        {
+            if (factor == 1f)
+                ResetMovement();
+            else
+                moveSpeed *= factor;
+
+            if (animator != null && animator.enabled)
+                animator.speed = factor;
+        }
+
+        private void ApplyStatusEffect<T>(
+            T statusEffect,
+            Dictionary<T, Coroutine> effectsDict,
+            Func<T, IEnumerator> enumerator)
+            where T : StatusEffect
+        {
+            if (statusEffect == null) return;
+            if (effectsDict.ContainsKey(statusEffect)) return;
+
+            Coroutine routine = StartCoroutine(enumerator(statusEffect));
+            effectsDict.Add(statusEffect, routine);
+        }
+
+        private void StopStatusEffect<T>(
+            T statusEffect,
+            Dictionary<T, Coroutine> effectsDict)
+            where T : StatusEffect
+        {
+            if (statusEffect == null) return;
+            if (!effectsDict.TryGetValue(statusEffect, out Coroutine routine)) return;
+
+            StopCoroutine(routine);
+            EffectsPool.Instance.ReturnParticleSystem(statusEffect.particleSystem);
+            effectsDict.Remove(statusEffect);
+        }
+
+        private IEnumerator ApplyDamageOverTime<T>(
+            T statusEffect,
+            Dictionary<T, Coroutine> effectsDict,
+            float damagePerTick,
+            float tickSpeed)
+            where T : StatusEffect
+        {
+            float elapsed = 0f;
+            if (breakableObject.GetHealth() <= 0) yield break;
+
+            PlayEffect(statusEffect.particleSystem);
+
+            while (elapsed < statusEffect.duration)
+            {
+                DamageInfo effectDamageInfo = new
+                (
+                    damage: Mathf.RoundToInt(damagePerTick),
+                    hitPoint: transform.position,
+                    hitNormal: Vector3.zero
+                );
+
+                breakableObject.TakeDamage(effectDamageInfo);
+
+                yield return new WaitForSeconds(tickSpeed);
+
+                if (!statusEffect.noTimer)
+                    elapsed += tickSpeed;
+            }
+
+            StopStatusEffect(statusEffect, effectsDict);
+        }
+
+        private IEnumerator ModifySpeedOverTime<T>(
+            T statusEffect,
+            Dictionary<T, Coroutine> effectsDict,
+            float speedFactor)
+            where T : StatusEffect
+        {
+            ModifySpeed(speedFactor);
+            PlayEffect(statusEffect.particleSystem);
+
+            if (statusEffect.noTimer) yield break;
+
+            yield return new WaitForSeconds(statusEffect.duration);
+
+            StopStatusEffect(statusEffect, effectsDict);
+        }
+
+        public void ApplySlow(SlowEffect slowEffect) => ApplyStatusEffect(slowEffect, activeSlows, SlowRoutine);
+
+        public void StopSlow(SlowEffect slowEffect)
+        {
+            StopStatusEffect(slowEffect, activeSlows);
+            ModifySpeed(1f);
+        }
+
+        private IEnumerator SlowRoutine(SlowEffect slowEffect)
+        {
+            yield return ModifySpeedOverTime(slowEffect, activeSlows, slowEffect.slowFactor);
+        }
+
+        public void ApplyBurn(BurnEffect burnEffect) => ApplyStatusEffect(burnEffect, activeBurns, BurnRoutine);
+
+        public void StopBurn(BurnEffect burnEffect) => StopStatusEffect(burnEffect, activeBurns);
+
+        private IEnumerator BurnRoutine(BurnEffect burnEffect)
+        {
+            yield return ApplyDamageOverTime(burnEffect, activeBurns, burnEffect.damagePerTick, burnEffect.tickSpeed);
+        }
+
+        public void ApplyStun(StunEffect stunEffect) => ApplyStatusEffect(stunEffect, activeStuns, StunRoutine);
+
+        public void StopStun(StunEffect stunEffect) => StopStatusEffect(stunEffect, activeStuns);
+
+        private IEnumerator StunRoutine(StunEffect stunEffect)
+        {
+            yield return ModifySpeedOverTime(stunEffect, activeStuns, speedFactor: 0f);
+        }
+
+        public void ApplyPoison(PoisonEffect poisonEffect) => ApplyStatusEffect(poisonEffect, activePoisons, PoisonRoutine);
+
+        public void StopPoison(PoisonEffect poisonEffect) => StopStatusEffect(poisonEffect, activePoisons);
+
+        private IEnumerator PoisonRoutine(PoisonEffect poisonEffect)
+        {
+            yield return ApplyDamageOverTime(poisonEffect, activePoisons, poisonEffect.damagePerTick, poisonEffect.tickSpeed);
+        }
+
+        private void PlayEffect(ParticleSystem effect, bool persistent = false)
+        {
+            if (effect == null) return;
+            if (particleEffectScaler == null) return;
+            if (!effect.TryGetComponent(out PrefabID prefabID)) return;
+
+            GameObject effectPrefab = PrefabRegistry.GetPrefabByKey(prefabID.prefabKey);
+            ParticleSystem particleSystem = EffectsPool.Instance.GetParticleSystem(effectPrefab);
+            if (particleSystem == null) return;
+
+            if (persistent)
+            {
+                particleSystem.transform.SetParent(null);
+                StartCoroutine(ReturnEffectAfterDelay(particleSystem, particleSystem.totalTime));
+            }
+
+            particleEffectScaler.ApplyTo(particleSystem);
+            particleSystem.Play();
+        }
+
+        private IEnumerator ReturnEffectAfterDelay(ParticleSystem effect, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            EffectsPool.Instance.ReturnParticleSystem(effect);
+        }
+
+        #endregion
+
+        #region Death
+
+        public void Die()
+        {
+            if (currentState == State.Dead) return;
+
+            StopAllCoroutines();
+
+            currentState = State.Dead;
+            isActive = false;
+            animator.enabled = false;
+
+            if (ragdollController != null)
+                ragdollController.EnableRagdoll();
+
+            WorldSession.CurrentRunStats.totalEnemiesDefeated++;
+
+            if (enemyType == EnemyType.Elite)
+                WorldSession.CurrentRunStats.eliteEnemiesDefeated++;
+
+            if (enemyType == EnemyType.Blight)
+                WorldSession.CurrentRunStats.blightEnemiesDefeated++;
+
+            Invoke(nameof(Despawn), 5f);
+        }
+
+        private void Despawn()
+        {
+            EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
+            if (spawner != null && !TryGetComponent<TrialEnemyMarker>(out _))
+                spawner.DecreaseEnemyCount();
+
+            PlayEffect(deathEffect, persistent: true);
+
+            if (breakableObject != null)
+                breakableObject.DestroyObject();
+
+            EnemyPool.Instance.ReturnEnemy(this);
+            gameObject.SetActive(false);
+        }
+
+        #endregion
+
+        public State GetCurrentState() => currentState;
 
         public void ResetAnimatorPose()
         {
             animator.Rebind();
             animator.Update(0f);
-        }
-
-        private bool ShouldResetPath(float distanceToTarget)
-        {
-            return distanceToTarget > Mathf.Max(meleeAttackRange, rangedAttackRange)
-                    && currentTarget != null
-                    && !agent.HasPath
-                    && Time.time - lastPathRequestTime > 1f;
         }
     }
 }

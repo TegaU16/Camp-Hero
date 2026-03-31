@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.WindowsRuntime;
 using Game.Players;
 using UnityEngine;
 
@@ -6,7 +5,10 @@ public class BlessingAltar : MonoBehaviour, IInteractable
 {
     private bool hasBeenUsed = false;
 
-    public string GetInteractText() => throw new System.NotImplementedException();
+    public Sprite altarIcon;
+    public Sprite ObjectIcon => altarIcon;
+
+    public string GetInteractText() => "";
 
     public Transform GetTransform() => transform;
 

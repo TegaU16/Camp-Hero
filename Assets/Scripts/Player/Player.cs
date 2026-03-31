@@ -1,10 +1,8 @@
 using System.Collections.Generic;
-using System.Linq;
 using DG.Tweening;
 using Game.Inventory;
 using Game.Level;
 using Game.Saving;
-using Game.Terrain.Structures.Trials;
 using Game.Upgrades;
 using UnityEngine;
 using Worlds;
@@ -16,10 +14,10 @@ namespace Game.Players
     public class Player : MonoBehaviour
     {
         [Header("Movement")]
-        public float speed = 6f;
-        public float sprintSpeed = 10f;
-        public float gravity = -9.8f;
-        public float jumpHeight = 3f;
+        [SerializeField] private float speed = 6f;
+        [SerializeField] private float sprintSpeed = 10f;
+        [SerializeField] private float gravity = -9.8f;
+        [SerializeField] private float jumpHeight = 3f;
         private Vector3 velocity;
         private float currentSpeed;
         public float CurrentSpeed => currentSpeed;
@@ -29,10 +27,10 @@ namespace Game.Players
         [HideInInspector] public HealthBar healthBar;
         [HideInInspector] public StaminaBar staminaBar;
         private float buffer = 0f;
-        public float bufferCooldown = 5f;
-        public float jumpDecrease = 5f;
+        [SerializeField] private float bufferCooldown = 5f;
+        [SerializeField] private float jumpDecrease = 5f;
         public PlayerAttributes playerAttributes;
-        public PlayerCombat playerCombat;
+        [SerializeField] private PlayerCombat playerCombat;
         public float CurrentStamina => staminaBar.GetStamina();
 
         [Header("Body Settings")]
@@ -61,12 +59,24 @@ namespace Game.Players
         private bool uiBound = false;
 
         private readonly List<ActiveUpgradeEffect> activeUpgrades = new();
-        private readonly List<UpgradeEffect> unlockedActiveAbilities = new();
 
-        private void Awake()
-        {
-            animator = GetComponent<Animator>();
-        }
+        [HideInInspector] public readonly MultiplierStat damageMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat attackSpeedMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat knockbackForceMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat poiseDamageMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat critChanceMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat critFactorMultiplier = new();
+        [HideInInspector] public readonly MultiplierStat resourceDropMultiplier = new();
+
+        public float TotalDamageMultiplier => damageMultiplier.Total;
+        public float TotalAttackSpeedMultiplier => attackSpeedMultiplier.Total;
+        public float TotalKnockbackForceMultiplier => knockbackForceMultiplier.Total;
+        public float TotalPoiseDamageMultiplier => poiseDamageMultiplier.Total;
+        public float TotalCritChanceMultiplier => critChanceMultiplier.Total;
+        public float TotalCritFactorMultiplier => critFactorMultiplier.Total;
+        public float TotalResourceDropMultiplier => resourceDropMultiplier.Total;
+
+        private void Awake() => animator = GetComponent<Animator>();
 
         private void Start()
         {
@@ -84,7 +94,7 @@ namespace Game.Players
         // Update is called once per frame
         private void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (!uiBound) return;
 
             // Capture input every frame for responsiveness
@@ -114,7 +124,7 @@ namespace Game.Players
 
         private void FixedUpdate()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (!uiBound) return;
             if (controller == null || !controller.enabled || cam == null) return;
 
@@ -153,7 +163,7 @@ namespace Game.Players
                 }
                 else if (buffer >= bufferCooldown)
                 {
-                    staminaBar.IncreaseStamina();
+                    staminaBar.IncreaseStamina(playerAttributes.StaminaRegenRate);
                 }
                 else
                 {
@@ -166,7 +176,7 @@ namespace Game.Players
                     proceduralAnimator.SetMovementSpeed(0f);
 
                 if (buffer >= bufferCooldown)
-                    staminaBar.IncreaseStamina();
+                    staminaBar.IncreaseStamina(playerAttributes.StaminaRegenRate);
                 else
                     buffer += Time.fixedDeltaTime;
             }
@@ -257,21 +267,20 @@ namespace Game.Players
         // Called by animation event for the ground slam upgrade
         private void OnSlamImpact()
         {
-            (GroundSlamUpgrade upgrade, bool unlocked) = HasGroundSlam();
-
-            if (!unlocked) return;
+            GroundSlamUpgrade upgrade = GetGroundSlam();
+            if (upgrade == null) return;
 
             upgrade.OnSlamImpact();
         }
 
-        private (GroundSlamUpgrade, bool) HasGroundSlam()
+        private GroundSlamUpgrade GetGroundSlam()
         {
             foreach (ActiveUpgradeEffect activeUpgrade in activeUpgrades)
             {
-                if (activeUpgrade is GroundSlamUpgrade groundSlam) return (groundSlam, true);
+                if (activeUpgrade is GroundSlamUpgrade groundSlam) return groundSlam;
             }
 
-            return (null, false);
+            return null;
         }
 
         // Called by animation event
@@ -297,29 +306,25 @@ namespace Game.Players
 
             int currentHealth = health.GetHealth();
             currentHealth += health.maxHealth - oldMaxHealth;
-
-            int currentStamina = (int)staminaBar.GetStamina();
-            currentStamina += (int)staminaBar.maxStamina - oldMaxStamina;
-
             currentHealth = Mathf.Clamp(currentHealth, 0, health.maxHealth);
-            currentStamina = Mathf.Clamp(currentStamina, 0, (int)staminaBar.maxStamina);
 
             health.SetHealth(currentHealth);
             health.healthBar.Initialize(health.maxHealth, currentHealth);
 
+            float currentStamina = staminaBar.GetStamina();
+            currentStamina += staminaBar.maxStamina - oldMaxStamina;
+            currentStamina = Mathf.Clamp(currentStamina, 0, staminaBar.maxStamina);
+
             staminaBar.SetNewStamina(currentStamina);
             staminaBar.Initialize(staminaBar.maxStamina, currentStamina);
 
-            staminaBar.incrementRate = playerAttributes.StaminaRegenRate;
+            if (playerCombat == null) return;
 
-            if (playerCombat != null)
-            {
-                float meleeMult = playerAttributes.MeleeDamageMultiplier;
-                float critMult = playerAttributes.CritChanceMultiplier;
+            float meleeMult = playerAttributes.MeleeDamageMultiplier;
+            float critMult = playerAttributes.CritChanceMultiplier;
 
-                playerCombat.SetDamageMultiplierSource(this, meleeMult);
-                playerCombat.critChanceMultiplier = critMult;
-            }
+            Utility.SetMultiplierSource(this, meleeMult, damageMultiplier);
+            Utility.SetMultiplierSource(this, critMult, critChanceMultiplier);
         }
 
         public void SavePlayer()

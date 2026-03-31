@@ -55,6 +55,9 @@ namespace Game.Terrain.Structures.Trials
 
         private GameObject barrierRoot;
 
+        public Sprite trialAltarIcon;
+        public Sprite ObjectIcon => trialAltarIcon;
+
         private void Start()
         {
             GenerateWaves();

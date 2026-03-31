@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: Yellow Gem Guardian
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 06489b2ea414ef5499c2163ea27b9765, type: 2}
   m_sharedMaterial: {fileID: -2197837410598498285, guid: 06489b2ea414ef5499c2163ea27b9765, type: 2}
@@ -103,6 +103,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 20
   m_lineSpacingMax: 0
@@ -201,7 +202,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: 1000
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 06489b2ea414ef5499c2163ea27b9765, type: 2}
   m_sharedMaterial: {fileID: -2197837410598498285, guid: 06489b2ea414ef5499c2163ea27b9765, type: 2}
@@ -239,6 +240,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

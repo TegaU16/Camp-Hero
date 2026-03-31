@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Iron Sword
   equippedPrefab: {fileID: 2905248897025389340, guid: 4139b1164ed0ec742a1062552e2f0dc0, type: 3}
   itemDrop: {fileID: 9175304881291783079, guid: 25cba4e89c9dadf41a7509aae3ee9609, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 2
-  toolType: 2
+  toolType: 4
+  toolAttribute: {fileID: 11400000, guid: 4103c89a7426efd469a04b38058f20c7, type: 2}
+  itemsToPair:
+  - {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

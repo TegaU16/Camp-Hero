@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Stone Pickaxe
   equippedPrefab: {fileID: 8888418256296920343, guid: 106b82082b0a6fd42bcd0a54269170c0, type: 3}
   itemDrop: {fileID: 8414669205607405416, guid: 32320e9d6f7aa854a9352b7321f617e5, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 1
-  toolType: 1
+  toolType: 2
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 1b528fed20e0990478f549f2c481aca0, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

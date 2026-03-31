@@ -1,5 +1,6 @@
 using Game.AI.Enemies;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Defenses
 {
@@ -14,7 +15,7 @@ namespace Game.Defenses
 
         protected override void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             pulseTimer -= Time.deltaTime;
 
             if (pulseTimer <= 0f && HasEnemiesInRange())
@@ -41,11 +42,20 @@ namespace Game.Defenses
                 Collider hit = hits[i];
                 if (!hit.TryGetComponent(out Enemy enemy)) continue;
 
-                Vector3 hitPoint = hit.ClosestPoint(transform.position);
-                Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                Vector3 targetHitPoint = hit.ClosestPoint(transform.position);
+                Vector3 targetHitNormal = (targetHitPoint - transform.position).normalized;
 
-                if (enemy.TryGetComponent(out BreakableObject breakable))
-                    breakable.TakeDamage(pulseDamage, crit: false, hitPoint, hitNormal);
+                if (enemy.breakableObject != null)
+                {
+                    DamageInfo attackDamageInfo = new
+                    (
+                        damage: pulseDamage,
+                        hitPoint: targetHitPoint,
+                        hitNormal: targetHitNormal
+                    );
+
+                    enemy.breakableObject.TakeDamage(attackDamageInfo);
+                }
 
                 enemy.OnAttacked(transform);
             }

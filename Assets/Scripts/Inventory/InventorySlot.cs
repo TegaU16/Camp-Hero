@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using Game.Smelting;
 
 namespace Game.Inventory
 {
@@ -13,7 +12,8 @@ namespace Game.Inventory
         Weapon,
         Crafting,
         Smelting,
-        Fuel
+        Fuel,
+        Reforge
     }
 
     public class InventorySlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -22,115 +22,71 @@ namespace Game.Inventory
         public SlotType slotType;
         private Coroutine followCoroutine;
 
-        [HideInInspector] public FurnaceUnit parentFurnace;
-
         private void Awake()
         {
             if (TryGetComponent(out SelectableImage selectableImage))
                 selectableImage.Deselect();
         }
 
-        private void Start()
-        {
-            image.raycastTarget = true;
-        }
+        private void Start() => image.raycastTarget = true;
 
-        // --- Left click pick / place
+        #region Click Handlers
+
         public void HandleLeftClick()
         {
-            if (parentFurnace != null)
-                parentFurnace.SaveUI();
-
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
                 QuickTransfer();
-                UpdateInventorySlot();
                 return;
             }
 
             if (InventoryItem.selectedItem != null)
             {
                 OnSecondClick(this);
-                UpdateInventorySlot();
                 return;
             }
 
-            if (transform.childCount > 0)
-            {
-                InventoryItem selectedItem = GetComponentInChildren<InventoryItem>();
-                if (selectedItem == null) return;
+            if (transform.childCount == 0) return;
 
-                selectedItem.originalParentSlot = transform;
-                InventoryItem.selectedItem = selectedItem;
-                selectedItem.isBeingDragged = true;
-                selectedItem.transform.SetParent(transform.root, true); // keep position
-                selectedItem.GetComponent<Image>().raycastTarget = false;
+            InventoryItem selectedItem = GetComponentInChildren<InventoryItem>(this);
+            if (selectedItem == null) return;
 
-                selectedItem.EnableDragLayering();
-                StartFollowCursor(selectedItem);
-            }
-
-            UpdateInventorySlot();
+            PickUpItem(selectedItem);
         }
 
-        // --- Right click split / pick
         public void HandleRightClick()
         {
-            if (parentFurnace != null)
-                parentFurnace.SaveUI();
-
             if (InventoryItem.selectedItem != null)
             {
                 OnSecondClick(this);
-                UpdateInventorySlot();
                 return;
             }
 
-            if (transform.childCount > 0)
+            if (transform.childCount == 0) return;
+
+            InventoryItem originalItem = GetComponentInChildren<InventoryItem>(this);
+            if (originalItem == null) return;
+
+            if (originalItem.count <= 1)
             {
-                InventoryItem originalItem = GetComponentInChildren<InventoryItem>();
-                if (originalItem == null) return;
-
-                if (originalItem.count > 1)
-                {
-                    int splitCount = originalItem.count / 2;
-
-                    // Reduce original count and refresh
-                    originalItem.count -= splitCount;
-                    originalItem.RefreshCount();
-
-                    // Instantiate the split item directly under the UI root to avoid a single-frame race
-                    GameObject splitItemGo = Instantiate(InventoryManager.Instance.inventoryItemPrefab, transform);
-                    splitItemGo.name = "SplitItem_" + originalItem.item.name;
-
-                    InventoryItem splitItem = splitItemGo.GetComponent<InventoryItem>();
-                    splitItem.SetItem(originalItem.item, splitCount);
-
-                    // store the slot the split came from so RevertToOriginalSlot can work
-                    splitItem.originalParentSlot = transform;
-
-                    // mark as the currently selected (being dragged) item
-                    InventoryItem.selectedItem = splitItem;
-                    splitItem.isBeingDragged = true;
-                    splitItem.GetComponent<Image>().raycastTarget = false;
-
-                    splitItem.EnableDragLayering();
-                    StartFollowCursor(InventoryItem.selectedItem);
-                }
-                else
-                {
-                    InventoryItem.selectedItem = originalItem;
-                    originalItem.originalParentSlot = transform;
-                    originalItem.isBeingDragged = true;
-                    originalItem.transform.SetParent(transform.root);
-                    originalItem.GetComponent<Image>().raycastTarget = false;
-
-                    InventoryItem.selectedItem.EnableDragLayering();
-                    StartFollowCursor(InventoryItem.selectedItem);
-                }
+                PickUpItem(originalItem);
+                return;
             }
 
-            UpdateInventorySlot();
+            int splitCount = originalItem.count / 2;
+
+            // Reduce original count and refresh
+            originalItem.count -= splitCount;
+            originalItem.RefreshCount();
+
+            // Instantiate the split item directly under the UI root to avoid a single-frame race
+            GameObject splitItemGo = Instantiate(InventoryManager.Instance.inventoryItemPrefab, transform);
+            splitItemGo.name = "SplitItem_" + originalItem.item.name;
+
+            InventoryItem splitItem = splitItemGo.GetComponent<InventoryItem>();
+            splitItem.SetItem(originalItem.item, splitCount);
+
+            PickUpItem(splitItem, setParentRoot: false);
         }
 
         private void OnSecondClick(InventorySlot targetSlot)
@@ -138,68 +94,51 @@ namespace Game.Inventory
             if (InventoryItem.selectedItem == null) return;
 
             InventoryItem.selectedItem.GetComponent<Image>().raycastTarget = true;
+            RectTransform deleteSlotTransform = InventoryManager.Instance.inventoryUIHandler.deleteSlot;
 
-            if (InventoryManager.InventoryUI != null &&
-                !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
-            {
-                if (targetSlot != null && targetSlot.IsItemAllowedInSlot(InventoryItem.selectedItem.item))
-                {
-                    if (targetSlot.transform.childCount == 0)
-                    {
-                        InventoryItem.selectedItem.PlaceInSlot(targetSlot.transform);
-                    }
-                    else
-                    {
-                        InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
-                        if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
-                            StackItems(existingItem, InventoryItem.selectedItem);
-                        else
-                            InventoryItem.selectedItem.RevertToOriginalSlot();
-                    }
-                }
-                else
-                {
-                    InventoryItem.selectedItem.RevertToOriginalSlot();
-                }
-
-                InventoryItem.selectedItem.DisableDragLayering();
-                StopFollowCursor();
-            }
-            else
+            if (InventoryManager.InventoryUI == null || IsItemInsideDeleteSlot(deleteSlotTransform, Input.mousePosition))
             {
                 DropSelectedItem();
+                InventoryItem.selectedItem = null;
+                return;
             }
 
-            InventoryItem.selectedItem = null;
+            if (targetSlot == null || !targetSlot.IsItemAllowedInSlot(InventoryItem.selectedItem.item))
+            {
+                InventoryItem.selectedItem.RevertToOriginalSlot();
+                DisableItemDrag();
+                return;
+            }
+
+            if (targetSlot.transform.childCount == 0)
+            {
+                InventoryItem.selectedItem.PlaceInSlot(targetSlot.transform);
+                DisableItemDrag();
+                return;
+            }
+
+            InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>(this);
+            if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
+                StackItems(existingItem, InventoryItem.selectedItem);
+            else
+                InventoryItem.selectedItem.RevertToOriginalSlot();
+
+            DisableItemDrag();
         }
 
-        // --- DRAG HANDLERS ---
+        #endregion
+
+        #region Drag Handlers
+
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (parentFurnace != null)
-                parentFurnace.SaveUI();
-
             // IMPORTANT: if an item is already being carried (selectedItem), don't start a new drag.
-            if (InventoryItem.selectedItem != null) return;
+            if (InventoryItem.selectedItem != null || transform.childCount <= 0) return;
 
-            if (transform.childCount <= 0) return;
+            InventoryItem selectedItem = GetComponentInChildren<InventoryItem>(this);
+            if (selectedItem == null || selectedItem.isBeingDragged) return;
 
-            InventoryItem selectedItem = GetComponentInChildren<InventoryItem>();
-            if (selectedItem == null) return;
-
-            // if the child is already flagged as being dragged, ignore
-            if (selectedItem.isBeingDragged) return;
-
-            InventoryItem.selectedItem = selectedItem;
-            selectedItem.originalParentSlot = transform;
-            selectedItem.isBeingDragged = true;
-            selectedItem.transform.SetParent(transform.root);
-            selectedItem.GetComponent<Image>().raycastTarget = false;
-
-            selectedItem.EnableDragLayering();
-            StartFollowCursor(selectedItem);
-
-            UpdateInventorySlot();
+            PickUpItem(selectedItem);
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -210,9 +149,6 @@ namespace Game.Inventory
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (parentFurnace != null)
-                parentFurnace.SaveUI();
-
             if (InventoryItem.selectedItem == null) return;
 
             // clear dragged flag
@@ -223,16 +159,40 @@ namespace Game.Inventory
             StopFollowCursor();
 
             // Use the centralized InventoryUI reference to check if the item is inside the inventory
-            if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(InventoryManager.Instance.inventoryUIHandler.deleteSlot, Input.mousePosition))
-                HandleItemDrop(eventData);
+            RectTransform deleteSlotTransform = InventoryManager.Instance.inventoryUIHandler.deleteSlot;
+            if (InventoryManager.InventoryUI != null && !IsItemInsideDeleteSlot(deleteSlotTransform, Input.mousePosition))
+                HandleItemPlaced(eventData);
             else
                 DropSelectedItem();
 
             InventoryItem.selectedItem = null;
-            UpdateInventorySlot();
         }
 
-        private void HandleItemDrop(PointerEventData eventData)
+        private void DisableItemDrag()
+        {
+            InventoryItem.selectedItem.DisableDragLayering();
+            StopFollowCursor();
+            InventoryItem.selectedItem = null;
+        }
+
+        #endregion
+
+        private void PickUpItem(InventoryItem inventoryItem, bool setParentRoot = true)
+        {
+            InventoryItem.selectedItem = inventoryItem;
+            inventoryItem.isBeingDragged = true;
+
+            if (setParentRoot)
+                inventoryItem.transform.SetParent(transform.root);
+
+            inventoryItem.GetComponent<Image>().raycastTarget = false;
+            inventoryItem.EnableDragLayering();
+            StartFollowCursor(inventoryItem);
+
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
+        }
+
+        private void HandleItemPlaced(PointerEventData eventData)
         {
             GameObject targetObject = eventData.pointerEnter;
             InventorySlot targetSlot = FindTargetSlot(targetObject);
@@ -249,7 +209,7 @@ namespace Game.Inventory
                 return;
             }
 
-            InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
+            InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>(this);
             if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
                 StackItems(existingItem, InventoryItem.selectedItem);
             else
@@ -268,9 +228,9 @@ namespace Game.Inventory
         }
 
         private bool IsItemInsideDeleteSlot(RectTransform deleteSlotRectTransform, Vector2 itemPosition) 
-            => RectTransformUtility.RectangleContainsScreenPoint(deleteSlotRectTransform, itemPosition, null);
+            => RectTransformUtility.RectangleContainsScreenPoint(deleteSlotRectTransform, itemPosition, cam: null);
 
-        private void UpdateInventorySlot() => InventoryManager.Instance.EquipSelectedItem();
+        #region Placing In Slots
 
         private void StackItems(InventoryItem existingItem, InventoryItem selectedItem)
         {
@@ -282,11 +242,13 @@ namespace Game.Inventory
                 existingItem.count = combinedCount;
                 existingItem.RefreshCount();
                 Destroy(selectedItem.gameObject);
+                InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
                 return;
             }
 
             existingItem.count = maxStack;
             existingItem.RefreshCount();
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
 
             int overflow = combinedCount - maxStack;
 
@@ -301,6 +263,7 @@ namespace Game.Inventory
             selectedItem.count = overflow;
             selectedItem.RefreshCount();
             selectedItem.RevertToOriginalSlot();
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
         }
 
         private void QuickTransfer()
@@ -308,88 +271,77 @@ namespace Game.Inventory
             InventoryItem inventoryItem = GetComponentInChildren<InventoryItem>();
             if (inventoryItem == null) return;
 
+            Item item = inventoryItem.item;
             int remaining = inventoryItem.count;
 
-            // Try to stack into existing slots first
-            foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
-            {
-                if (slot == this || slot.transform.childCount <= 0) continue;
+            // Remove source immediately
+            Destroy(inventoryItem.gameObject);
 
-                InventoryItem existing = slot.GetComponentInChildren<InventoryItem>();
-                if (existing.item != inventoryItem.item || existing.count >= inventoryItem.item.maxStack) continue;
+            // Move count elsewhere
+            remaining = StackIntoExistingSlots(item, remaining, this);
+            remaining = PlaceIntoEmptySlots(item, remaining, this);
 
-                int space = inventoryItem.item.maxStack - existing.count;
-                int toMove = Mathf.Min(space, remaining);
-
-                existing.count += toMove;
-                existing.RefreshCount();
-                remaining -= toMove;
-
-                if (remaining <= 0) break;
-            }
-
-            // If leftover, try empty slots
+            // If leftover exists, recreate in original slot
             if (remaining > 0)
-            {
-                foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
-                {
-                    if (slot == this || slot.transform.childCount != 0) continue;
-
-                    int toPlace = Mathf.Min(remaining, inventoryItem.item.maxStack);
-
-                    InventoryManager.Instance.SpawnNewItem(inventoryItem.item, slot, toPlace);
-
-                    remaining -= toPlace;
-                    if (remaining <= 0) break;
-                }
-            }
-
-            // Update or remove original slot
-            if (remaining > 0)
-            {
-                inventoryItem.count = remaining;
-                inventoryItem.RefreshCount();
-            }
+                InventoryManager.Instance.SpawnNewItem(item, this, remaining);
             else
-            {
-                Destroy(inventoryItem.gameObject);
                 ItemTooltipUI.Instance.HideTooltip();
-            }
+
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
         }
 
         private int PlaceOverflowInSlots(Item item, int overflow)
         {
-            // First, try to stack into other existing items
-            foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
-            {
-                if (slot.transform.childCount <= 0) continue;
+            overflow = StackIntoExistingSlots(item, overflow);
+            overflow = PlaceIntoEmptySlots(item, overflow);
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
 
-                InventoryItem existing = slot.GetComponentInChildren<InventoryItem>();
-                if (existing.item != item || existing.count >= item.maxStack) continue;
+            return overflow;
+        }
+
+        private int StackIntoExistingSlots(Item item, int amount, InventorySlot excludeSlot = null)
+        {
+            if (item == null || amount <= 0) return 0;
+
+            foreach (InventorySlot slot in InventoryManager.Instance.InventorySlots)
+            {
+                if (slot == excludeSlot || slot.transform.childCount <= 0) continue;
+
+                InventoryItem existing = slot.GetComponentInChildren<InventoryItem>(this);
+                if (existing.item.itemName != item.itemName || existing.count >= item.maxStack) continue;
 
                 int space = item.maxStack - existing.count;
-                int toMove = Mathf.Min(space, overflow);
+                int toMove = Mathf.Min(space, amount);
 
                 existing.count += toMove;
                 existing.RefreshCount();
-                overflow -= toMove;
-                if (overflow <= 0) return 0;
+
+                amount -= toMove;
+                if (amount <= 0) return 0;
             }
 
-            // Then, put into empty slots
-            foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
-            {
-                if (slot.transform.childCount != 0) continue;
+            return amount;
+        }
 
-                int toPlace = Mathf.Min(overflow, item.maxStack);
+        private int PlaceIntoEmptySlots(Item item, int amount, InventorySlot excludeSlot = null)
+        {
+            if (item == null || amount <= 0) return 0;
+
+            foreach (InventorySlot slot in InventoryManager.Instance.InventorySlots)
+            {
+                if (slot == excludeSlot || slot.transform.childCount != 0) continue;
+
+                int toPlace = Mathf.Min(amount, item.maxStack);
                 InventoryManager.Instance.SpawnNewItem(item, slot, toPlace);
 
-                overflow -= toPlace;
-                if (overflow <= 0) return 0;
+                amount -= toPlace;
+                if (amount <= 0) return 0;
             }
 
-            return overflow; // leftover if no slots
+            return amount;
         }
+
+        #endregion
 
         public bool IsItemAllowedInSlot(Item item)
         {
@@ -410,7 +362,11 @@ namespace Game.Inventory
             ItemTooltipUI.Instance.HideTooltip();
             InventoryItem.selectedItem.DisableDragLayering();
             StopFollowCursor();
+
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
         }
+
+        #region Cursor Follow
 
         // --- Cursor follow helpers (single coroutine)
         private void StartFollowCursor(InventoryItem item)
@@ -421,29 +377,29 @@ namespace Game.Inventory
 
         private void StopFollowCursor()
         {
-            if (followCoroutine != null)
-            {
-                StopCoroutine(followCoroutine);
-                followCoroutine = null;
-            }
+            if (followCoroutine == null) return;
+
+            StopCoroutine(followCoroutine);
+            followCoroutine = null;
         }
 
         private IEnumerator FollowCursor(InventoryItem item)
         {
-            while (item == InventoryItem.selectedItem && item != null)
+            while (item != null && item == InventoryItem.selectedItem)
             {
-                if (item != null)
-                    item.transform.position = Input.mousePosition;
-                else
-                    yield break;
+                item.transform.position = Input.mousePosition;
                 yield return null;
             }
         }
+
+        #endregion
 
         public void ClearSlot()
         {
             foreach (Transform child in transform)
                 Destroy(child.gameObject);
+
+            InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
         }
     }
 }

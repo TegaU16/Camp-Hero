@@ -16,35 +16,34 @@ namespace Game.Upgrades
         public static UpgradeTooltipMenu Instance;
 
         [Header("UI References")]
-        public TextMeshProUGUI nameText;
-        public TextMeshProUGUI descriptionText;
-        public TextMeshProUGUI costText;
-        public TextMeshProUGUI levelRequiredText;
-        public TextMeshProUGUI purchaseText;
-        public Image holdProgressImage;
-        public HoldToPurchase holdToPurchase;
+        [SerializeField] private TextMeshProUGUI nameText;
+        [SerializeField] private TextMeshProUGUI descriptionText;
+        [SerializeField] private TextMeshProUGUI costText;
+        [SerializeField] private TextMeshProUGUI levelRequiredText;
+        [SerializeField] private TextMeshProUGUI purchaseText;
+        [SerializeField] private Image holdProgressImage;
+        [SerializeField] private HoldToPurchase holdToPurchase;
 
         [Header("Text Colors")]
-        public Color costTextColor;
-        public Color levelTextColor;
+        [SerializeField] private Color costTextColor;
+        [SerializeField] private Color levelTextColor;
 
         private bool isHovered;
-        private StatUpgrade currentPlayerUpgrade;
-        private CampfireUpgrade currentCampfireUpgrade;
+        private UpgradeBase currentUpgrade;
+        private Vector2 currentPosition;
+        private bool currentShowLevelRequirement;
 
         private GameObject currentButton;
 
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
+            if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
+
+            Instance = this;
 
             EventTrigger trigger = gameObject.AddComponent<EventTrigger>();
 
@@ -63,12 +62,9 @@ namespace Game.Upgrades
         where T : UpgradeEffect
         {
             currentButton = upgradeBase.upgradeButtonObj;
-
-            // Store current upgrade based on type
-            if (upgradeBase is StatUpgrade statUpgrade)
-                currentPlayerUpgrade = statUpgrade;
-            else if (upgradeBase is CampfireUpgrade campfireUpgrade)
-                currentCampfireUpgrade = campfireUpgrade;
+            currentUpgrade = upgradeBase;
+            currentPosition = position;
+            currentShowLevelRequirement = showLevelRequirement;
 
             // Set text fields
             nameText.text = upgradeBase.UpgradeName;
@@ -87,7 +83,7 @@ namespace Game.Upgrades
             holdProgressImage.fillAmount = upgradeBase.purchased ? 1f : 0f;
             isHovered = true;
 
-            holdToPurchase.SetCurrentUpgrades(currentPlayerUpgrade, currentCampfireUpgrade);
+            holdToPurchase.SetCurrentUpgrade(currentUpgrade);
 
             // Activate tooltip
             gameObject.SetActive(true);
@@ -112,14 +108,10 @@ namespace Game.Upgrades
             if (currentButton != null && IsPointerOverTooltipOrButton(currentButton)) return;
 
             gameObject.SetActive(false);
-
             currentButton = null;
-            currentPlayerUpgrade = null;
-            currentCampfireUpgrade = null;
 
             holdProgressImage.fillAmount = 0f;
-
-            holdToPurchase.SetCurrentUpgrades(currentPlayerUpgrade, currentCampfireUpgrade);
+            holdToPurchase.SetCurrentUpgrade(currentUpgrade);
         }
 
         private bool IsPointerOverTooltipOrButton(GameObject upgradeButton)
@@ -142,24 +134,36 @@ namespace Game.Upgrades
 
         public bool CanPurchase()
         {
-            if (currentPlayerUpgrade != null)
+            if (currentUpgrade == null) return false;
+
+            return currentUpgrade switch
             {
-                bool canBuyPlayerUpgrade = PlayerStatsManager.Instance.stats.goldenPoints >= currentPlayerUpgrade.Cost
-                    && !currentPlayerUpgrade.purchased;
+                StatUpgrade statUpgrade => PlayerStatsManager.Instance.stats.goldenPoints >= statUpgrade.Cost
+                                           && !statUpgrade.purchased,
 
-                return canBuyPlayerUpgrade;
-            }
-
-            if (currentCampfireUpgrade != null)
-            {
-                bool canBuyCampfireUpgrade = PlayerStatsManager.Instance.stats.goldenPoints >= currentCampfireUpgrade.Cost
-                    && !currentCampfireUpgrade.purchased
-                    && LevelManager.Instance.GetLevel() >= currentCampfireUpgrade.LevelRequirement;
-
-                return canBuyCampfireUpgrade;
-            }
-
-            return false;
+                CampfireUpgrade campfireUpgrade => PlayerStatsManager.Instance.stats.goldenPoints >= campfireUpgrade.Cost
+                                           && !campfireUpgrade.purchased
+                                           && LevelManager.Instance.GetLevel() >= campfireUpgrade.LevelRequirement,
+                _ => false,
+            };
         }
+
+        public void RefreshCurrent()
+        {
+            if (currentUpgrade == null) return;
+
+            switch (currentUpgrade)
+            {
+                case StatUpgrade playerUpgrade:
+                    ShowUpgrade(playerUpgrade, currentPosition, currentShowLevelRequirement);
+                    break;
+
+                case CampfireUpgrade campfireUpgrade:
+                    ShowUpgrade(campfireUpgrade, currentPosition, currentShowLevelRequirement);
+                    break;
+            }
+        }
+
+        public bool IsShowing(UpgradeBase upgrade) => currentUpgrade == upgrade;
     }
 }

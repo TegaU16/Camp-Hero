@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Game.Saving;
 using Game.Storage;
 using UnityEditor;
 using UnityEditorInternal;
@@ -8,59 +10,82 @@ using UnityEngine;
 public class LootTableEditor : Editor
 {
     private ReorderableList lootList;
+    private SerializedProperty entriesProp;
 
     private void OnEnable()
     {
-        SerializedProperty lootEntries = serializedObject.FindProperty("lootEntries");
+        SerializedProperty tableProp = serializedObject.FindProperty("weightedTable");
+        entriesProp = tableProp.FindPropertyRelative("entries");
 
-        lootList = new ReorderableList(serializedObject, lootEntries, true, true, true, true)
+        lootList = new ReorderableList(serializedObject, entriesProp)
         {
-            // Header
             drawHeaderCallback = rect =>
             {
-                float padding = 4f;
-                float lineHeight = EditorGUIUtility.singleLineHeight;
+                float line = EditorGUIUtility.singleLineHeight;
 
-                // Main label
-                EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, lineHeight), "Loot Entries");
+                EditorGUI.LabelField(
+                    new Rect(rect.x, rect.y, rect.width, line),
+                    "Loot Entries"
+                );
 
-                rect.y += lineHeight + 2; // move down for column headers
+                rect.y += line + 2;
 
-                // Column headers
-                EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width * 0.4f - padding, lineHeight), "Item");
-                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.42f, rect.y, rect.width * 0.12f - padding, lineHeight), "Min");
-                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.55f, rect.y, rect.width * 0.12f - padding, lineHeight), "Max");
-                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.7f, rect.y, rect.width * 0.28f - padding, lineHeight), "Probability");
+                EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width * 0.4f, line), "Item");
+                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.42f, rect.y, rect.width * 0.12f, line), "Min");
+                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.55f, rect.y, rect.width * 0.12f, line), "Max");
+                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.7f, rect.y, rect.width * 0.14f, line), "Weight");
+                EditorGUI.LabelField(new Rect(rect.x + rect.width * 0.86f, rect.y, rect.width * 0.14f, line), "Chance %");
             },
 
-            // Element display
             drawElementCallback = (rect, index, isActive, isFocused) =>
             {
-                SerializedProperty element = lootEntries.GetArrayElementAtIndex(index);
-                SerializedProperty item = element.FindPropertyRelative("item");
-                SerializedProperty minCount = element.FindPropertyRelative("minCount");
-                SerializedProperty maxCount = element.FindPropertyRelative("maxCount");
-                SerializedProperty probability = element.FindPropertyRelative("probability");
+                SerializedProperty element = entriesProp.GetArrayElementAtIndex(index);
+                SerializedProperty value = element.FindPropertyRelative("value");
+                SerializedProperty weight = element.FindPropertyRelative("weight");
 
-                float lineHeight = EditorGUIUtility.singleLineHeight;
-                float padding = 4f;
+                SerializedProperty item = value.FindPropertyRelative("item");
+                SerializedProperty min = value.FindPropertyRelative("minCount");
+                SerializedProperty max = value.FindPropertyRelative("maxCount");
 
+                float line = EditorGUIUtility.singleLineHeight;
                 rect.y += 2;
 
-                // Item field
-                Rect itemRect = new(rect.x, rect.y, rect.width * 0.4f - padding, lineHeight);
-                EditorGUI.PropertyField(itemRect, item, GUIContent.none);
+                float totalWeight = GetTotalWeight();
 
-                // Min/Max count
-                Rect minRect = new(rect.x + rect.width * 0.42f, rect.y, rect.width * 0.12f - padding, lineHeight);
-                Rect maxRect = new(rect.x + rect.width * 0.55f, rect.y, rect.width * 0.12f - padding, lineHeight);
-                EditorGUI.PropertyField(minRect, minCount, GUIContent.none);
-                EditorGUI.PropertyField(maxRect, maxCount, GUIContent.none);
+                EditorGUI.PropertyField(
+                    new Rect(rect.x, rect.y, rect.width * 0.4f, line),
+                    item,
+                    GUIContent.none
+                );
 
-                // Probability slider
-                Rect probRect = new(rect.x + rect.width * 0.7f, rect.y, rect.width * 0.28f - padding, lineHeight);
-                EditorGUI.Slider(probRect, probability, 0f, 1f, GUIContent.none);
+                EditorGUI.PropertyField(
+                    new Rect(rect.x + rect.width * 0.42f, rect.y, rect.width * 0.12f, line),
+                    min,
+                    GUIContent.none
+                );
+
+                EditorGUI.PropertyField(
+                    new Rect(rect.x + rect.width * 0.55f, rect.y, rect.width * 0.12f, line),
+                    max,
+                    GUIContent.none
+                );
+
+                EditorGUI.PropertyField(
+                    new Rect(rect.x + rect.width * 0.7f, rect.y, rect.width * 0.14f, line),
+                    weight,
+                    GUIContent.none
+                );
+
+                float chance = totalWeight > 0f
+                    ? (weight.floatValue / totalWeight) * 100f
+                    : 0f;
+
+                EditorGUI.LabelField(
+                    new Rect(rect.x + rect.width * 0.86f, rect.y, rect.width * 0.14f, line),
+                    $"{chance:0.0}%"
+                );
             },
+
             elementHeight = EditorGUIUtility.singleLineHeight + 6,
             headerHeight = EditorGUIUtility.singleLineHeight * 2 + 6
         };
@@ -70,31 +95,115 @@ public class LootTableEditor : Editor
     {
         serializedObject.Update();
 
+        DrawSummaryBox();
         lootList.DoLayoutList();
+        DrawUtilityButtons();
 
         serializedObject.ApplyModifiedProperties();
+    }
 
-        if (GUILayout.Button("Sort by Probability (High → Low)"))
+    // =========================
+    // SUMMARY
+    // =========================
+
+    private void DrawSummaryBox()
+    {
+        float totalWeight = GetTotalWeight();
+
+        if (totalWeight <= 0f)
         {
-            LootTable lootTable = (LootTable)target;
-            lootTable.lootEntries.Sort((a, b) => b.probability.CompareTo(a.probability));
-            EditorUtility.SetDirty(lootTable);
+            EditorGUILayout.HelpBox(
+                "Total weight is 0.\nNo loot can be rolled.",
+                MessageType.Error
+            );
+        }
+        else
+        {
+            EditorGUILayout.HelpBox(
+                $"Total Weight: {totalWeight:0.##}",
+                MessageType.Info
+            );
+        }
+    }
+
+    private float GetTotalWeight()
+    {
+        LootTable table = (LootTable)target;
+        return table.weightedTable.Entries
+            .Where(entry => entry != null && entry.weight > 0f)
+            .Sum(entry => entry.weight);
+    }
+
+    // =========================
+    // BUTTONS
+    // =========================
+
+    private void DrawUtilityButtons()
+    {
+        LootTable table = (LootTable)target;
+
+        GUILayout.Space(6);
+
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            if (GUILayout.Button("Normalize", GUILayout.Height(20)))
+                Normalize(table);
+
+            if (GUILayout.Button("Even Split", GUILayout.Height(20)))
+                EvenSplit(table);
+
+            if (GUILayout.Button("Sort (High → Low)", GUILayout.Height(20)))
+            {
+                Undo.RecordObject(table, "Sort Loot Weights");
+                table.weightedTable.Entries.Sort((a, b) => b.weight.CompareTo(a.weight));
+                EditorUtility.SetDirty(table);
+            }
         }
 
-        if (GUILayout.Button("Preview Loot Roll"))
+        if (GUILayout.Button("Preview Loot Roll", GUILayout.Height(22)))
         {
-            LootTable lootTable = (LootTable)target;
-            List<StoredItem> loot = lootTable.GetRandomLoot();
-
+            List<ItemData> loot = table.GetRandomLoot();
             if (loot.Count == 0)
             {
                 Debug.Log("No loot rolled.");
             }
             else
             {
-                foreach (StoredItem item in loot)
-                    Debug.Log($"{item.item.name} x{item.count}");
+                foreach (ItemData item in loot)
+                    Debug.Log($"{item.itemName} x{item.count}");
             }
         }
+    }
+
+    // =========================
+    // ACTIONS
+    // =========================
+
+    private void Normalize(LootTable table)
+    {
+        Undo.RecordObject(table, "Normalize Loot Weights");
+
+        float total = table.weightedTable.Entries.Sum(e => e.weight);
+        if (total <= 0f) return;
+
+        foreach (WeightedEntry<LootEntry> entry in table.weightedTable.Entries)
+            entry.weight /= total;
+
+        EditorUtility.SetDirty(table);
+    }
+
+    private void EvenSplit(LootTable table)
+    {
+        Undo.RecordObject(table, "Even Split Loot Weights");
+
+        int count = table.weightedTable.Entries.Count;
+        if (count == 0) return;
+
+        float value = 1f / count;
+
+        foreach (WeightedEntry<LootEntry> entry in table.weightedTable.Entries)
+            entry.weight = value;
+
+        EditorUtility.SetDirty(table);
     }
 }

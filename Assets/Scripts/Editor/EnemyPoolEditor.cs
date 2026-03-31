@@ -8,7 +8,6 @@ public class EnemyPoolEditor : Editor
 {
     SerializedProperty enemyTiers;
 
-    SerializedProperty dayNightCycle;
     SerializedProperty poolGraveyardPosition;
 
     SerializedProperty dailyGrowthRate;
@@ -20,7 +19,6 @@ public class EnemyPoolEditor : Editor
     {
         enemyTiers = serializedObject.FindProperty("enemyTiers");
 
-        dayNightCycle = serializedObject.FindProperty("dayNightCycle");
         poolGraveyardPosition = serializedObject.FindProperty("poolGraveyardPosition");
 
         dailyGrowthRate = serializedObject.FindProperty("dailyGrowthRate");
@@ -32,7 +30,6 @@ public class EnemyPoolEditor : Editor
         serializedObject.Update();
 
         EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(dayNightCycle, new GUIContent("Day Night Cycle"));
         EditorGUILayout.PropertyField(poolGraveyardPosition, new GUIContent("Pool Graveyard Position"));
 
         EditorGUILayout.Space();
@@ -51,12 +48,14 @@ public class EnemyPoolEditor : Editor
             SerializedProperty prefab = tier.FindPropertyRelative("prefab");
             SerializedProperty unlockDay = tier.FindPropertyRelative("unlockDay");
             SerializedProperty basePoolSize = tier.FindPropertyRelative("poolSize");
+            SerializedProperty regularsToSpawnWith = tier.FindPropertyRelative("regularsToSpawnWith");
 
             EditorGUILayout.BeginVertical("box");
 
             EditorGUILayout.PropertyField(prefab, new GUIContent("Prefab"));
             EditorGUILayout.PropertyField(unlockDay, new GUIContent("Unlock Day"));
             EditorGUILayout.PropertyField(basePoolSize, new GUIContent("Base Pool Size"));
+            EditorGUILayout.PropertyField(regularsToSpawnWith, new GUIContent("Regulars To Spawn With"));
 
             if (GUILayout.Button("Remove Tier"))
             {

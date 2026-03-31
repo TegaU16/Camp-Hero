@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Mithril Axe
   equippedPrefab: {fileID: 3992650619839999490, guid: ed396a5c9e8b57b4fa1a5348cb9a32ff, type: 3}
   itemDrop: {fileID: 3924220530090478521, guid: 3aa46ad5ee46f3c46a927fa54d878e41, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 3
-  toolType: 0
+  toolType: 1
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 7d56eeb9c704cfd4f9512799934321b2, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Inventory;
 using Game.Tutorial;
 using TMPro;
@@ -9,20 +11,48 @@ namespace Game.Crafting
 {
     public class CraftingUI : MonoBehaviour
     {
-        public GameObject craftingItemPrefab;
+        [Serializable]
+        private struct CraftingTab
+        {
+            public Button tabButton;
+            public CraftingCategory category;
+        }
+
+        public static CraftingUI Instance;
+
+        [SerializeField] private GameObject craftingItemPrefab;
         public Transform craftingItemParent;
-        public TextMeshProUGUI craftingItemName;
-        public GameObject craftingItemIconBackground;
-        public Image craftingItemIcon;
-        public GameObject requirementPrefabParent;
-        public Button craftButton;
-        public List<Button> craftingTabs;
+        [SerializeField] private TextMeshProUGUI craftingItemName;
+
+        [SerializeField] private GameObject craftingItemIconBackground;
+        [SerializeField] private Image craftingItemIcon;
+
+        [SerializeField] private GameObject requirementPrefabParent;
+        [SerializeField] private Button craftButton;
+
+        [SerializeField] private List<CraftingTab> craftingTabs;
+        private CraftingTab selectedTab;
 
         [HideInInspector] public CraftingItem selectedItem;
+
+        private CraftingSource currentSource;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
 
         private void Start()
         {
             selectedItem = null;
+            selectedTab = craftingTabs[0]; // First tab is ALL
+            ApplyFilters();
         }
 
         public void ToggleCraftingMenu(CraftingSource menuCraftingSource)
@@ -42,7 +72,8 @@ namespace Game.Crafting
                     Destroy(child.gameObject);
             }
 
-            FilterBySource(menuCraftingSource);
+            currentSource = menuCraftingSource;
+            ApplyFilters();
 
             if (InventoryManager.Instance.mainInventory != null)
                 InventoryManager.Instance.mainInventory.SetActive(true);
@@ -106,36 +137,41 @@ namespace Game.Crafting
                 TutorialManager.Instance.CompleteTutorial(craftingTutorial);
         }
 
-        private void FilterBySource(CraftingSource menuCraftingSource)
-        {
-            foreach (Transform child in craftingItemParent.transform)
-            {
-                if (!child.TryGetComponent(out CraftingItem craftingItem)) continue;
-
-                CraftingSource itemCraftingSource = craftingItem.recipe.source;
-                bool shouldShow = (itemCraftingSource & menuCraftingSource) != 0;
-                child.gameObject.SetActive(shouldShow);
-            }
-        }
-
         public void FilterByCategory(CraftingCategory category, Button button)
         {
-            foreach (Transform child in craftingItemParent)
+            selectedTab.category = category;
+            selectedTab.tabButton = button;
+
+            foreach (CraftingTab tab in craftingTabs)
             {
-                if (!child.TryGetComponent(out CraftingItem item)) continue;
+                if (!tab.tabButton.TryGetComponent(out InteractiveButton interactive)) continue;
 
-                bool shouldShow = category == CraftingCategory.All || item.recipe.category == category;
-                child.gameObject.SetActive(shouldShow);
-            }
-
-            foreach (Button tab in craftingTabs)
-            {
-                if (!tab.TryGetComponent(out InteractiveButton interactive)) continue;
-
-                if (tab == button)
+                if (tab.tabButton == button)
                     interactive.Select();
                 else
                     interactive.Deselect();
+            }
+
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            List<Transform> allItems = craftingItemParent.GetComponentsInChildren<Transform>()
+                .Where(t => t != craftingItemParent)
+                .ToList();
+
+            foreach (Transform child in allItems)
+            {
+                if (!child.TryGetComponent(out CraftingItem item)) continue;
+
+                bool categoryPass =
+                    selectedTab.category == CraftingCategory.All ||
+                    item.recipe.category == selectedTab.category;
+
+                bool sourcePass = (item.recipe.source & currentSource) != 0;
+
+                child.gameObject.SetActive(categoryPass && sourcePass);
             }
         }
 
@@ -145,8 +181,15 @@ namespace Game.Crafting
             CraftingItem uiItem = itemGO.GetComponent<CraftingItem>();
 
             uiItem.recipe = recipe;
-            uiItem.recipe.category = recipe.category;
             uiItem.itemImage.sprite = recipe.resultItem.icon;
+
+            ApplyFilters();
+        }
+
+        public void SetSelectedCategory(CraftingCategory category, Button button)
+        {
+            selectedTab.category = category;
+            selectedTab.tabButton = button;
         }
     }
 }

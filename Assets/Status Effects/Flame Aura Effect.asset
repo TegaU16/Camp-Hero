@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Flame Aura Effect
   m_EditorClassIdentifier: Assembly-CSharp::BurnEffect
   duration: 1
+  particleSystem: {fileID: 3806320003991218143, guid: 9c1394391cef06244b41569e4b27655e, type: 3}
+  noTimer: 1
   tickSpeed: 0.8
   damagePerTick: 20
-  noTimer: 1

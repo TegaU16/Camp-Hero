@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using Game.Saving;
 using Game.Terrain;
@@ -28,7 +29,15 @@ public static class Utility
             voxelCoord.z + offset);
     }
 
-    public static bool IsAreaFree(GameObject prefab, Vector3 intendedPosition, Func<Vector3Int, bool> checkFunc)
+    public static int ManhattanDistance(Vector3Int a, Vector3Int b)
+    {
+        int dx = Mathf.Abs(a.x - b.x);
+        int dz = Mathf.Abs(a.z - b.z);
+
+        return dx + dz;
+    }
+
+    public static bool AreaCheck(GameObject prefab, Vector3 intendedPosition, Func<Vector3Int, bool> checkFunc)
     {
         Bounds bounds = prefab.GetComponentInChildren<Renderer>().bounds;
 
@@ -125,16 +134,16 @@ public static class Utility
         return !hasChunks;
     }
 
-    public static Bounds GetObjectBounds(Transform t)
+    public static Bounds GetObjectBounds(Transform objTransform)
     {
-        Renderer[] renderers = t.GetComponentsInChildren<Renderer>();
-        if (renderers.Length == 0) return new Bounds(t.position, Vector3.zero);
+        Renderer[] renderers = objTransform.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return new Bounds(objTransform.position, Vector3.zero);
 
-        Bounds b = renderers[0].bounds;
-        foreach (Renderer r in renderers)
-            b.Encapsulate(r.bounds);
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer renderer in renderers)
+            bounds.Encapsulate(renderer.bounds);
 
-        return b;
+        return bounds;
     }
 
     public static void AddObjectDataToChunk(SpawnedObjectData data, Vector3 spawnPosition, VoxelChunk chunk)
@@ -144,5 +153,28 @@ public static class Utility
 
         Vector3Int spawnKey = WorldToVoxelCoord(spawnPosition);
         chunk.savedObjectPositionsInt.Add(spawnKey);
+    }
+
+    public static void SetMultiplierSource(object source, float multiplier, MultiplierStat multiplierStat)
+        => multiplierStat.SetSource(source, multiplier);
+
+    public static void RemoveMultiplierSource(object source, MultiplierStat multiplierStat)
+        => multiplierStat.RemoveSource(source);
+
+    public static IEnumerator Fade(CanvasGroup canvasGroup, float start, float end, float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            canvasGroup.alpha = Mathf.Lerp(start, end, t);
+
+            yield return null;
+        }
+
+        canvasGroup.alpha = end;
     }
 }

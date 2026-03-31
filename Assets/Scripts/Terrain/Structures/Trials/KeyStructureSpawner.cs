@@ -21,7 +21,10 @@ namespace Game.Terrain.Structures.Trials
 
         private void Awake()
         {
-            Instance = this;
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
         }
 
         public IEnumerator SpawnKeyStructures(float worldSize, Vector3 worldCenter, Action<float> onProgress = null)
@@ -68,10 +71,14 @@ namespace Game.Terrain.Structures.Trials
 
                     usedChunks.Add(chunkCoord);
 
-                    Vector3 groundPos = AdjustHeightToTerrain(position);
-                    keyStructurePositions.Add(groundPos);
+                    int posX = Mathf.FloorToInt(position.x);
+                    int posZ = Mathf.FloorToInt(position.z);
+                    float posY = Utility.GetHeightAt(posX, posZ);
 
-                    GameObject placedStructure = Instantiate(trialStructurePrefab, groundPos, Quaternion.identity);
+                    position.y = posY;
+                    keyStructurePositions.Add(position);
+
+                    GameObject placedStructure = Instantiate(trialStructurePrefab, position, Quaternion.identity);
                     VoxelGrid.Instance.MarkVoxelArea(placedStructure, walkable: true, buildable: false);
 
                     TrialAltar trialAltar = placedStructure.GetComponentInChildren<TrialAltar>();
@@ -105,15 +112,6 @@ namespace Game.Terrain.Structures.Trials
 
                 yield return null;
             }
-        }
-
-        private Vector3 AdjustHeightToTerrain(Vector3 position)
-        {
-            Vector3 rayStart = position + Vector3.up * 200f;
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f)) return hit.point;
-
-            Debug.LogWarning($"No terrain found below key structure position: {position}");
-            return position;
         }
     }
 }

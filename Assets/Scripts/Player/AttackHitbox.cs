@@ -4,30 +4,34 @@ using Game.AI.Enemies;
 using Game.Inventory;
 using Game.StatusEffects;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Players
 {
+    [RequireComponent(typeof(PlayerCombat))]
+    [RequireComponent(typeof(Player))]
     public class AttackHitbox : MonoBehaviour
     {
         private readonly HashSet<BreakableObject> alreadyHit = new();
 
         public LayerMask breakableLayer;
 
-        public PlayerCombat playerCombat;
+        private Player player;
+        private PlayerCombat playerCombat;
         private AttackData attackData;
 
         public AudioClip hitSound;
 
         private void Awake()
         {
-            if (playerCombat == null)
-                playerCombat = GetComponentInParent<PlayerCombat>();
+            player = GetComponent<Player>();
+            playerCombat = GetComponent<PlayerCombat>();
         }
 
         // Called by animation event
         private void PerformHit()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (!TryGetComponent(out BoxCollider box)) return;
             if (attackData == null) return;
 
@@ -55,31 +59,41 @@ namespace Game.Players
             if (playerCombat == null) return;
 
             Vector3 boxCenter = transform.TransformPoint(box.center);
-            Vector3 hitPoint;
-            Vector3 hitNormal;
+            Vector3 targetHitPoint;
+            Vector3 targetHitNormal;
 
             Vector3 direction = (other.transform.position - boxCenter).normalized;
 
             if (other.Raycast(new Ray(boxCenter, direction), out RaycastHit hitInfo, 5f))
             {
-                hitPoint = hitInfo.point;
-                hitNormal = hitInfo.normal;
+                targetHitPoint = hitInfo.point;
+                targetHitNormal = hitInfo.normal;
             }
             else
             {
-                hitPoint = other.bounds.ClosestPoint(boxCenter);
-                hitNormal = (hitPoint - boxCenter).normalized;
-                if (hitNormal == Vector3.zero)
-                    hitNormal = direction;
+                targetHitPoint = other.bounds.ClosestPoint(boxCenter);
+                targetHitNormal = (targetHitPoint - boxCenter).normalized;
+                if (targetHitNormal == Vector3.zero)
+                    targetHitNormal = direction;
             }
 
-            Vector3 knockbackDir = (other.transform.position - playerCombat.transform.position).normalized;
+            Vector3 knockbackDir = (other.transform.position - player.transform.position).normalized;
 
             // Calculate base damage (PlayerCombat still decides scaling)
             Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
-            int damage = playerCombat.ItemDamage(breakable, selectedItem, attackData);
+            Utility.SetMultiplierSource(this, attackData.damageMultiplier, player.damageMultiplier);
+            int itemDamage = playerCombat.ItemDamage(breakable, selectedItem);
 
-            breakable.TakeDamage(damage, playerCombat.isCritical, hitPoint, hitNormal);
+            DamageInfo attackDamageInfo = new
+            (
+                damage: itemDamage,
+                poiseDamage: attackData.poiseDamage,
+                crit: playerCombat.isCritical,
+                hitPoint: targetHitPoint,
+                hitNormal: targetHitNormal
+            );
+
+            breakable.TakeDamage(attackDamageInfo);
             alreadyHit.Add(breakable);
 
             AudioManager.Instance.PlaySFX(hitSound);
@@ -99,28 +113,26 @@ namespace Game.Players
             // Extra effects
             if (attackData.applyKnockback)
             {
+                float finalKnockbackForce = attackData.knockbackForce * player.TotalKnockbackForceMultiplier;
+
                 if (enemy != null)
                 {
                     enemy.OnAttacked(transform);
-                    enemy.ApplyKnockback(knockbackDir, attackData.knockbackForce);
+                    enemy.ApplyKnockback(knockbackDir, finalKnockbackForce);
                 }
 
                 if (animal != null)
-                    animal.ApplyKnockback(knockbackDir, attackData.knockbackForce);
+                    animal.ApplyKnockback(knockbackDir, finalKnockbackForce);
             }
 
             // VFX / SFX
             if (attackData.hitEffectPrefab != null)
-                Instantiate(attackData.hitEffectPrefab, hitPoint, Quaternion.LookRotation(hitNormal));
+                Instantiate(attackData.hitEffectPrefab, targetHitPoint, Quaternion.LookRotation(targetHitNormal));
 
             if (attackData.hitSound != null)
-                AudioManager.Instance.PlaySFX(attackData.hitSound, position: hitPoint);
+                AudioManager.Instance.PlaySFX(attackData.hitSound, position: targetHitPoint);
         }
 
-        public void SetAttackData(AttackData data)
-        {
-            if (data == null) return;
-            attackData = data;
-        }
+        public void SetAttackData(AttackData data) => attackData = data;
     }
 }

@@ -1,5 +1,6 @@
 using Game.AI.Enemies;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Defenses
 {
@@ -11,7 +12,7 @@ namespace Game.Defenses
 
         private Transform attacker;
         private Transform target;
-        private int damage;
+        private int projectileDamage;
         private Vector3 currentDirection;
         private bool homing = true;
         private float lifetime;
@@ -20,7 +21,7 @@ namespace Game.Defenses
         {
             this.attacker = attacker;
             target = t;
-            damage = dmg;
+            projectileDamage = dmg;
             homing = useHoming;
 
             if (target != null)
@@ -29,7 +30,7 @@ namespace Game.Defenses
 
         private void Update()
         {
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
 
             lifetime += Time.deltaTime;
             if (lifetime >= maxLifetime || target == null)
@@ -57,21 +58,21 @@ namespace Game.Defenses
 
         private void HitTarget()
         {
-            Vector3 hitPoint;
-            Vector3 hitNormal;
+            Vector3 targetHitPoint;
+            Vector3 targetHitNormal;
 
             if (target.TryGetComponent(out Collider collider))
-                hitPoint = collider.ClosestPoint(transform.position);
+                targetHitPoint = collider.ClosestPoint(transform.position);
             else if (target.TryGetComponent(out CharacterController controller))
-                hitPoint = controller.ClosestPoint(transform.position);
+                targetHitPoint = controller.ClosestPoint(transform.position);
             else
                 return;
 
-            hitNormal = (hitPoint - transform.position).normalized;
+            targetHitNormal = (targetHitPoint - transform.position).normalized;
 
             if (target.TryGetComponent(out Targetable targetable) && targetable.TryGetComponent(out Health targetHealth))
             {
-                targetHealth.TakeDamage(damage, attacker);
+                targetHealth.TakeDamage(projectileDamage, attacker);
 
                 if (target.TryGetComponent(out Rigidbody rb))
                 {
@@ -82,7 +83,14 @@ namespace Game.Defenses
 
             if (target.TryGetComponent(out BreakableObject breakable) && target.TryGetComponent(out Enemy enemy))
             {
-                breakable.TakeDamage(damage, crit: false, hitPoint, hitNormal);
+                DamageInfo attackDamageInfo = new
+                (
+                    damage: projectileDamage,
+                    hitPoint: targetHitPoint,
+                    hitNormal: targetHitNormal
+                );
+
+                breakable.TakeDamage(attackDamageInfo);
                 enemy.OnAttacked(attacker);
             }
 

@@ -16,25 +16,21 @@ namespace Game.Inventory
         public int count = 1;
         public TextMeshProUGUI countText;
 
-        private Transform originalParent;
         public float padding;
 
         [HideInInspector] public Image image;
 
         [HideInInspector] public bool isBeingDragged;
-        [HideInInspector] public Transform originalParentSlot;
+        private Transform originalParentSlot;
 
         private Canvas dragCanvas;
 
-        private void Awake()
-        {
-            image = GetComponent<Image>();
-        }
+        private void Awake() => image = GetComponent<Image>();
 
         private void Start()
         {
             RefreshCount();
-            originalParent = transform.parent; // Set the original parent
+            originalParentSlot = transform.parent; // Set the original parent
 
             // Disable raycast on countText to prevent it from interfering with slot detection
             if (countText != null)
@@ -43,8 +39,8 @@ namespace Game.Inventory
 
         private void OnDestroy()
         {
-            // If this item was being hovered and gets destroyed, hide tooltip
-            ItemTooltipUI.Instance.HideTooltip();
+            if (ItemTooltipUI.Instance != null && ItemTooltipUI.Instance.HoveredItem == item)
+                ItemTooltipUI.Instance.HideTooltip();
         }
 
         public void SetItem(Item newItem, int itemCount = 1)
@@ -63,10 +59,10 @@ namespace Game.Inventory
             }
 
             image.sprite = item.icon;
-            image.rectTransform.localScale = Vector3.one; // Reset scale
+            image.rectTransform.localScale = Vector3.one;
 
             // Scale the image to fit within the slot
-            RectTransform slotRect = transform.parent.GetComponent<RectTransform>(); // The parent slot
+            RectTransform slotRect = transform.parent.GetComponent<RectTransform>();
             RectTransform imageRect = image.rectTransform;
 
             // Set the image to match the parent's size
@@ -90,40 +86,40 @@ namespace Game.Inventory
             // Re-enable raycast targeting once placed in the slot
             image.raycastTarget = true;
 
-            // Update the original parent to the new slot
-            originalParent = transform.parent;
-
-            InventorySlot slot = GetComponentInParent<InventorySlot>();
-            InventoryManager.Instance.SetTutorialForItem(slot, item);
-
             ItemTooltipUI.Instance.HideTooltip();
+
+            if (originalParentSlot.TryGetComponent(out InventorySlot parentSlot))
+                InventoryManager.Instance.OnInventoryItemChanged?.Invoke(parentSlot);
+
+            if (!slotTransform.TryGetComponent(out InventorySlot slot)) return;
+            if (!InventoryManager.Instance.InventorySlots.Contains(slot)) return;
+
+            InventoryManager.Instance.SetTutorialForItem(item);
         }
 
-        public void RevertToOriginalSlot() => PlaceInSlot(originalParent);
+        public void RevertToOriginalSlot() => PlaceInSlot(originalParentSlot);
 
         public void RefreshCount()
         {
-            if (count > 1)
-            {
-                countText.text = count.ToString();
-                countText.gameObject.SetActive(true);
-            }
-            else
+            if (count <= 1)
             {
                 countText.gameObject.SetActive(false);
+                return;
             }
+
+            countText.text = count.ToString();
+            countText.gameObject.SetActive(true);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (item != null && selectedItem == null)
-                ItemTooltipUI.Instance.ShowTooltip(item.itemName, GetComponent<RectTransform>());
+            if (!GameManager.Instance.IsGameActive) return;
+
+            if (selectedItem == null)
+                ItemTooltipUI.Instance.ShowTooltip(item, GetComponent<RectTransform>());
         }
 
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            ItemTooltipUI.Instance.HideTooltip();
-        }
+        public void OnPointerExit(PointerEventData eventData) => ItemTooltipUI.Instance.HideTooltip();
 
         public void StretchToFit(float padding)
         {
@@ -157,11 +153,10 @@ namespace Game.Inventory
 
         public void DisableDragLayering()
         {
-            if (dragCanvas != null)
-            {
-                dragCanvas.overrideSorting = false;
-                dragCanvas.sortingOrder = 0;
-            }
+            if (dragCanvas == null) return;
+
+            dragCanvas.overrideSorting = false;
+            dragCanvas.sortingOrder = 0;
         }
     }
 }

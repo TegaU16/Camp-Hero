@@ -14,6 +14,9 @@ namespace Game.Terrain.Structures
         private bool bossDefeated = false;
         private bool isActivated = false;
 
+        public Sprite gemAltarIcon;
+        public Sprite ObjectIcon => gemAltarIcon;
+
         public void Interact()
         {
             if (isActivated || bossDefeated) return;

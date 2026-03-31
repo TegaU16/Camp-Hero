@@ -263,6 +263,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4997075386578795920}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6075603086284030661}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: fd9073084d2868048865e6ecec25aa66, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1755211474337944238}
@@ -1542,7 +1545,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotationSpeed: 720
   speedParam: Speed
-  yLerpSpeed: 5
 --- !u!143 &7308117665617574924
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1630,7 +1632,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.AI.VoxelAgent
   rotationSpeed: 720
   speedParam: Speed
-  yLerpSpeed: 5
 --- !u!114 &4997075386578795920
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1650,20 +1651,42 @@ MonoBehaviour:
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
+  poise: 100
   enemyIcon: {fileID: 0}
+  breakableObject: {fileID: 0}
   rangedAttackScripts:
   - {fileID: 651732364563471998}
   - {fileID: 6622896445496257384}
   moveSpeed: 4.5
   gravity: -9.8
+  knockbackDuration: 5
   preferredTargets: 0100000004000000000000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
   repathDistanceThreshold: 1
+  attackRangeBuffer: 1.5
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
   animator: {fileID: 0}
+  particleEffectScaler: {fileID: 6075603086284030661}
+  deathEffect: {fileID: 3963187424393952677, guid: 86b0122c3a3ea93469b6b24deb63d6cd, type: 3}
+--- !u!114 &6075603086284030661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342064213770231154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e63f30bb9ade59b43a5b6b157dd98b92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleEffectScaler
+  targetRenderers: []
+  sizeMultiplier: 1
+  speedMultiplier: 1
+  emissionMultiplier: 1
 --- !u!1 &6531757012700448668 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1037963683107284927, guid: fd9073084d2868048865e6ecec25aa66, type: 3}

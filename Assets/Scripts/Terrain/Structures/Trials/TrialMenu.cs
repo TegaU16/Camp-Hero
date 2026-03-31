@@ -37,7 +37,6 @@ namespace Game.Terrain.Structures.Trials
             CameraControlToggle.Instance.SetCameraControl(false);
 
             TryGiveTrialQuest();
-
             BuildWaveList();
             UpdateButtons();
         }
@@ -57,10 +56,10 @@ namespace Game.Terrain.Structures.Trials
                 WaveEntry waveEntry = entry.GetComponent<WaveEntry>();
                 waveEntries.Add(waveEntry);
 
-                TMP_Text text = entry.GetComponentInChildren<TMP_Text>();
+                TMP_Text waveText = entry.GetComponentInChildren<TMP_Text>();
                 Transform enemyListContainer = entry.GetComponent<WaveEntry>().enemyListContainer;
 
-                text.text = $"WAVE {i + 1}";
+                waveText.text = $"WAVE {i + 1}";
 
                 List<WaveEnemy> waveEnemies = currentAltar.GetEnemiesForWave(i);
 
@@ -68,13 +67,12 @@ namespace Game.Terrain.Structures.Trials
                 {
                     GameObject iconGO = Instantiate(enemyIconPrefab, enemyListContainer);
 
-                    Image img = iconGO.transform.Find("Icon").GetComponent<Image>();
+                    Image icon = iconGO.transform.Find("Icon").GetComponent<Image>();
                     TextMeshProUGUI enemyCountText = iconGO.transform.Find("Enemy Count Text").GetComponent<TextMeshProUGUI>();
 
-                    if (waveEnemy.enemyPrefab == null || !waveEnemy.enemyPrefab.TryGetComponent(out Enemy enemyData)) continue;
+                    if (waveEnemy.enemyPrefab == null || !waveEnemy.enemyPrefab.TryGetComponent(out Enemy enemy)) continue;
 
-                    if (enemyData.enemyIcon != null)
-                        img.sprite = enemyData.enemyIcon;
+                    icon.sprite = enemy.enemyIcon;
 
                     if (enemyCountText != null)
                         enemyCountText.text = waveEnemy.count.ToString();
@@ -88,15 +86,14 @@ namespace Game.Terrain.Structures.Trials
         {
             for (int i = 0; i < waveEntries.Count; i++)
             {
-                if (i == index)
-                {
-                    waveEntries[i].Select();
-                    selectedWave = i + 1;
-                }
-                else
+                if (i != index)
                 {
                     waveEntries[i].Deselect();
+                    continue;
                 }
+
+                waveEntries[i].Select();
+                selectedWave = i + 1;
             }
 
             UpdateButtons();

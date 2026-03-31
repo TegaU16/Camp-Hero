@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.Inventory
@@ -24,11 +25,13 @@ namespace Game.Inventory
             if (InventoryManager.InventoryUI == null) return;
 
             Vector2 mousePosition = Input.mousePosition;
-
             if (RectTransformUtility.RectangleContainsScreenPoint(deleteSlot, mousePosition))
             {
                 if (InventoryItem.selectedItem != null)
-                    DropSelectedItem();
+                {
+                    InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
+                    Destroy(InventoryItem.selectedItem.gameObject);
+                }
 
                 return;
             }
@@ -48,31 +51,10 @@ namespace Game.Inventory
             }
         }
 
-        private IEnumerable<InventorySlot> GetAllSlots()
+        private List<InventorySlot> GetAllSlots()
         {
-            // Always include main inventory
-            foreach (InventorySlot slot in inventorySlots)
-                yield return slot;
-
-            // Include chest slots if chest is open
-            if (InventoryManager.Instance.activeChest != null)
-            {
-                foreach (InventorySlot slot in InventoryManager.Instance.activeChest.inventorySlots)
-                    yield return slot;
-            }
-
-            // Include furnace slots if furnace is open
-            if (InventoryManager.Instance.activeFurnace != null)
-            {
-                foreach (InventorySlot slot in InventoryManager.Instance.activeFurnace.inventorySlots)
-                    yield return slot;
-            }
-        }
-
-        private void DropSelectedItem()
-        {
-            InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
-            Destroy(InventoryItem.selectedItem.gameObject);
+            InventorySlot[] slots = FindObjectsByType<InventorySlot>(FindObjectsSortMode.None);
+            return slots.Where(slot => slot.gameObject.activeInHierarchy).ToList();
         }
     }
 }

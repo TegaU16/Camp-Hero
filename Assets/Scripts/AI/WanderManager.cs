@@ -18,10 +18,7 @@ namespace Game.AI
             Instance = this;
         }
 
-        public void Enqueue(WanderRequest request)
-        {
-            wanderQueue.Enqueue(request);
-        }
+        public void Enqueue(WanderRequest request) => wanderQueue.Enqueue(request);
 
         private void Update()
         {

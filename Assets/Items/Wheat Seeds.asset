@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Wheat Seeds
   equippedPrefab: {fileID: 4450474699024575460, guid: ca5b924018891e24a8fff49571a2a404, type: 3}
   itemDrop: {fileID: 8002542084978989083, guid: d7d95469e13389746aef197037ce357e, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 11400000, guid: 52776cd35ff5ea54685a9096218cce74, type: 2}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 11400000, guid: 8815e0a0586937543ba72bd4150cbbac, type: 2}
   fuelValue: 0

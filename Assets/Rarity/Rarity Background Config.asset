@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28db9df0edb3b0d4f8d9bbd4e72bdd43, type: 3}
+  m_Name: Rarity Background Config
+  m_EditorClassIdentifier: Assembly-CSharp::RarityBackgroundConfig
+  entries:
+  - rarity: 0
+    background: {fileID: 21300000, guid: ccb255c1b07a7a547939535daf3ce8e1, type: 3}
+  - rarity: 1
+    background: {fileID: 21300000, guid: 885525511bae42440ad97932b857f0b7, type: 3}
+  - rarity: 2
+    background: {fileID: 21300000, guid: 8dbd015bf6b0cce459a6b1d15f5690d2, type: 3}
+  - rarity: 3
+    background: {fileID: 21300000, guid: 49d18308dfb1ffa4db1b6be56967415d, type: 3}
+  defaultBackground: {fileID: 21300000, guid: ccb255c1b07a7a547939535daf3ce8e1, type: 3}

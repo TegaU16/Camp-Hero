@@ -20,14 +20,16 @@ namespace Game.Terrain.Structures
     [RequireComponent(typeof(SphereCollider))]
     public class Campfire : MonoBehaviour, IInteractable, ISaveableObject
     {
+        private static readonly WaitForSeconds _waitForSeconds1 = new(1f);
         public Health health;
-        public AudioClip fireSound;
+        [SerializeField] private AudioClip fireSound;
+        [SerializeField] private int dayRegenAmount = 1500;
 
         [Header("Gem References")]
-        public GameObject blueGem;
-        public GameObject greenGem;
-        public GameObject redGem;
-        public GameObject yellowGem;
+        [SerializeField] private GameObject blueGem;
+        [SerializeField] private GameObject greenGem;
+        [SerializeField] private GameObject redGem;
+        [SerializeField] private GameObject yellowGem;
 
         private readonly List<CampfireUpgradeEffect> activeUpgrades = new();
         private readonly Dictionary<(CampfireUpgradeEffect, MonoBehaviour), Coroutine> activeCoroutines = new();
@@ -38,15 +40,21 @@ namespace Game.Terrain.Structures
         private readonly List<GemColor> unlockedGems = new();
         private Dictionary<GemColor, GameObject> gemObjects;
 
+        [SerializeField] private Sprite campfireIcon;
+        public Sprite ObjectIcon => campfireIcon;
+
+        private float dayDuration;
+        private float RegenRate => dayRegenAmount / dayDuration;
+
         private void Awake()
         {
             gemObjects = new Dictionary<GemColor, GameObject>
-        {
-            { GemColor.Blue, blueGem },
-            { GemColor.Green, greenGem },
-            { GemColor.Red, redGem },
-            { GemColor.Yellow, yellowGem }
-        };
+            {
+                { GemColor.Blue, blueGem },
+                { GemColor.Green, greenGem },
+                { GemColor.Red, redGem },
+                { GemColor.Yellow, yellowGem }
+            };
 
             auraCollider = GetComponent<SphereCollider>();
             if (auraCollider == null)
@@ -60,6 +68,9 @@ namespace Game.Terrain.Structures
 
         private void Start()
         {
+            dayDuration = DayNightCycle.Instance.dayDurationInSeconds;
+            DayNightCycle.Instance.OnDayAdvanced += StartRegen;
+
             Collider[] cols = new Collider[20];
             int colliderCount = Physics.OverlapSphereNonAlloc(transform.position, auraCollider.radius, cols);
 
@@ -84,7 +95,28 @@ namespace Game.Terrain.Structures
                 }
             }
 
-            AudioManager.Instance.PlaySFX(fireSound);
+            AudioManager.Instance.PlaySFX(fireSound, loop: true, position: transform.position);
+        }
+
+        private void OnDestroy()
+        {
+            DayNightCycle.Instance.OnDayAdvanced -= StartRegen;
+        }
+
+        private void StartRegen(int _)
+        {
+            StartCoroutine(RegenRoutine());
+        }
+
+        private IEnumerator RegenRoutine()
+        {
+            while (!health.IsFull)
+            {
+                if (DayNightCycle.Instance.IsNight()) yield break;
+
+                health.AddHealth((int)RegenRate);
+                yield return _waitForSeconds1;
+            }
         }
 
         private void OnTriggerEnter(Collider other)
@@ -168,7 +200,11 @@ namespace Game.Terrain.Structures
             CameraControlToggle.Instance.SetCameraControl(false);
         }
 
-        public string GetInteractText() => "Open Campfire Menu";
+        public string GetInteractText()
+        {
+            IInteractable interactable = this;
+            return $"Campfire\n{interactable.InteractKeyText}";
+        }
 
         public Transform GetTransform() => transform;
 

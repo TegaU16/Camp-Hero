@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3903e82d5188598488e57b0128cd6afa, type: 3}
+  m_Name: Cart Fallen
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Terrain.Structures.StructureTemplate
+  structureName: Cart Fallen
+  prefabParts:
+  - prefab: {fileID: 3253902002498706898, guid: 1c6c3132ad014aa44a235a5a5213ab99, type: 3}
+    localOffset: {x: 0, y: 0.68, z: 0}
+  - prefab: {fileID: 1225668700139714346, guid: da9dc4e1327235544a8fb291365dfb82, type: 3}
+    localOffset: {x: 2, y: 0, z: 0}

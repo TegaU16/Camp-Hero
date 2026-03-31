@@ -1,14 +1,26 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Game;
 using Game.AI.Animals;
 using Game.AI.Enemies;
 using Game.Inventory;
 using Game.Level;
+using Game.Players;
 using Game.Registries;
 using Game.Saving;
 using Game.Smelting;
 using Game.Storage;
 using Game.Terrain;
 using UnityEngine;
+
+public enum ObjectType
+{
+    Wood,
+    Stone,
+    Flesh,
+    None
+}
 
 public class BreakableObject : MonoBehaviour, ISaveableObject
 {
@@ -21,14 +33,33 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         [Range(0f, 1f)] public float dropChance;
     }
 
-    public enum ObjectType
+    public readonly struct DamageInfo
     {
-        Wood,
-        Stone,
-        Flesh,
-        None
+        public readonly int Damage;
+        public readonly int PoiseDamage;
+        public readonly bool Crit;
+        public readonly Vector3 HitPoint;
+        public readonly Vector3 HitNormal;
+        public readonly bool FromEnemy;
+
+        public DamageInfo(
+            int damage,
+            int poiseDamage = 0,
+            bool crit = false,
+            Vector3 hitPoint = default,
+            Vector3 hitNormal = default,
+            bool fromEnemy = false)
+        {
+            Damage = damage;
+            PoiseDamage = poiseDamage;
+            Crit = crit;
+            HitPoint = hitPoint;
+            HitNormal = hitNormal;
+            FromEnemy = fromEnemy;
+        }
     }
 
+    private Player player;
     public GameObject damagePopupPrefab;
     private int maxHealth;
     public int baseHealth;
@@ -47,7 +78,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     [HideInInspector] public VoxelChunk owningChunk;
 
-    [SerializeField] private Transform torsoBone;
+    public Transform torsoBone;
 
     private bool canBounce = true;
     [SerializeField] private float bounceCooldown = 0.2f;
@@ -65,10 +96,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         ResetObject();
     }
 
-    private void OnDisable()
-    {
-        DifficultyManager.Instance.OnDifficultyChanged -= ApplyDifficultyScaling;
-    }
+    private void OnDisable() => DifficultyManager.Instance.OnDifficultyChanged -= ApplyDifficultyScaling;
 
     private void ApplyDifficultyScaling(bool reset = false)
     {
@@ -79,9 +107,14 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         health = reset ? maxHealth : (int)(maxHealth * healthPercent);
     }
 
-    public void TakeDamage(int damage, bool crit, Vector3 hitPoint = default, Vector3 hitNormal = default, bool fromEnemy = false)
+    public void TakeDamage(DamageInfo damageInfo)
     {
         if (isDestroyed || health <= 0) return;
+
+        int damage = damageInfo.Damage;
+        bool crit = damageInfo.Crit;
+        Vector3 hitPoint = damageInfo.HitPoint;
+        Vector3 hitNormal = damageInfo.HitNormal;
 
         ShowDamagePopup(damage, crit, hitPoint);
 
@@ -101,6 +134,12 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             if (entityType == EntityType.Static)
                 TryBounce(transform);
 
+            if (enemy != null)
+            {
+                int poiseDamage = (int)(damageInfo.PoiseDamage * player.TotalPoiseDamageMultiplier);
+                enemy.ApplyStagger(poiseDamage);
+            }
+
             return;
         }
 
@@ -117,7 +156,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             return;
         }
 
-        DestroyedByEnemy = fromEnemy;
+        DestroyedByEnemy = damageInfo.FromEnemy;
         DestroyObject();
     }
 
@@ -159,6 +198,9 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
                 int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
                 dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
 
+                if (TryGetComponent(out ObjectCategory category) && category != null)
+                    dropAmount = (int)(dropAmount * player.TotalResourceDropMultiplier);
+
                 SpawnDrop(itemDrop.drop, dropAmount, transform.position, torsoBone, scatter: false);
             }
 
@@ -166,37 +208,10 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             LevelManager.Instance.AddExp((int)expGain);
         }
 
-        // Drop items in furnace slots
-        if (TryGetComponent(out FurnaceUnit furnaceUnit))
-        {
-            foreach (FurnaceSlot slot in furnaceUnit.furnaceSlots)
-            {
-                slot.SyncNameFromItem();
-                if (string.IsNullOrEmpty(slot.itemName)) continue;
+        if (entityType != EntityType.Static) return;
 
-                SpawnDrop(
-                    ItemRegistry.GetItemByName(slot.itemName),
-                    slot.count,
-                    transform.position
-                );
-            }
-        }
-
-        // Drop items in chest slots
-        if (TryGetComponent(out StorageUnit storageUnit))
-        {
-            foreach (StoredItem storedItem in storageUnit.items)
-            {
-                storedItem.SyncNameFromItem();
-                if (string.IsNullOrEmpty(storedItem.itemName)) continue;
-
-                SpawnDrop(
-                    ItemRegistry.GetItemByName(storedItem.itemName),
-                    storedItem.count,
-                    transform.position
-                );
-            }
-        }
+        if (TryGetComponent(out StorageContainer storageContainer))
+            DropStoredItems(storageContainer.items);
 
         if (TryGetComponent(out WallSegment wall))
         {
@@ -205,13 +220,25 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             BuildingManager.Instance.DestroyWall(wallPosInt);
         }
 
-        if (entityType == EntityType.Static)
-        {
-            VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, gameObject);
-            owningChunk.isDirty = true;
+        if (TryGetComponent(out OreRockGroup oreRockGroup))
+            oreRockGroup.ReleaseRocks();
 
-            VoxelGrid.Instance.MarkVoxelArea(gameObject, occupy: false, walkable: true);
-            Destroy(gameObject);
+        VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, gameObject);
+        VoxelGrid.Instance.MarkVoxelArea(gameObject, occupy: false, walkable: true);
+        Destroy(gameObject);
+    }
+
+    private void DropStoredItems(ItemData[] items)
+    {
+        foreach (ItemData data in items)
+        {
+            if (data == null || string.IsNullOrEmpty(data.itemName)) continue;
+
+            SpawnDrop(
+                ItemRegistry.GetItemByName(data.itemName),
+                data.count,
+                transform.position
+            );
         }
     }
 
@@ -274,8 +301,17 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     public void ResetObject()
     {
+        StartCoroutine(SetPlayer());
         isDestroyed = false;
         ApplyDifficultyScaling(reset: true);
+    }
+
+    private IEnumerator SetPlayer()
+    {
+        while (GameManager.Instance.playerInstance == null)
+            yield return null;
+
+        player = GameManager.Instance.playerInstance.GetComponent<Player>();
     }
 
     public int GetMaxHealth() => maxHealth;

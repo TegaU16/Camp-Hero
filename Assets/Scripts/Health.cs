@@ -30,6 +30,8 @@ public class Health : MonoBehaviour
     public delegate int PreDamageDelegate(int incomingDamage);
     public event PreDamageDelegate OnPreDamage;
 
+    public bool IsFull => currentHealth >= maxHealth;
+
     private void Start()
     {
         currentHealth = maxHealth;
@@ -51,8 +53,8 @@ public class Health : MonoBehaviour
 
         if (TryGetComponent(out Player player) && attacker != null)
         {
-            if (attacker.TryGetComponent(out Enemy enemy) && enemy.TryGetComponent(out BreakableObject breakable))
-                OnHit?.Invoke(amount, breakable);
+            if (attacker.TryGetComponent(out Enemy enemy) && enemy.breakableObject != null)
+                OnHit?.Invoke(amount, enemy.breakableObject);
 
             if (OnPreDamage != null)
                 amount = OnPreDamage.Invoke(amount);

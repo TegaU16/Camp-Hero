@@ -20,9 +20,10 @@ namespace Game.Crafting
                 itemImage.sprite = recipe.resultItem.icon;
         }
 
+        // Called by button
         public void SetRequirements()
         {
-            CraftingManager.Instance.craftingUI.SetSelectedCraftingItem(this);
+            CraftingUI.Instance.SetSelectedCraftingItem(this);
         }
 
         public bool HasItems()
@@ -31,7 +32,7 @@ namespace Game.Crafting
             {
                 int totalCount = 0;
 
-                foreach (InventorySlot slot in InventoryManager.Instance.inventoryUIHandler.inventorySlots)
+                foreach (InventorySlot slot in InventoryManager.Instance.InventorySlots)
                 {
                     InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
                     if (itemInSlot != null && itemInSlot.item == req.requiredItem)

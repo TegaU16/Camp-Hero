@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Game.Inventory;
+using Game.Saving;
 using UnityEngine;
 
 namespace Game.Storage
@@ -10,29 +11,36 @@ namespace Game.Storage
         public Item item;
         public int minCount = 1;
         public int maxCount = 1;
-        public float probability = 1f; // Chance to appear in loot
     }
 
     [CreateAssetMenu(menuName = "Loot/LootTable")]
     public class LootTable : ScriptableObject
     {
-        public List<LootEntry> lootEntries = new();
+        public WeightedTable<LootEntry> weightedTable = new();
+        [SerializeField] private int minRolls = 6;
+        [SerializeField] private int maxRolls = 8;
 
-        public List<StoredItem> GetRandomLoot()
+        public List<ItemData> GetRandomLoot()
         {
-            List<StoredItem> loot = new();
+            int rolls = Random.Range(minRolls, maxRolls + 1);
+            List<ItemData> loot = new();
 
-            foreach (LootEntry entry in lootEntries)
+            for (int i = 0; i < rolls; i++)
             {
-                if (Random.value > entry.probability) continue;
+                LootEntry entry = weightedTable.Roll();
+                if (entry == null || entry.item == null) continue;
 
-                StoredItem storedItem = new()
+                ToolAttributeProbabilityTable table = InventoryManager.Instance.toolAttributeTable;
+                ToolAttribute toolAttribute = table.GetRandomToolAttribute(entry.item.toolType);
+
+                string attributeID = toolAttribute == null ? "" : toolAttribute.attributeID;
+
+                loot.Add(new ItemData
                 {
-                    item = entry.item,
-                    count = Random.Range(entry.minCount, entry.maxCount + 1)
-                };
-                storedItem.SyncNameFromItem();
-                loot.Add(storedItem);
+                    itemName = entry.item.itemName,
+                    count = Random.Range(entry.minCount, entry.maxCount + 1),
+                    toolAttribute = attributeID
+                });
             }
 
             return loot;

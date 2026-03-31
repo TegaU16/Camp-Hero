@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &6824582053462199859
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.8660254
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_Name
+      value: Stone Visual
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      propertyPath: m_TagString
+      value: Natural
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4690469845173308569}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1712235927670611042}
+  m_SourcePrefab: {fileID: 100100000, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+--- !u!1 &5941550734369878882 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9dcd6982d1d07744ca82b3ad2f138c62, type: 3}
+  m_PrefabInstance: {fileID: 6824582053462199859}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &4690469845173308569
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5941550734369878882}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.24000001, y: 0.10000002, z: 0.120000005}
+  m_Center: {x: -0.0000000037252903, y: 0.05, z: 0}
+--- !u!114 &1712235927670611042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5941550734369878882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07f09f675c1a7b04aa26838d40942e9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Terrain.OreChildRock
+  index: 0
+  parentOre: {fileID: 0}
+  pickupPrefab: {fileID: 4680600429347278188, guid: 090364826fda93a46891003f9b856ab0, type: 3}
+  stoneIcon: {fileID: 21300000, guid: ce4e631952918dd4fb395b9b27b97605, type: 3}

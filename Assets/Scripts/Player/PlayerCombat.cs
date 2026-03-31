@@ -8,10 +8,11 @@ namespace Game.Players
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(ProceduralAnimator))]
     [RequireComponent(typeof(Health))]
+    [RequireComponent(typeof(Player))]
     public class PlayerCombat : MonoBehaviour
     {
-        [Header("Combo Settings")]
-        public float comboResetTime = 1f;
+        [SerializeField] private float comboResetTime = 1f;
+        [SerializeField] private int baseDamage = 1;
 
         private int comboStep = 0;
         private float lastAttackTime;
@@ -19,14 +20,14 @@ namespace Game.Players
         private bool attackQueued;
         [HideInInspector] public bool canAttack = true;
 
+        private Player player;
         private Animator animator;
         private ProceduralAnimator proceduralAnimator;
         private Health health;
 
-        public AttackSet defaultAttackSet;
+        [SerializeField] private AttackSet defaultAttackSet;
         private AttackSet currentAttackSet;
 
-        [HideInInspector] public float critChanceMultiplier;
         [HideInInspector] public bool isCritical = false;
 
         public AttackHitbox playerAttackHitbox;
@@ -34,15 +35,12 @@ namespace Game.Players
 
         public AudioClip swordWhoosh;
 
-        private static readonly Dictionary<ToolType, HashSet<BreakableObject.ObjectType>> toolToObjectMap = new()
-    {
-        { ToolType.Axe, new() { BreakableObject.ObjectType.Wood } },
-        { ToolType.Pickaxe, new() { BreakableObject.ObjectType.Stone } },
-        { ToolType.Sword, new() { BreakableObject.ObjectType.Flesh } }
-    };
-
-        private readonly Dictionary<object, float> damageMultiplierSources = new();
-        private readonly float baseDamageMultiplier = 1f;
+        private static readonly Dictionary<ToolType, HashSet<ObjectType>> toolToObjectMap = new()
+        {
+            { ToolType.Axe, new() { ObjectType.Wood } },
+            { ToolType.Pickaxe, new() { ObjectType.Stone } },
+            { ToolType.Sword, new() { ObjectType.Flesh } }
+        };
 
         public delegate float ModifyDamageDelegate(int currentDamage, bool isCrit);
         public event ModifyDamageDelegate OnModifyDamage;
@@ -54,6 +52,7 @@ namespace Game.Players
 
         void Start()
         {
+            player = GetComponent<Player>();
             animator = GetComponent<Animator>();
             proceduralAnimator = GetComponent<ProceduralAnimator>();
             health = GetComponent<Health>();
@@ -70,11 +69,10 @@ namespace Game.Players
 
         private void HandleComboAttack()
         {
-            if (InventoryManager.Instance.IsExtensionOpen()) return;
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+			if (!GameManager.Instance.IsGameActive) return;
+			if (InventoryManager.Instance.IsExtensionOpen()) return;
             if (!canAttack) return;
 
-            // 1️⃣ Get current AttackSet
             Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
             AttackSet set = (selectedItem != null && selectedItem.attackSet != null)
                 ? selectedItem.attackSet
@@ -82,7 +80,6 @@ namespace Game.Players
 
             if (set.comboAttacks == null || set.comboAttacks.Length == 0) return;
 
-            // 2️⃣ Reset combo if weapon changed
             if (currentAttackSet != set)
             {
                 comboStep = 0;
@@ -91,7 +88,6 @@ namespace Game.Players
                 currentAttackSet = set;
             }
 
-            // 3️⃣ Only start next attack if allowed
             if (!canChain && comboStep != 0)
             {
                 attackQueued = true;
@@ -104,6 +100,12 @@ namespace Game.Players
             int attackIndex = Mathf.Min(comboStep - 1, set.comboAttacks.Length - 1);
             AttackData attack = set.comboAttacks[attackIndex];
 
+            if (attack.staminaCost > player.staminaBar.GetStamina())
+            {
+                comboStep = 0;
+                return;
+            }
+
             proceduralAnimator.SetAttacking(true);
             proceduralAnimator.SetProceduralOverrides(
                 legs: attack.overrideLegs,
@@ -111,11 +113,10 @@ namespace Game.Players
                 torso: attack.overrideTorso
             );
 
-            // 4️⃣ Setup hitbox
             playerAttackHitbox.SetAttackData(attack);
 
-            // 5️⃣ Apply root motion and animator parameters
             animator.applyRootMotion = attack.useRootMotion;
+            animator.speed = player.TotalAttackSpeedMultiplier;
 
             // Determine if this is the first attack in the combo
             bool firstAttack = comboStep == 1;
@@ -151,26 +152,27 @@ namespace Game.Players
             proceduralAnimator.SetAttacking(false);
         }
 
-        public int ItemDamage(BreakableObject hitObject, Item selectedItem, AttackData attackData)
+        public int ItemDamage(BreakableObject hitObject, Item selectedItem)
         {
             if (selectedItem == null)
             {
                 isCritical = false;
-                return 0;
+                return (int)(baseDamage * player.TotalDamageMultiplier);
             }
 
             float minDamage = selectedItem.attackDamage[0];
             float maxDamage = selectedItem.attackDamage[1];
             float damage = Random.Range(minDamage, maxDamage);
 
-            float critChanceWithLuck = selectedItem.critChance * critChanceMultiplier;
+            float critChanceWithLuck = selectedItem.critChance * player.TotalCritChanceMultiplier;
             critChanceWithLuck = Mathf.Clamp(critChanceWithLuck, 0f, 100f);
             bool isCrit = Random.Range(0f, 100f) < critChanceWithLuck;
 
             bool isTypeMatched = IsTypeMatched(hitObject, selectedItem);
             bool isToolLevelSufficient = selectedItem.toolLevel >= hitObject.objectLevel;
+            bool isToolValid = isTypeMatched && isToolLevelSufficient;
 
-            int damageResult = CalculateDamage(damage, isCrit, isTypeMatched && isToolLevelSufficient, selectedItem, attackData);
+            int damageResult = CalculateDamage(damage, isCrit, isToolValid, selectedItem);
 
             if (OnLifesteal != null && hitObject.GetComponent<Enemy>())
             {
@@ -181,29 +183,25 @@ namespace Game.Players
             return hitObject.PlacedByPlayer ? Mathf.Min(10, damageResult) : damageResult;
         }
 
-        private int CalculateDamage(float baseDamage, bool isCrit, bool isToolValid, Item selectedItem, AttackData attackData)
+        private int CalculateDamage(float baseDamage, bool isCrit, bool isToolValid, Item selectedItem)
         {
             isCritical = isCrit;
 
-            float damageMultiplier = TotalDamageMultiplier; // Base multiplier from upgrades
-
-            // Start with item damage range
+            float damageMultiplier = player.TotalDamageMultiplier;
             float damage = baseDamage;
-
-            // Apply AttackData scaling
-            damage *= attackData.damageMultiplier;
+            float critFactor = selectedItem.critFactor * player.TotalCritFactorMultiplier;
 
             // Critical scaling from AttackData
             if (isCritical)
             {
-                damage *= selectedItem.critFactor;
+                damage *= critFactor;
                 OnCriticalHit?.Invoke(); // Notify listeners of a crit
             }
 
             // Apply tool reduction if invalid
             if (!isToolValid)
             {
-                float reduction = isCritical ? selectedItem.critFactor / reductionFactor : 1 / reductionFactor;
+                float reduction = isCritical ? critFactor / reductionFactor : 1 / reductionFactor;
                 damage *= reduction;
             }
 
@@ -218,47 +216,52 @@ namespace Game.Players
         public bool IsTypeMatched(BreakableObject hitObject, Item selectedItem)
         {
             if (selectedItem == null) return false;
+            if (selectedItem.toolType == 0 || hitObject.objectType == ObjectType.None) return true;
 
-            if (selectedItem.toolType == ToolType.None || hitObject.objectType == BreakableObject.ObjectType.None) return true;
-
-            return toolToObjectMap.TryGetValue(selectedItem.toolType, out HashSet<BreakableObject.ObjectType> breakableTypes)
-                && breakableTypes.Contains(hitObject.objectType);
+            return CanBreak(selectedItem, hitObject);
         }
 
-        public float TotalDamageMultiplier
+        private bool CanBreak(Item selectedItem, BreakableObject hitObject)
         {
-            get
+            foreach ((ToolType tool, HashSet<ObjectType> breakables) in toolToObjectMap)
             {
-                if (damageMultiplierSources.Count == 0) return baseDamageMultiplier;
-
-                // Multiply all bonuses together
-                float total = baseDamageMultiplier;
-                foreach (float mult in damageMultiplierSources.Values)
-                    total *= mult;
-
-                return total;
+                if ((selectedItem.toolType & tool) != 0 && breakables.Contains(hitObject.objectType)) return true;
             }
-        }
 
-        public void SetDamageMultiplierSource(object source, float multiplier)
-        {
-            if (source == null) return;
-            damageMultiplierSources[source] = multiplier;
-        }
-
-        public void RemoveDamageMultiplierSource(object source)
-        {
-            if (source == null) return;
-            damageMultiplierSources.Remove(source);
+            return false;
         }
 
         // Called by animation event
         private void PlayWhooshSound()
         {
             float pitchVariance = 0.1f;
-            float pitch = 1f + Random.Range(-pitchVariance, pitchVariance);
+            float pitch = 1f + UnityEngine.Random.Range(-pitchVariance, pitchVariance);
 
             AudioManager.Instance.PlaySFX(swordWhoosh, pitch: pitch);
+        }
+
+        // Called by animation event
+        private void StartWeaponSlash()
+        {
+            GameObject equippedItem = ItemEquip.Instance.HeldItem;
+            if (equippedItem == null) return;
+
+            SlashEffect slashEffect = equippedItem.GetComponentInChildren<SlashEffect>();
+            if (slashEffect == null) return;
+
+            slashEffect.StartSlash();
+        }
+
+        // Called by animation event
+        private void EndWeaponSlash()
+        {
+            GameObject equippedItem = ItemEquip.Instance.HeldItem;
+            if (equippedItem == null) return;
+
+            SlashEffect slashEffect = equippedItem.GetComponentInChildren<SlashEffect>();
+            if (slashEffect == null) return;
+
+            slashEffect.StopSlash();
         }
     }
 }

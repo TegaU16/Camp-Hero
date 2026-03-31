@@ -7,9 +7,9 @@ using Game.Inventory;
 
 public class PickupNotification : MonoBehaviour
 {
-    public Image itemIcon;
-    public TextMeshProUGUI itemCountText;
-    public RectTransform rectTransform;
+    [SerializeField] private Image itemIcon;
+    [SerializeField] private TextMeshProUGUI itemCountText;
+    [SerializeField] private RectTransform rectTransform;
 
     private CanvasGroup canvasGroup;
     private int totalCount;
@@ -67,22 +67,19 @@ public class PickupNotification : MonoBehaviour
 
         canvasGroup.alpha = 0f;
 
-        Sequence seq = DOTween.Sequence();
+        Sequence sequence = DOTween.Sequence();
 
         // Slide in + fade in
-        seq.Append(rectTransform.DOAnchorPosX(BaseAnchoredPos.x, 0.4f).SetEase(Ease.OutCubic));
-        seq.Join(canvasGroup.DOFade(1f, 0.4f));
+        sequence.Append(rectTransform.DOAnchorPosX(BaseAnchoredPos.x, 0.4f).SetEase(Ease.OutCubic));
+        sequence.Join(canvasGroup.DOFade(1f, 0.4f));
 
         // Stay visible
-        seq.AppendInterval(1.5f);
+        sequence.AppendInterval(1.5f);
 
         // Fade out
-        seq.Append(
-            canvasGroup.DOFade(0f, 1f)
-                .OnStart(() => IsFading = true)
-        );
+        sequence.Append(canvasGroup.DOFade(0f, 1f).OnStart(() => IsFading = true));
 
-        seq.OnComplete(() =>
+        sequence.OnComplete(() =>
         {
             gameObject.SetActive(false);
             onCompleteCallback?.Invoke();

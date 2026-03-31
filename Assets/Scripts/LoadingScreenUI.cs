@@ -9,16 +9,16 @@ public class LoadingScreenUI : MonoBehaviour
     public static LoadingScreenUI Instance;
 
     [Header("UI References")]
-    public GameObject loadingScreenRoot;
-    public Image progressBar;
-    public TextMeshProUGUI progressText;
-    public TextMeshProUGUI tipText;
+    [SerializeField] private GameObject loadingScreenRoot;
+    [SerializeField] private Slider progressBarSlider;
+    [SerializeField] private TextMeshProUGUI progressText;
+    [SerializeField] private TextMeshProUGUI tipText;
 
     [Header("Tip Settings")]
-    [TextArea] public List<string> tips = new();
-    public float tipDisplayDuration = 4f; // How long each tip stays visible
-    public float fadeDuration = 0.5f;     // How long fade in/out lasts
-    public int cooldownCycles = 3;        // Number of tips shown before a tip can reappear
+    [TextArea, SerializeField] private List<string> tips = new();
+    [SerializeField] private float tipDisplayDuration = 4f; // How long each tip stays visible
+    [SerializeField] private float fadeDuration = 0.5f;     // How long fade in/out lasts
+    [SerializeField] private int cooldownCycles = 3;        // Number of tips shown before a tip can reappear
 
     private float lastProgress = 0f;
     private int currentTipIndex = -1;
@@ -40,7 +40,7 @@ public class LoadingScreenUI : MonoBehaviour
     {
         loadingScreenRoot.SetActive(true);
 
-        progressBar.fillAmount = 0f;
+        progressBarSlider.value = 0f;
         progressText.text = "0%";
 
         if (tipRoutine != null)
@@ -63,12 +63,11 @@ public class LoadingScreenUI : MonoBehaviour
     public void SetProgress(float progress)
     {
         float clamped = Mathf.Clamp01(progress);
-
         if (clamped < lastProgress) return;
 
         lastProgress = clamped;
 
-        progressBar.fillAmount = clamped;
+        progressBarSlider.value = clamped;
         progressText.text = Mathf.RoundToInt(clamped * 100f) + "%";
     }
 

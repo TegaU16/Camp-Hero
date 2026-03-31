@@ -40,7 +40,7 @@ namespace Game.Players
 
         [Header("Combat Values")]
         public float staminaCost = 10f;
-        public float poiseDamage = 5f;          // e.g. for stagger systems
+        public int poiseDamage = 5;
 
         [Header("Procedural Override")]
         public bool overrideLegs = false;

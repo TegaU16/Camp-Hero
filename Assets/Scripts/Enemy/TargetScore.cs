@@ -51,9 +51,6 @@ namespace Game.AI.Enemies
         }
 
         // Helper to get the position for scoring
-        public Vector3 GetPosition()
-        {
-            return target != null ? target.position : simulatedPosition;
-        }
+        public Vector3 GetPosition() => target != null ? target.position : simulatedPosition;
     }
 }

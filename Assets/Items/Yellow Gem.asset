@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Yellow Gem
   equippedPrefab: {fileID: 3165396035135136774, guid: 8a1ffa93bed486b47893eb35a92fb5fb, type: 3}
   itemDrop: {fileID: 5203723472698150520, guid: 91aa8488365786d4288f56f71ed49886, type: 3}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Roasted Apple
   equippedPrefab: {fileID: 5474095379368652304, guid: b13116fc482fce94da8f9d1de1310965, type: 3}
   itemDrop: {fileID: 8623349339665724986, guid: b77edadc6d7dfc246bf53545c24e8156, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 10
   plantData: {fileID: 0}
   fuelValue: 0

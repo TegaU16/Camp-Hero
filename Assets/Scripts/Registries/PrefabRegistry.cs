@@ -13,32 +13,34 @@ namespace Game.Registries
             public List<GameObject> prefabs = new();
         }
 
-        public List<PrefabCategory> categories = new()
+        private static readonly string[] RequiredCategories =
         {
-            new PrefabCategory { categoryName = "Resources" },
-            new PrefabCategory { categoryName = "Builds" },
-            new PrefabCategory { categoryName = "Drops" },
-            new PrefabCategory { categoryName = "Enemies" },
-            new PrefabCategory { categoryName = "Animals" },
-            new PrefabCategory { categoryName = "General Structures" },
-            new PrefabCategory { categoryName = "Important Structures" },
+            "Resources",
+            "Builds",
+            "Drops",
+            "Enemies",
+            "Animals",
+            "General Structures",
+            "Important Structures",
+            "Effects",
+            "Text Notifications"
         };
+
+        public List<PrefabCategory> categories = new();
 
         public static PrefabRegistry Instance { get; private set; }
 
         private static Dictionary<string, GameObject> prefabDict;
 
-        void Awake()
+        private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
+            if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
+
+            Instance = this;
 
             if (prefabDict != null && prefabDict.Count > 0) return;
 
@@ -62,14 +64,25 @@ namespace Game.Registries
             }
         }
 
+        private void OnValidate()
+        {
+            foreach (string categoryName in RequiredCategories)
+            {
+                if (!categories.Exists(c => c.categoryName == categoryName))
+                    categories.Add(new PrefabCategory { categoryName = categoryName });
+            }
+
+            categories.Sort((a, b) =>
+                Array.IndexOf(RequiredCategories, a.categoryName)
+                .CompareTo(Array.IndexOf(RequiredCategories, b.categoryName)));
+        }
+
         public static GameObject GetPrefabByKey(string key) =>
             prefabDict.TryGetValue(key, out GameObject prefab) ? prefab : null;
 
         public static List<GameObject> GetPrefabsInCategory(string categoryName)
         {
-            PrefabCategory category = Instance.categories
-                .Find(c => c.categoryName == categoryName);
-
+            PrefabCategory category = Instance.categories.Find(c => c.categoryName == categoryName);
             return category != null ? category.prefabs : new List<GameObject>();
         }
     }

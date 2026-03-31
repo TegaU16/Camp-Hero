@@ -5,21 +5,20 @@ public class GameOverUI : MonoBehaviour
 {
     public static GameOverUI Instance;
 
-    [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private Transform statsContainer;
     [SerializeField] private GameObject statRowPrefab;
     [SerializeField] private GameObject categoryHeaderPrefab;
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
     }
 
     public void DisplayStats(RunStats stats)
     {
-        // --- Score ---
-        scoreText.text = $"Score\n{stats.totalExpGained}";
-
         // --- Clear old UI entries ---
         foreach (Transform child in statsContainer)
             Destroy(child.gameObject);

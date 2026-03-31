@@ -15,10 +15,11 @@ MonoBehaviour:
   itemTypes: 9
   actionType: 0
   maxStack: 20
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d4c03372162040e40a03dd20bb55120e, type: 3}
   itemName: Wood
-  equippedPrefab: {fileID: 0}
-  itemDrop: {fileID: 0}
+  equippedPrefab: {fileID: 5243352452108032205, guid: 12f08a973beddac4a81a5660054ba517, type: 3}
+  itemDrop: {fileID: 8230007836131536971, guid: 02a138a2095e51844803eca926ada3df, type: 3}
+  rarity: 0
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 11400000, guid: fe3d6ed991e0ada418cd1f3f4dd182d4, type: 2}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 5

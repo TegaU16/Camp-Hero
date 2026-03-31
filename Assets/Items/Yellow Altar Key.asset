@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Yellow Altar Key
   equippedPrefab: {fileID: 4901610619207469864, guid: 89be0173094aca0439de5f022aa0f934, type: 3}
   itemDrop: {fileID: 4151988024654692442, guid: abd62541abe54704cad01aa4a9b62175, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

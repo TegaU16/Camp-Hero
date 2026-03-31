@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.AI.Enemies;
 using Game.Players;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Upgrades
 {
@@ -42,20 +43,24 @@ namespace Game.Upgrades
                 if (enemy == null ||
                     enemy.GetCurrentState() == Enemy.State.Dead ||
                     Vector3.Distance(center, enemy.transform.position) > radius ||
-                    visited.Contains(enemy))
-                    continue;
+                    visited.Contains(enemy)) continue;
 
                 visited.Add(enemy); // mark as hit by this chain
 
-                int damage = baseDamage;
+                int carryThroughDamage = baseDamage;
                 if (overflow > 0)
-                    damage += Mathf.RoundToInt(overflow * overflowMultiplier);
+                    carryThroughDamage += Mathf.RoundToInt(overflow * overflowMultiplier);
 
-                if (enemy.TryGetComponent(out BreakableObject enemyBreakable))
+                if (enemy.breakableObject != null)
                 {
-                    enemyBreakable.TakeDamage(damage, crit: false);
+                    DamageInfo carryThroughDamageInfo = new
+                    (
+                        damage: carryThroughDamage
+                    );
 
-                    if (enemyBreakable.GetHealth() <= 0)
+                    enemy.breakableObject.TakeDamage(carryThroughDamageInfo);
+
+                    if (enemy.breakableObject.GetHealth() <= 0)
                         killedThisChain.Add(enemy);
                 }
 
@@ -83,8 +88,8 @@ namespace Game.Upgrades
             // Subscribe to every enemy's OnEnemyKilled event
             foreach (Enemy enemy in EnemyManager.Instance.GetActiveEnemies())
             {
-                if (enemy.TryGetComponent(out BreakableObject bo))
-                    bo.OnEnemyKilled += OnEnemyKilled;
+                if (enemy.breakableObject != null)
+                    enemy.breakableObject.OnEnemyKilled += OnEnemyKilled;
             }
         }
 
@@ -95,8 +100,8 @@ namespace Game.Upgrades
             // Unsubscribe
             foreach (Enemy enemy in EnemyManager.Instance.GetActiveEnemies())
             {
-                if (enemy.TryGetComponent(out BreakableObject bo))
-                    bo.OnEnemyKilled -= OnEnemyKilled;
+                if (enemy.breakableObject != null)
+                    enemy.breakableObject.OnEnemyKilled -= OnEnemyKilled;
             }
         }
     }

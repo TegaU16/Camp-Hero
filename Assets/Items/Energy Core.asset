@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Energy Core
   equippedPrefab: {fileID: 939546307154746809, guid: 2c2d907b2cb1bd748afb7be0e06d490b, type: 3}
   itemDrop: {fileID: 6188174445967036791, guid: f425d0cf5c60bde42ae900d7e9142bf2, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

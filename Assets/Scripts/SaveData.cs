@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Inventory;
 using Game.Storage;
 using Game.Terrain.Structures;
 using UnityEngine;
@@ -104,22 +105,37 @@ namespace Game.Saving
         {
             if (instanceObj == null)
             {
+                Debug.LogWarning($"{prefabID} instance is null");
                 savedStateJson = null;
                 return;
             }
 
             StorageUnit storage = instanceObj.GetComponentInChildren<StorageUnit>();
-
             if (storage != null)
             {
                 savedStateJson = storage.SaveState();
                 return;
             }
 
-            ISaveableObject saveable = instanceObj.GetComponentInChildren<ISaveableObject>();
-            // fallback for non-storage objects
-            savedStateJson = saveable?.SaveState();
+            ISaveableObject[] saveables = instanceObj.GetComponentsInChildren<ISaveableObject>();
+            List<string> allStates = new();
+
+            foreach (ISaveableObject saveable in saveables)
+            {
+                string state = saveable.SaveState();
+                if (!string.IsNullOrEmpty(state))
+                    allStates.Add(state);
+            }
+
+            savedStateJson = JsonUtility.ToJson(new MultiSaveData { states = allStates });
+
         }
+    }
+
+    [System.Serializable]
+    public class MultiSaveData
+    {
+        public List<string> states;
     }
 
     [System.Serializable]
@@ -133,8 +149,15 @@ namespace Game.Saving
     public class ItemData
     {
         public string itemName;
+        public string toolAttribute;
         public int count;
         public int position;
+    }
+
+    [System.Serializable]
+    public class RockSaveData
+    {
+        public List<int> removedRocks;
     }
 
     [System.Serializable]
@@ -222,10 +245,24 @@ namespace Game.Saving
     [System.Serializable]
     public class FurnaceSaveData
     {
-        public string inputJson;
-        public string outputJson;
-        public string fuelDataJson;
+        public ItemData input;
+        public ItemData output;
+        public ItemData fuel;
+        public float smeltProgress;
         public float currentFuel;
+    }
+
+    [System.Serializable]
+    public class ReforgeTableSaveData
+    {
+        public ItemData tool;
+        public ItemData material;
+    }
+
+    [System.Serializable]
+    public class StorageSaveData
+    {
+        public List<ItemData> storedItems;
     }
 
     [System.Serializable]

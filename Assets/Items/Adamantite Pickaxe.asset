@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Adamantite Pickaxe
   equippedPrefab: {fileID: 1904878581342297375, guid: 815cf67629dac7d459c3dd989372645c, type: 3}
   itemDrop: {fileID: 5596515248738443585, guid: d0e9789c4a099c54082f7214c4fd47d8, type: 3}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,12 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 4
-  toolType: 1
+  toolType: 2
+  toolAttribute: {fileID: 0}
+  itemsToPair:
+  - {fileID: 11400000, guid: 1392e31e79a279a4480ef92733410e09, type: 2}
+  - {fileID: 11400000}
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

@@ -27,39 +27,42 @@ namespace Game.Players
         public static PlayerStatsManager Instance;
 
         [Header("Menu References")]
-        public GameObject campfireStatsMenu;
-        public GameObject playerSkillsSelectorMenu;
-        public GameObject playerSkillMenu;
+        [SerializeField] private GameObject campfireStatsMenu;
+        [SerializeField] private GameObject playerSkillsSelectorMenu;
+        [SerializeField] private GameObject playerSkillMenu;
 
         [Header("Skill Menu UI")]
-        public GameObject skillLabel;
-        public TextMeshProUGUI availablePointsText;
-        public TextMeshProUGUI playerAvailableGoldenPointsText;
-        public TextMeshProUGUI campfireAvailableGoldenPointsText;
-        public TextMeshProUGUI levelText;
+        [SerializeField] private GameObject skillLabel;
+        [SerializeField] private TextMeshProUGUI availablePointsText;
+        [SerializeField] private TextMeshProUGUI playerAvailableGoldenPointsText;
+        [SerializeField] private TextMeshProUGUI campfireAvailableGoldenPointsText;
+        [SerializeField] private TextMeshProUGUI levelText;
 
         [Header("Player Stats")]
         public PlayerStats stats;
         private Player player;
 
         [Header("Add Stat Button Settings")]
-        public GameObject addStatButtonObj;
-        public Sprite activeSprite;
-        public Sprite inactiveSprite;
+        [SerializeField] private GameObject addStatButtonObj;
+        [SerializeField] private Sprite activeSprite;
+        [SerializeField] private Sprite inactiveSprite;
         private Image addStatButtonImg;
         private Button addStatButton;
 
         [Header("Skills List Menu")]
-        public GameObject skillsListMenu;
+        [SerializeField] private GameObject skillsListMenu;
 
         private Stat selectedStat;
 
         private void Awake()
         {
-            if (Instance == null)
-                Instance = this;
-            else
+            if (Instance != null && Instance != this)
+            {
                 Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
         }
 
         private void Start()
@@ -73,6 +76,7 @@ namespace Game.Players
             CloseStatsMenu();
         }
 
+        // Called by button
         public void AllocatePoint()
         {
             if (stats.availablePoints <= 0) return;
@@ -105,7 +109,7 @@ namespace Game.Players
             if (selectedStat != null)
             {
                 bool isMaxed = selectedStat.Value == selectedStat.MaxValue;
-                levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {selectedStat.Value + 1}";
+                levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {selectedStat.Value}";
             }
         }
 
@@ -125,7 +129,7 @@ namespace Game.Players
             UpdateStatOuterUI(stat);
         }
 
-        public void UpdateStatOuterUI(Stat stat) => stat.OuterLevelText.text = $"{stat.Value + 1}/{stat.MaxValue}";
+        public void UpdateStatOuterUI(Stat stat) => stat.OuterLevelText.text = $"{stat.Value}/{stat.MaxValue}";
 
         public void ToggleCampfireStatsMenu(bool open)
         {
@@ -204,7 +208,7 @@ namespace Game.Players
                 skillName.text = selectedStat.Name;
             }
 
-            levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {stat.Value + 1}";
+            levelText.text = isMaxed ? "Lv. MAX" : $"Lv. {stat.Value}";
             RefreshUpgradeUI(selectedStat.upgrades);
             HideNonSelectedUpgrades(selectedStat);
         }
@@ -232,6 +236,9 @@ namespace Game.Players
             {
                 RefreshUpgradeUI(stats.campfireUpgrades, showLevelRequirement: true);
             }
+
+            if (UpgradeTooltipMenu.Instance.IsShowing(upgrade))
+                UpgradeTooltipMenu.Instance.RefreshCurrent();
         }
 
         private void RefreshUpgradeUI<T>(IEnumerable<UpgradeBase<T>> upgrades, bool showLevelRequirement = false)

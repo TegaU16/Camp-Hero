@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Game;
 using Game.AI.Enemies;
 using Game.Saving;
@@ -14,44 +15,46 @@ public class DayNightCycle : MonoBehaviour
     [Header("Time Settings")]
     public float dayDurationInSeconds = 120f;
 
-    [Range(0, 24)] public float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
-    [Range(0, 24)] public float nightStart = 18f;
-    [Range(0, 24)] public float nightEnd = 6f;
+    [SerializeField, Range(0, 24)] private float timeOfDay = 12f; // 0 = Midnight, 12 = Noon
+    [SerializeField, Range(0, 24)] private float nightStart = 18f;
+    [SerializeField, Range(0, 24)] private float nightEnd = 6f;
 
     private int currentDay = 1;
     private bool hasAdvancedDayToday = false;
 
     [Header("Sky Settings")]
-    public Material proceduralSkybox;
+    [SerializeField] private Material proceduralSkybox;
 
-    public Light sun;
-    public Light moon;
+    [SerializeField] private Light sun;
+    [SerializeField] private Light moon;
 
-    public AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
-    public AnimationCurve atmosphereThickness;
+    [SerializeField] private AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+    [SerializeField] private AnimationCurve atmosphereThickness;
 
-    public Gradient sunColor;
-    public Gradient moonColor;
-    public Gradient skyTint;
-    public Gradient zenithGradient;   // Zenith/top of sky
-    public Gradient horizonGradient;
+    [SerializeField] private Gradient sunColor;
+    [SerializeField] private Gradient moonColor;
+    [SerializeField] private Gradient skyTint;
+    [SerializeField] private Gradient zenithGradient;   // Zenith/top of sky
+    [SerializeField] private Gradient horizonGradient;
 
-    public float sunDistance = 1000f;
-    public float moonDistance = 1000f;
+    [SerializeField] private float sunDistance = 1000f;
+    [SerializeField] private float moonDistance = 1000f;
 
     private GameObject player;
 
     [Header("UI")]
-    public Image sunMoonIcon;
-    public Sprite sunIcon;
-    public Sprite moonIcon;
-    public TextMeshProUGUI dayCountText;
-    public TextMeshProUGUI timeOfDayText;
+    [SerializeField] private Image sunMoonIcon;
+    [SerializeField] private Sprite sunIcon;
+    [SerializeField] private Sprite moonIcon;
+    [SerializeField] private TextMeshProUGUI dayCountText;
+    [SerializeField] private TextMeshProUGUI timeOfDayText;
     private bool isNight;
 
     [Header("References")]
     public DayTextUI dayTextUI;
     public EnemyPool enemyPool;
+
+    public Action<int> OnDayAdvanced;
 
     private void Awake()
     {
@@ -73,7 +76,7 @@ public class DayNightCycle : MonoBehaviour
 
     void Update()
     {
-        if (!GameManager.Instance.IsGameManagerReady()) return;
+        if (!GameManager.Instance.IsGameActive) return;
         if (sun == null || moon == null) return;
 
         // Update time
@@ -169,13 +172,7 @@ public class DayNightCycle : MonoBehaviour
     public void AdvanceDay()
     {
         currentDay++;
-
-        if (dayTextUI != null)
-            dayTextUI.ShowDay(currentDay);
-
-        if (enemyPool != null)
-            enemyPool.AdjustPoolsForNewDay(currentDay);
-
+        OnDayAdvanced.Invoke(currentDay);
         UpdateDayUI();
     }
 

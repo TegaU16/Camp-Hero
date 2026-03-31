@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Campfire Slow Effect
   m_EditorClassIdentifier: Assembly-CSharp::Game.StatusEffects.SlowEffect
   duration: 1
-  slowFactor: 0.5
+  particleSystem: {fileID: 2443842651793275490, guid: 04842d14871fb204783bd17def5b9542, type: 3}
   noTimer: 1
+  slowFactor: 0.5

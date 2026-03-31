@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
   m_Name: Chest
   m_EditorClassIdentifier: 
-  itemTypes: 1
+  itemTypes: 3
   actionType: 1
   maxStack: 20
   icon: {fileID: 21300000, guid: 7be611736b9cdfe479559e3c0984188c, type: 3}
   itemName: Chest
   equippedPrefab: {fileID: 7852133574617813940, guid: 5b9d57920fffe6c46aa928afb29fcf46, type: 3}
   itemDrop: {fileID: 5151602917863921798, guid: a4646a7fafc356247a8b7cc90462aeee, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 1225668700139714346, guid: da9dc4e1327235544a8fb291365dfb82, type: 3}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 10

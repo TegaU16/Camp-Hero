@@ -257,6 +257,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 59e1bb0bf872e2f43875bf912f65967c, type: 3}
       insertIndex: -1
       addedObject: {fileID: -162860116511018393}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 59e1bb0bf872e2f43875bf912f65967c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -752923592126578783}
     - targetCorrespondingSourceObject: {fileID: -3621796501373493266, guid: 59e1bb0bf872e2f43875bf912f65967c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5919891428130430993}
@@ -554,20 +557,26 @@ MonoBehaviour:
   attackCooldown: 2
   damage: 10
   knockbackForce: 5
+  poise: 100
   enemyIcon: {fileID: 0}
+  breakableObject: {fileID: 0}
   rangedAttackScripts:
   - {fileID: 2089011608938922683}
   - {fileID: 5018646145604257070}
   moveSpeed: 4.5
   gravity: -9.8
+  knockbackDuration: 5
   preferredTargets: 0100000004000000000000000200000003000000
   targetStickTime: 3
   minTargetMovementThreshold: 1
   repathCooldown: 0.5
   repathDistanceThreshold: 1
+  attackRangeBuffer: 1.5
   pathRequestCooldown: 0.2
   personality: {fileID: 11400000, guid: d86ff76e6429c9c4f817d30a8634a0fc, type: 2}
   animator: {fileID: 0}
+  particleEffectScaler: {fileID: -752923592126578783}
+  deathEffect: {fileID: 3963187424393952677, guid: 86b0122c3a3ea93469b6b24deb63d6cd, type: 3}
 --- !u!114 &4997834886555257523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -594,7 +603,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotationSpeed: 720
   speedParam: Speed
-  yLerpSpeed: 5
 --- !u!143 &1122250685634668941
 CharacterController:
   m_ObjectHideFlags: 0
@@ -668,6 +676,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
   prefabKey: gem_guardian_blue
+--- !u!114 &-752923592126578783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478956996202849501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e63f30bb9ade59b43a5b6b157dd98b92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleEffectScaler
+  targetRenderers: []
+  sizeMultiplier: 1
+  speedMultiplier: 1
+  emissionMultiplier: 1
 --- !u!4 &662841344545821141 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8982970722707158951, guid: 59e1bb0bf872e2f43875bf912f65967c, type: 3}

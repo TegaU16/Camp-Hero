@@ -8,6 +8,6 @@ namespace Game.StatusEffects
     {
         public override void Apply(Enemy target) => target.ApplyStun(this);
 
-        public override void ResetEffect(Enemy target) => throw new System.NotImplementedException();
+        public override void ResetEffect(Enemy target) => target.StopStun(this);
     }
 }

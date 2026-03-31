@@ -14,8 +14,7 @@ public class HoldToPurchase : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private bool isHolding = false;
     private Coroutine holdRoutine;
 
-    private StatUpgrade currentPlayerUpgrade;
-    private CampfireUpgrade currentCampfireUpgrade;
+    private UpgradeBase currentUpgrade;
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -42,10 +41,13 @@ public class HoldToPurchase : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
             if (timeHeld >= holdDuration)
             {
-                if (currentCampfireUpgrade != null)
-                    PlayerStatsManager.Instance.PurchaseUpgrade(currentCampfireUpgrade);
-                else if (currentPlayerUpgrade != null)
-                    PlayerStatsManager.Instance.PurchaseUpgrade(currentPlayerUpgrade);
+                if (currentUpgrade != null)
+                {
+                    if (currentUpgrade is StatUpgrade playerUpgrade)
+                        PlayerStatsManager.Instance.PurchaseUpgrade(playerUpgrade);
+                    else if (currentUpgrade is CampfireUpgrade campfireUpgrade)
+                        PlayerStatsManager.Instance.PurchaseUpgrade(campfireUpgrade);
+                }
 
                 holdProgressImage.fillAmount = 0f;
                 yield break;
@@ -58,9 +60,5 @@ public class HoldToPurchase : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         holdProgressImage.fillAmount = 0f;
     }
 
-    public void SetCurrentUpgrades(StatUpgrade playerUpgrade, CampfireUpgrade campfireUpgrade)
-    {
-        currentPlayerUpgrade = playerUpgrade; 
-        currentCampfireUpgrade = campfireUpgrade;
-    }
+    public void SetCurrentUpgrade(UpgradeBase upgrade) => currentUpgrade = upgrade;
 }

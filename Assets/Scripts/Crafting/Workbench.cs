@@ -4,20 +4,17 @@ namespace Game.Crafting
 {
     public class Workbench : MonoBehaviour, IInteractable
     {
+        public Sprite workbenchIcon;
+        public Sprite ObjectIcon => workbenchIcon;
+
         public void Interact()
         {
             if (CraftingManager.Instance != null)
-                CraftingManager.Instance.craftingUI.ToggleCraftingMenu(CraftingSource.Workbench);
+                CraftingUI.Instance.ToggleCraftingMenu(CraftingSource.Workbench);
         }
 
-        public string GetInteractText()
-        {
-            return "";
-        }
+        public string GetInteractText() => "Craft\n<color=#27ef60>\"E\"</color>";
 
-        public Transform GetTransform()
-        {
-            return transform;
-        }
+        public Transform GetTransform() => transform;
     }
 }

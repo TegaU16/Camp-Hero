@@ -48,6 +48,8 @@ namespace Game
         public bool IsGameOver { get; private set; }
         public bool IsPaused { get; private set; }
 
+        public bool IsGameActive => !IsGameOver && !IsPaused && !IsLoading;
+
         private PlayerSaveData pendingPlayerData;
 
         private void Awake()
@@ -58,15 +60,13 @@ namespace Game
                 Destroy(gameObject);
         }
 
-        private void Start()
-        {
-            LoadGame();
-        }
+        private void Start() => LoadGame();
 
         private void Update()
         {
             if (IsGameOver) return;
             if (!Input.GetKeyDown(togglePauseKey)) return;
+
             if (InventoryManager.Instance.JustClosedExtension)
             {
                 Cursor.lockState = CursorLockMode.Locked;
@@ -82,6 +82,7 @@ namespace Game
         }
 
         private void OnApplicationQuit() => SaveGame(true);
+
         private void OnApplicationPause(bool pause)
         {
             if (pause)
@@ -101,7 +102,11 @@ namespace Game
                 spawnPos.y = 3f;
 
             playerInstance = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-            if (!playerInstance.TryGetComponent(out Player _)) return;
+            if (!playerInstance.TryGetComponent(out Player _))
+            {
+                Debug.LogError("Couldn't find player");
+                return;
+            }
 
             HookSystems(playerInstance);
 
@@ -136,7 +141,6 @@ namespace Game
 
             InventoryManager.Instance.AddSavedPlayerItems(data.inventory.savedItems);
             InventoryManager.Instance.LoadDiscoveredItems(data.inventory.discoveredItems);
-            InventoryManager.Instance.EquipSelectedItem();
 
             PlayerStatsManager.Instance.stats.availablePoints = data.attributes.availablePoints;
             PlayerStatsManager.Instance.stats.goldenPoints = data.attributes.goldenPoints;
@@ -155,10 +159,9 @@ namespace Game
         {
             if (player == null) return;
 
-            player.BindUI(
-                    UIManager.Instance.GetHealthBar("Player"),
-                    UIManager.Instance.GetStaminaBar()
-                );
+            HealthBar healthBar = UIManager.Instance.GetHealthBar("Player");
+            StaminaBar staminaBar = UIManager.Instance.GetStaminaBar();
+            player.BindUI(healthBar, staminaBar);
 
             if (player.healthBar != null)
                 player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
@@ -206,6 +209,15 @@ namespace Game
             player.staminaBar.SetNewStamina((int)player.staminaBar.maxStamina);
 
             BindPlayerUI(player);
+
+            CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+            if (cinemachineCamera == null) yield break;
+
+            if (Camera.main.TryGetComponent(out CinemachineBrain brain))
+                brain.enabled = true;
+
+            cinemachineCamera.Follow = player.cameraTarget;
+            cinemachineCamera.LookAt = player.cameraTarget;
         }
 
         private void HookSystems(GameObject playerInstance)
@@ -220,11 +232,15 @@ namespace Game
 
             CinemachineCamera cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
             if (cinemachineCamera == null || !playerInstance.TryGetComponent(out Player player)) return;
+
             if (player.cameraTarget == null)
             {
                 Debug.LogWarning("Camera target not yet initialized");
                 return;
             }
+
+            if (Camera.main.TryGetComponent(out CinemachineBrain brain))
+                brain.enabled = true;
 
             cinemachineCamera.Follow = player.cameraTarget;
             cinemachineCamera.LookAt = player.cameraTarget;
@@ -470,6 +486,7 @@ namespace Game
                 UpdateWorldState(WorldState.Failed);
         }
 
+        // Called by button
         public void ReturnToMainMenu()
         {
             Time.timeScale = 1f;
@@ -508,6 +525,7 @@ namespace Game
             Cursor.visible = false;
         }
 
+        // Called by button
         public void QuitGame()
         {
             Time.timeScale = 1f;
@@ -526,8 +544,7 @@ namespace Game
             SaveSystem.SaveWorldMeta(meta);
         }
 
-        public bool IsGameManagerReady() => !IsGameOver && !IsPaused && !IsLoading;
-
+        // Called by button
         public void OpenSettingsMenu() => settingsMenuUI.SetActive(true);
     }
 }

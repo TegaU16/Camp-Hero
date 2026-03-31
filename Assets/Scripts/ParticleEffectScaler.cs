@@ -10,14 +10,14 @@ public class ParticleEffectScaler : MonoBehaviour
     public float speedMultiplier = 1f;
     public float emissionMultiplier = 1f;
 
-    Bounds bounds;
+    private Bounds bounds;
 
     void Awake()
     {
         CalculateBounds();
     }
 
-    void CalculateBounds()
+    private void CalculateBounds()
     {
         if (targetRenderers == null || targetRenderers.Length == 0)
             targetRenderers = GetComponentsInChildren<Renderer>();

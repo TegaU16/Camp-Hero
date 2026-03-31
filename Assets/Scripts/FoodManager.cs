@@ -21,7 +21,7 @@ namespace Game.Food
         void Update()
         {
             if (!Input.GetMouseButtonDown(1)) return;
-            if (!GameManager.Instance.IsGameManagerReady()) return;
+            if (!GameManager.Instance.IsGameActive) return;
             if (InventoryManager.Instance.IsExtensionOpen()) return;
 
             Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);

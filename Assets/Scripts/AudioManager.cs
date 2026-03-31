@@ -145,7 +145,7 @@ public class AudioManager : MonoBehaviour
 
     // === SFX FUNCTIONS ===
 
-    public void PlaySFX(string clipName, float pitch = 1f, Vector3? position = null)
+    public void PlaySFX(string clipName, bool loop = false, float pitch = 1f, Vector3? position = null)
     {
         if (!sfxDict.TryGetValue(clipName, out AudioClip clip))
         {
@@ -153,18 +153,29 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        PlaySFX(clip, pitch, position); // reuse the clip overload
+        PlaySFX(clip, loop, pitch, position); // reuse the clip overload
     }
 
-    public void PlaySFX(AudioClip clip, float pitch = 1f, Vector3? position = null)
+    public void PlaySFX(AudioClip clip, bool loop = false, float pitch = 1f, Vector3? position = null)
     {
         if (clip == null) return;
 
         AudioSource src = GetPooledSource();
+
+        bool is3D = position.HasValue;
+
         src.transform.position = position ?? Vector3.zero;
 
         src.pitch = pitch;
         src.clip = clip;
+        src.loop = loop;
+
+        // 2D vs 3D setup
+        src.spatialBlend = is3D ? 1f : 0f;      // 1 = fully 3D, 0 = UI/flat sound
+        src.rolloffMode = AudioRolloffMode.Linear;
+        src.minDistance = 2f;                   // full volume within 2 units
+        src.maxDistance = 20f;                  // silent at 20 units
+
         src.Play();
 
         StartCoroutine(ReturnAfter(src, clip.length / Mathf.Abs(Mathf.Max(0.0001f, pitch))));

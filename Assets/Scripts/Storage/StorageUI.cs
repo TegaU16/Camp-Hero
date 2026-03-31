@@ -1,48 +1,72 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using Game.Inventory;
+using Game.Saving;
+using Game.Registries;
 
 namespace Game.Storage
 {
     public class StorageUI : MonoBehaviour
     {
+        public static StorageUI Instance;
+
         public GameObject slotPrefab;
         public Transform slotParent;
 
         private StorageUnit linkedStorage;
-        private readonly List<GameObject> slotInstances = new();
+        private readonly List<InventorySlot> slotInstances = new();
 
+        private bool isOpen;
         private float menuHeight;
         public float slotHeight = 36f;
 
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
+
         public void Open(StorageUnit storage)
         {
+            if (isOpen) return;
+
+            isOpen = true;
             linkedStorage = storage;
 
-            foreach (StoredItem storedItem in linkedStorage.items)
-                storedItem.ResolveItemFromName();
+            if (linkedStorage.TryGetComponent(out Animator animator))
+                animator.SetTrigger("Open");
 
             ClearSlots();
 
+            InventoryManager.Instance.mainInventory.SetActive(true);
             InventoryManager.Instance.OnInventoryOpen();
-            InventoryManager.Instance.activeChest = linkedStorage;
             BuildSlots();
 
+            linkedStorage.inventorySlots = slotInstances;
             gameObject.SetActive(true);
         }
 
         public void Close()
         {
-            linkedStorage.isOpen = false;
+            if (!isOpen) return;
 
+            isOpen = false;
             SaveItemsToStorage();
             ClearSlots();
 
+            if (linkedStorage.TryGetComponent(out Animator animator))
+                animator.SetTrigger("Close");
+
+            InventoryManager.Instance.mainInventory.SetActive(false);
             InventoryManager.Instance.darkBackground.SetActive(false);
 
+            linkedStorage.inventorySlots = null;
             linkedStorage = null;
-
             gameObject.SetActive(false);
         }
 
@@ -51,15 +75,23 @@ namespace Game.Storage
             for (int i = 0; i < linkedStorage.maxSlots; i++)
             {
                 GameObject slot = Instantiate(slotPrefab, slotParent);
-                slotInstances.Add(slot);
+                if (!slot.TryGetComponent(out InventorySlot inventorySlot)) continue;
 
-                if (i >= linkedStorage.items.Count) continue;
+                slotInstances.Add(inventorySlot);
 
-                StoredItem storedItem = linkedStorage.items[i];
-                if (storedItem == null || storedItem.item == null) continue;
+                if (i >= linkedStorage.items.Length) continue;
 
-                InventorySlot inventorySlot = slot.GetComponent<InventorySlot>();
-                InventoryManager.Instance.SpawnNewItem(storedItem.item, inventorySlot, storedItem.count);
+                ItemData storedItem = linkedStorage.items[i];
+                if (storedItem == null) continue;
+
+                Item baseItem = ItemRegistry.GetItemByName(storedItem.itemName);
+                if (baseItem == null) continue;
+
+                Item item = baseItem.maxStack > 1 ? baseItem : Instantiate(baseItem);
+                ToolAttribute toolAttribute = ToolAtributeRegistry.GetToolAttributeByName(storedItem.toolAttribute);
+                item.toolAttribute = toolAttribute;
+
+                InventoryManager.Instance.SpawnNewItem(item, inventorySlot, storedItem.count);
             }
 
             // Resize the menu based on number of slots
@@ -84,23 +116,10 @@ namespace Game.Storage
 
         private void ClearSlots()
         {
-            foreach (GameObject slot in slotInstances)
-                Destroy(slot);
+            foreach (InventorySlot slot in slotInstances)
+                Destroy(slot.gameObject);
 
             slotInstances.Clear();
-        }
-
-        public List<InventorySlot> GetInventorySlots()
-        {
-            List<InventorySlot> slots = new();
-
-            foreach (GameObject slot in slotInstances)
-            {
-                if (slot.TryGetComponent(out InventorySlot inventorySlot))
-                    slots.Add(inventorySlot);
-            }
-
-            return slots;
         }
 
         private void SaveItemsToStorage()
@@ -111,20 +130,24 @@ namespace Game.Storage
                 return;
             }
 
-            linkedStorage.items.Clear();
+            int itemCount = linkedStorage.items.Length;
+            linkedStorage.items = new ItemData[itemCount];
 
-            foreach (GameObject slot in slotInstances)
+            for (int i = 0; i < itemCount; i++)
             {
+                InventorySlot slot = slotInstances[i];
+                if (slot == null) return;
+
                 InventoryItem inventoryItem = slot.GetComponentInChildren<InventoryItem>();
                 if (inventoryItem == null || inventoryItem.item == null) continue;
 
-                StoredItem stored = new()
+                ItemData stored = new()
                 {
-                    item = inventoryItem.item,
+                    itemName = inventoryItem.item.itemName,
                     count = Mathf.Max(1, inventoryItem.count)
                 };
-                stored.SyncNameFromItem();
-                linkedStorage.items.Add(stored);
+
+                linkedStorage.items[i] = stored;
             }
         }
     }

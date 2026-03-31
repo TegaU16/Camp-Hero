@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
+using Game.Players;
+using TMPro;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -52,4 +55,19 @@ public class UIManager : MonoBehaviour
     public StaminaBar GetStaminaBar() => staminaBar;
 
     public ShieldBar GetShieldBar() => shieldBar;
+
+    public IEnumerator DisplayTextRoutine(TextMeshProUGUI text, float displayTime, float fadeInTime, float fadeOutTime)
+    {
+        if (!text.TryGetComponent(out CanvasGroup canvasGroup)) yield break;
+
+        text.gameObject.SetActive(true);
+
+        yield return StartCoroutine(Utility.Fade(canvasGroup, 0f, 1f, fadeInTime));
+
+        yield return new WaitForSeconds(displayTime);
+
+        yield return StartCoroutine(Utility.Fade(canvasGroup, 1f, 0f, fadeOutTime));
+
+        text.gameObject.SetActive(false);
+    }
 }

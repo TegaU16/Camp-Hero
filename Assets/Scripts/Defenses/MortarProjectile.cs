@@ -1,5 +1,6 @@
 using Game.AI.Enemies;
 using UnityEngine;
+using static BreakableObject;
 
 namespace Game.Defenses
 {
@@ -7,7 +8,7 @@ namespace Game.Defenses
     public class MortarProjectile : MonoBehaviour
     {
         public float explosionRadius = 3f;
-        public LayerMask damageMask;
+        public LayerMask projectileDamageMask;
         public GameObject explosionEffect;
         public float arcHeight = 5f;
 
@@ -16,7 +17,7 @@ namespace Game.Defenses
         Transform mortar;
 
         private Rigidbody rb;
-        private int damage;
+        private int projectileDamage;
 
         void Awake()
         {
@@ -34,9 +35,9 @@ namespace Game.Defenses
             transform.forward = rb.linearVelocity.normalized;
         }
 
-        public void Launch(Vector3 targetPosition, int damageAmount)
+        public void Launch(Vector3 targetPosition, int projectileDamageAmount)
         {
-            damage = damageAmount;
+            projectileDamage = projectileDamageAmount;
 
             Vector3 start = transform.position;
             Vector3 end = targetPosition;
@@ -77,10 +78,17 @@ namespace Game.Defenses
                 if (!hit.TryGetComponent(out Enemy enemy)) continue;
                 if (!hit.TryGetComponent(out BreakableObject breakable)) continue;
 
-                Vector3 hitPoint = hit.GetComponent<CharacterController>().ClosestPoint(transform.position);
-                Vector3 hitNormal = (hitPoint - transform.position).normalized;
+                Vector3 targetHitPoint = hit.GetComponent<CharacterController>().ClosestPoint(transform.position);
+                Vector3 targetHitNormal = (targetHitPoint - transform.position).normalized;
 
-                breakable.TakeDamage(damage, crit: false, hitPoint, hitNormal);
+                DamageInfo attackDamageInfo = new
+                (
+                    damage: projectileDamage,
+                    hitPoint: targetHitPoint,
+                    hitNormal: targetHitNormal
+                );
+
+                breakable.TakeDamage(attackDamageInfo);
 
                 enemy.OnAttacked(mortar);
             }

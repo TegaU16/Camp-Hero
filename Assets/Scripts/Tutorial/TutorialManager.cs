@@ -1,9 +1,9 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Game.Inventory;
 using Game.Crafting;
+using Game.Inventory;
 using Game.Smelting;
+using UnityEngine;
 
 namespace Game.Tutorial
 {
@@ -11,6 +11,8 @@ namespace Game.Tutorial
     {
         public static TutorialManager Instance;
         private readonly Dictionary<string, TutorialData> tutorials = new();
+
+        public string recipeUnlockTag = "_unlock";
 
         void Awake()
         {
@@ -24,22 +26,42 @@ namespace Game.Tutorial
 
         public void ActivateTutorial(TutorialData data)
         {
+            // Cancel other active popup tutorials
+            if (data.type == TutorialType.PopupMessage)
+            {
+                foreach (TutorialData tutorial in tutorials.Values)
+                {
+                    if (!tutorial.isActive || tutorial.type != TutorialType.PopupMessage || tutorial == data) continue;
+
+                    if (tutorial.id.Contains(recipeUnlockTag))
+                        StartCoroutine(TimeoutRoutine(tutorial));
+                    else
+                        TimeoutTutorialInternal(tutorial);
+                }
+            }
+
             data.isActive = true;
             data.lastTriggeredTime = Time.time;
 
             TutorialEventBus.TriggerTutorial(data);
 
             if (data.duration > 0)
-                Invoke(nameof(TimeoutTutorialInternal), data.duration);
+                StartCoroutine(TimeoutRoutine(data));
+        }
 
-            void TimeoutTutorialInternal()
-            {
-                if (!data.isActive) return;
+        private IEnumerator TimeoutRoutine(TutorialData data)
+        {
+            yield return new WaitForSeconds(data.duration);
 
-                data.isActive = false;
-                Debug.Log($"Tutorial timed out: {data.description}");
-                TutorialEventBus.TimeoutTutorial(data);
-            }
+            if (!data.isActive) yield break;
+
+            TimeoutTutorialInternal(data);
+        }
+
+        private void TimeoutTutorialInternal(TutorialData data)
+        {
+            data.isActive = false;
+            TutorialEventBus.TimeoutTutorial(data);
         }
 
         public void CompleteTutorial(TutorialData data)
@@ -48,17 +70,17 @@ namespace Game.Tutorial
             TutorialEventBus.CompleteTutorial(data);
         }
 
-        public List<TutorialData> CreatePickupCraftingRecipeTutorials(Item item)
+        public void CreatePickupCraftingRecipeTutorials(Item item)
         {
             // Pull recipes intentionally mapped to this item
             List<Item> discoveredItems = InventoryManager.Instance.discoveredItems;
-            CraftingRecipe[] matchingRecipes = CraftingManager.Instance.craftingDatabase.GetRecipesUnlockedByItem(item, discoveredItems);
+            CraftingDatabase craftingDatabase = CraftingManager.Instance.craftingDatabase;
+            CraftingRecipe[] matchingRecipes = craftingDatabase.GetRecipesUnlockedByItem(item, discoveredItems);
 
-            if (matchingRecipes == null || matchingRecipes.Length == 0) return null;
+            if (matchingRecipes == null || matchingRecipes.Length == 0) return;
 
             // Create ScriptableObject instance dynamically
-            CraftingRecipeHighlightTutorial highlightSO =
-                ScriptableObject.CreateInstance<CraftingRecipeHighlightTutorial>();
+            CraftingRecipeHighlightTutorial highlightSO = ScriptableObject.CreateInstance<CraftingRecipeHighlightTutorial>();
 
             highlightSO.targetRecipes = matchingRecipes;
             highlightSO.highlightDuration = 5f;
@@ -66,47 +88,46 @@ namespace Game.Tutorial
             highlightSO.RequireCraftable = false;
             highlightSO.RequireNotCraftedBefore = true;
 
-            List<TutorialData> tutorials = new();
-
             // Create tutorial instances
             foreach (CraftingRecipe recipe in matchingRecipes) 
             {
-                TutorialData tutorial = new()
+                TutorialData highlightTutorial = new()
                 {
                     id = $"{recipe.resultItem.itemName}_crafting",
                     description = $"Highlight recipes unlocked by picking up {item.itemName}",
                     type = TutorialType.HighlightObject,
                     craftingRecipeHighlightData = highlightSO,
                     duration = 5f,
-                    cooldown = 9999f,
+                    cooldown = 9999f
+                };
+                RegisterTutorial(highlightTutorial);
 
-                    triggerCondition = () => true,
-                    completionCondition = null
+                RecipeUnlockNotification notification = new()
+                {
+                    resultItem = recipe.resultItem,
+                    icon = recipe.resultItem.icon,
+                    duration = 2.4f
                 };
 
-                tutorials.Add(tutorial);
+                RecipeUnlockPopupQueue.Instance.Enqueue(notification);
             }
-
-            return tutorials;
         }
 
-        public List<TutorialData> CreatePickupSmeltingRecipeTutorials(Item item)
+        public void CreatePickupSmeltingRecipeTutorials(Item item)
         {
             List<Item> discoveredItems = InventoryManager.Instance.discoveredItems;
-            SmeltingRecipe[] matchingRecipes = FurnaceManager.Instance.smeltingDatabase.GetRecipesUnlockedByItem(item, discoveredItems);
+            SmeltingDatabase smeltingDatabase = FurnaceManager.Instance.smeltingDatabase;
+            SmeltingRecipe[] matchingRecipes = smeltingDatabase.GetRecipesUnlockedByItem(item, discoveredItems);
 
-            if (matchingRecipes == null || matchingRecipes.Length == 0) return null;
+            if (matchingRecipes == null || matchingRecipes.Length == 0) return;
 
-            SmeltingRecipeHighlightTutorial highlightSO =
-                ScriptableObject.CreateInstance<SmeltingRecipeHighlightTutorial>();
+            SmeltingRecipeHighlightTutorial highlightSO = ScriptableObject.CreateInstance<SmeltingRecipeHighlightTutorial>();
 
             highlightSO.targetRecipes = matchingRecipes;
             highlightSO.highlightDuration = 5f;
             highlightSO.cooldown = 9999f;
             highlightSO.RequireSmeltable = false;
             highlightSO.RequireNotSmeltedBefore = true;
-
-            List<TutorialData> tutorials = new();
 
             // Create tutorial instances
             foreach (SmeltingRecipe recipe in matchingRecipes)
@@ -118,16 +139,18 @@ namespace Game.Tutorial
                     type = TutorialType.HighlightObject,
                     smeltingRecipeHighlightData = highlightSO,
                     duration = 5f,
-                    cooldown = 9999f,
-
-                    triggerCondition = () => true,
-                    completionCondition = null
+                    cooldown = 9999f
                 };
+                RegisterTutorial(tutorial);
 
-                tutorials.Add(tutorial);
+                RecipeUnlockNotification notification = new()
+                {
+                    resultItem = recipe.resultItem,
+                    icon = recipe.resultItem.icon,
+                    duration = 2.4f
+                };
+                RecipeUnlockPopupQueue.Instance.Enqueue(notification);
             }
-
-            return tutorials;
         }
 
         public TutorialData GetTutorialData(string id)

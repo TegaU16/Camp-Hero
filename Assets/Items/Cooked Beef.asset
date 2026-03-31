@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Cooked Beef
   equippedPrefab: {fileID: 5958534300661063731, guid: 15c2f87ba45ca6b43ace0c154fd47c94, type: 3}
   itemDrop: {fileID: 901433794703204569, guid: 41f902663e1a9524cbb95ca94f6549f9, type: 3}
+  rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 11400000, guid: 4103c89a7426efd469a04b38058f20c7, type: 2}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 15
   plantData: {fileID: 0}
   fuelValue: 0

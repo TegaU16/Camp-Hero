@@ -19,6 +19,7 @@ MonoBehaviour:
   itemName: Blue Gem
   equippedPrefab: {fileID: 8524752270840117040, guid: 17778c2ea69f3d644870958fe0a8e1ed, type: 3}
   itemDrop: {fileID: 6050269278113603871, guid: 42d1f65788d45234384a31e14b834cc0, type: 3}
+  rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
@@ -29,7 +30,10 @@ MonoBehaviour:
   critChance: 2
   critFactor: 2
   toolLevel: 0
-  toolType: 3
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
   foodValue: 0
   plantData: {fileID: 0}
   fuelValue: 0

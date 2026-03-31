@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4767ff1886483445acea56cdf4882e4, type: 3}
+  m_Name: Dough
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Inventory.Item
+  itemTypes: 16
+  actionType: 0
+  maxStack: 20
+  icon: {fileID: 0}
+  itemName: Dough
+  equippedPrefab: {fileID: 0}
+  itemDrop: {fileID: 0}
+  rarity: 1
+  buildingGhost: {fileID: 0}
+  buildingSize: {x: 1, y: 1}
+  attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}
+  attackDistance: 3
+  attackDamage:
+  - 0
+  - 0
+  critChance: 2
+  critFactor: 2
+  toolLevel: 0
+  toolType: 0
+  toolAttribute: {fileID: 0}
+  itemsToPair: []
+  statusEffect: {fileID: 0}
+  foodValue: 0
+  plantData: {fileID: 0}
+  fuelValue: 0
+  smeltRate: 0.01
+  output: {fileID: 11400000, guid: 102ce8e29e8706446a47f15c52b7b139, type: 2}
+  outputCount: 1

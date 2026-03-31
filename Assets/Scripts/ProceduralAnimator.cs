@@ -245,7 +245,7 @@ public class ProceduralAnimator : MonoBehaviour
         AudioClip clip = clips[Random.Range(0, clips.Length)];
         float pitch = 1f + Random.Range(-footstepPitchVariance, footstepPitchVariance);
 
-        AudioManager.Instance.PlaySFX(clip, pitch, transform.position);
+        AudioManager.Instance.PlaySFX(clip, pitch: pitch, position: transform.position);
     }
 
     public void SetProceduralOverrides(bool legs, bool arms, bool torso)

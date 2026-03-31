@@ -9210,6 +9210,13 @@ AnimationClip:
   m_HasGenericRootTransform: 1
   m_HasMotionFloatCurves: 1
   m_Events:
+  - time: 0
+    functionName: StartWeaponSlash
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 0.041666668
     functionName: PlayWhooshSound
     data: 
@@ -9219,6 +9226,13 @@ AnimationClip:
     messageOptions: 0
   - time: 0.16666667
     functionName: PerformHit
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.45833334
+    functionName: EndWeaponSlash
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
