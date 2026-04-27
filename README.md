@@ -42,5 +42,9 @@ Open the main scene and press Play.
 I alone designed and implemented the core systems of the game, explained in the Features section above.
 
 ## Screenshots / Demo
+<img width="1495" height="836" alt="Screenshot 2026-03-15 104934" src="https://github.com/user-attachments/assets/3426161a-cf28-4c20-ae96-af0ff7a9381b" />
+<img width="299" height="460" alt="Player Screenshot" src="https://github.com/user-attachments/assets/aeaaeb9b-1bca-4947-a72a-7d86fa52fb49" />
+<img width="767" height="588" alt="Screenshot 2026-03-27 205224" src="https://github.com/user-attachments/assets/32bf7cd8-cdc3-4e5a-9fc2-177430e94ee4" />
+<img width="299" height="460" alt="Campfire Screenshot" src="https://github.com/user-attachments/assets/ad8ae36c-841f-4ba0-ad8b-ce466fb378ed" />
 
-(Add screenshots, GIFs, or gameplay clips here)
+
