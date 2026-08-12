@@ -7,7 +7,7 @@ namespace Game.Food
 {
     public class FarmPlot : MonoBehaviour, IInteractable, ISaveableObject
     {
-        public Transform plantSpawnPoint;
+        [SerializeField] private Transform plantSpawnPoint;
         private GameObject currentPlantInstance;
 
         [HideInInspector] public PlantData plantedData;
@@ -17,7 +17,7 @@ namespace Game.Food
 
         private Item selectedItem;
 
-        public Sprite farmPlotIcon;
+        [SerializeField] private Sprite farmPlotIcon;
         public Sprite ObjectIcon => farmPlotIcon;
 
         public void Plant()
@@ -138,7 +138,7 @@ namespace Game.Food
             FarmPlotData data = JsonUtility.FromJson<FarmPlotData>(json);
             if (data == null) return;
 
-            plantedData = PlantRegistry.GetPlantByKey(data.plantName);
+            plantedData = PlantRegistry.Instance.GetByKey(data.plantName);
             growthTimer = data.growthTimer;
             currentStage = data.currentStage;
             isPlanted = data.isPlanted;

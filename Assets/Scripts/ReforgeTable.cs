@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using Game.Inventory;
-using Game.Registries;
 using Game.Saving;
 using Game.Storage;
 using UnityEngine;
@@ -16,7 +14,7 @@ namespace Game.Reforge
             Material
         }
 
-        private readonly InventorySlot[] inventorySlots;
+        private readonly InventorySlot[] inventorySlots = new InventorySlot[2];
 
         [HideInInspector] public InventorySlot toolSlot;
         [HideInInspector] public InventorySlot materialSlot;
@@ -63,7 +61,6 @@ namespace Game.Reforge
         {
             if (changedSlot == toolSlot)
                 SaveSlot(toolSlot, Tool);
-
             else if (changedSlot == materialSlot)
                 SaveSlot(materialSlot, Material);
         }
@@ -112,7 +109,7 @@ namespace Game.Reforge
             reforgeTableUI.Open(this);
         }
 
-        public string GetInteractText() => "Use Reforge Table";
+        public string GetInteractText() => "Use Reforge Table\n<color=#27ef60>\"E\"</color>";
 
         public Transform GetTransform() => transform;
     }

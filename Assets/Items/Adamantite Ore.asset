@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 20
   icon: {fileID: 21300000, guid: 9a508e3ae84f7334da5ffcef339e1674, type: 3}
   itemName: Adamantite Ore
-  equippedPrefab: {fileID: 4980052497018192382, guid: 506b3037b19fd1e4ab57b4f1b118ac6c, type: 3}
-  itemDrop: {fileID: 6959633915284627044, guid: 36347d8e6926c9a40a29f615c2005e35, type: 3}
+  equippedPrefab: {fileID: 172416633605965695, guid: 506b3037b19fd1e4ab57b4f1b118ac6c, type: 3}
+  itemDrop: {fileID: 1326980777123683517, guid: 36347d8e6926c9a40a29f615c2005e35, type: 3}
   rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

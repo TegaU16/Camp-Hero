@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Game.Inventory;
 using Game.Tutorial;
 using TMPro;
@@ -37,6 +36,8 @@ namespace Game.Crafting
 
         private CraftingSource currentSource;
 
+        private GameObject CraftingMenu => InventoryManager.Instance.craftingMenuUI;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -52,36 +53,22 @@ namespace Game.Crafting
         {
             selectedItem = null;
             selectedTab = craftingTabs[0]; // First tab is ALL
+            currentSource = CraftingSource.Base;
             ApplyFilters();
         }
 
-        public void ToggleCraftingMenu(CraftingSource menuCraftingSource)
+        public void OpenCraftingMenu(CraftingSource menuCraftingSource)
         {
             if (InventoryManager.Instance.IsExtensionOpen()) return;
+            if (!CraftingMenu.TryGetComponent(out CanvasGroup canvasGroup)) return;
+            if (!CraftingMenu.TryGetComponent(out RectTransform rectTransform)) return;
 
-            if (selectedItem == null)
-            {
-                craftingItemIconBackground.SetActive(false);
-                craftingItemName.text = "Select an item to craft";
-                craftButton.interactable = false;
-
-                if (craftButton.TryGetComponent(out InteractiveButton interactiveButton))
-                    interactiveButton.Deselect();
-
-                foreach (Transform child in requirementPrefabParent.transform)
-                    Destroy(child.gameObject);
-            }
+            ClearRecipe();
 
             currentSource = menuCraftingSource;
             ApplyFilters();
 
-            if (InventoryManager.Instance.mainInventory != null)
-                InventoryManager.Instance.mainInventory.SetActive(true);
-
-            if (InventoryManager.Instance.craftingMenuUI != null)
-                InventoryManager.Instance.craftingMenuUI.SetActive(true);
-
-            InventoryManager.Instance.OnInventoryOpen();
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
         }
 
         /// <summary>
@@ -99,22 +86,18 @@ namespace Game.Crafting
 
                 GameObject reqGO = Instantiate(craftingItem.requirementPrefab, requirementPrefabParent.transform);
 
-                // Set requirement background
                 Image bg = reqGO.GetComponent<Image>();
                 if (bg != null && craftingItem.requirementBackground != null)
                     bg.sprite = Instantiate(craftingItem.requirementBackground.sprite);
 
-                // Set requirement icon
                 Transform iconTransform = reqGO.transform.Find("Req. Icon");
                 if (iconTransform != null && iconTransform.TryGetComponent(out Image iconImage))
                     iconImage.sprite = item.requiredItem.icon;
 
-                // Set requirement count
                 Transform count = reqGO.transform.Find("Req. Count");
                 if (count != null && count.TryGetComponent(out TextMeshProUGUI countText))
                     countText.text = item.count.ToString();
 
-                // Set requirement name
                 Transform name = reqGO.transform.Find("Req. Name");
                 if (name != null && name.TryGetComponent(out TextMeshProUGUI nameText))
                     nameText.text = item.requiredItem.name.ToString();
@@ -157,11 +140,7 @@ namespace Game.Crafting
 
         private void ApplyFilters()
         {
-            List<Transform> allItems = craftingItemParent.GetComponentsInChildren<Transform>()
-                .Where(t => t != craftingItemParent)
-                .ToList();
-
-            foreach (Transform child in allItems)
+            foreach (Transform child in craftingItemParent)
             {
                 if (!child.TryGetComponent(out CraftingItem item)) continue;
 
@@ -186,10 +165,17 @@ namespace Game.Crafting
             ApplyFilters();
         }
 
-        public void SetSelectedCategory(CraftingCategory category, Button button)
+        private void ClearRecipe()
         {
-            selectedTab.category = category;
-            selectedTab.tabButton = button;
+            craftingItemIconBackground.SetActive(false);
+            craftingItemName.text = "Select an item to craft";
+            craftButton.interactable = false;
+
+            if (craftButton.TryGetComponent(out InteractiveButton interactiveButton))
+                interactiveButton.Deselect();
+
+            foreach (Transform child in requirementPrefabParent.transform)
+                Destroy(child.gameObject);
         }
     }
 }

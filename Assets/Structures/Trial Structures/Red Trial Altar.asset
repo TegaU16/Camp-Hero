@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3903e82d5188598488e57b0128cd6afa, type: 3}
+  m_Name: Red Trial Altar
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Terrain.Structures.StructureTemplate
+  structureName: Red Trial Altar
+  prefabParts:
+  - prefab: {fileID: 6915518471841579358, guid: fa08af1ce65b94948a6b68ee0fb29584, type: 3}
+    localOffset: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 5595305104368721200, guid: 208e7b2c5817b454fa2cf181c2f698df, type: 3}
+    localOffset: {x: 3, y: 0, z: 3}
+  - prefab: {fileID: 5595305104368721200, guid: 208e7b2c5817b454fa2cf181c2f698df, type: 3}
+    localOffset: {x: 3, y: 0, z: -3}
+  - prefab: {fileID: 5595305104368721200, guid: 208e7b2c5817b454fa2cf181c2f698df, type: 3}
+    localOffset: {x: -3, y: 0, z: 3}
+  - prefab: {fileID: 5595305104368721200, guid: 208e7b2c5817b454fa2cf181c2f698df, type: 3}
+    localOffset: {x: -3, y: 0, z: -3}
+  lootTable: {fileID: 0}

@@ -7,20 +7,27 @@ namespace Game.AI.Enemies.Attacks
     public class LaserAttack : MonoBehaviour, IRangedAttackBehavior
     {
         [SerializeField] private GameObject laserPrefab;
-        [SerializeField] private float laserDuration = 2f;
-        [SerializeField] private int baseDamagePerSecond = 10;
         [SerializeField] private LayerMask hitMask;
         [SerializeField] private Transform laserOrigin;
 
+        [SerializeField] private float laserSpeed = 30f;
+        [SerializeField] private float spinSpeed = 360f;
+        [SerializeField] private float laserDuration = 2f;
+        [SerializeField] private int baseDamagePerSecond = 10;
+
+        private float currentLength = 0f;
+
         private GameObject laserInstance;
-        private LineRenderer laser;
         private Transform target;
         private Transform attacker;
 
         private float elapsedTime = 0f;
         private float damageBuffer = 0f;
 
-        public string AttackName => "Laser";
+        private Transform beamVisual;
+        private readonly float beamThickness = 0.2f;
+
+        public RangedAttackType AttackType => RangedAttackType.Laser;
 
         public void ExecuteAttack(Transform attacker, Transform target, int damage)
         {
@@ -28,55 +35,61 @@ namespace Game.AI.Enemies.Attacks
 
             this.attacker = attacker;
             this.target = target;
-            this.elapsedTime = 0f;
-            this.damageBuffer = 0f;
+            elapsedTime = 0f;
+            damageBuffer = 0f;
+
+            currentLength = 0f;
 
             laserInstance = Instantiate(laserPrefab, attacker.position, Quaternion.identity, attacker);
-            laser = laserInstance.GetComponent<LineRenderer>();
-            laser.enabled = true;
+            beamVisual = laserInstance.transform;
 
             StartCoroutine(TrackAndDamage());
         }
 
         private IEnumerator<WaitForEndOfFrame> TrackAndDamage()
         {
+            Vector3 origin = laserOrigin.position;
+            Vector3 lockedDirection = (Utility.GetTargetPoint(target) - origin).normalized;
+
+            currentLength = 0f;
+            damageBuffer = 0f;
+
             while (elapsedTime < laserDuration)
             {
-                if (attacker == null || target == null || laser == null) break;
+                if (attacker == null || target == null) break;
 
-                Vector3 origin = laserOrigin.position;
-                Vector3 targetPos = target.position;
+                origin = laserOrigin.position;
 
-                Vector3 direction = (targetPos - origin).normalized;
+                currentLength += laserSpeed * Time.deltaTime;
+                currentLength = Mathf.Min(currentLength, 100f);
 
-                Quaternion lookRotation = Quaternion.LookRotation(direction);
-                attacker.rotation = Quaternion.Slerp(attacker.rotation, lookRotation, Time.deltaTime * 10f);
+                Vector3 endPoint = origin + lockedDirection * currentLength;
 
-                if (Physics.Raycast(origin, direction, out RaycastHit hit, 100f, hitMask))
+                if (Physics.Raycast(origin, lockedDirection, out RaycastHit hit, currentLength, hitMask))
                 {
-                    laser.SetPosition(0, origin);
-                    laser.SetPosition(1, hit.point);
+                    endPoint = hit.point;
 
-                    float deltaDamage = baseDamagePerSecond * DifficultyManager.Instance.GetDamageMultiplier() * Time.deltaTime;
+                    float deltaDamage =
+                        baseDamagePerSecond *
+                        DifficultyManager.Instance.GetDamageMultiplier() *
+                        Time.deltaTime;
+
                     damageBuffer += deltaDamage;
 
                     int wholeDamage = Mathf.FloorToInt(damageBuffer);
+
                     if (wholeDamage > 0)
                     {
                         if (hit.collider.TryGetComponent(out Health health))
                         {
                             health.TakeDamage(wholeDamage);
                         }
-                        else if (target.TryGetComponent(out BreakableObject breakable))
+                        else if (hit.collider.TryGetComponent(out BreakableObject breakable))
                         {
-                            Vector3 targetHitPoint = hit.collider.ClosestPoint(transform.position);
-                            Vector3 targetHitNormal = (targetHitPoint - transform.position).normalized;
-
-                            DamageInfo attackDamageInfo = new
-                            (
+                            DamageInfo attackDamageInfo = new(
                                 damage: wholeDamage,
-                                hitPoint: targetHitPoint,
-                                hitNormal: targetHitNormal,
+                                hitPoint: hit.point,
+                                hitNormal: hit.normal,
                                 fromEnemy: true
                             );
 
@@ -86,11 +99,28 @@ namespace Game.AI.Enemies.Attacks
                         damageBuffer -= wholeDamage;
                     }
                 }
-                else
+
+                Vector3 beamDir = endPoint - origin;
+                float distance = beamDir.magnitude;
+
+                if (distance > 0.001f)
                 {
-                    // Nothing hit — laser reaches max distance
-                    laser.SetPosition(0, origin);
-                    laser.SetPosition(1, origin + direction * 100f);
+                    Vector3 center = origin + beamDir * 0.5f;
+
+                    Quaternion baseRotation = Quaternion.LookRotation(beamDir.normalized);
+
+                    Quaternion spin = Quaternion.AngleAxis(
+                        Time.time * spinSpeed,
+                        beamDir.normalized
+                    );
+
+                    beamVisual.SetPositionAndRotation(center, baseRotation * spin);
+
+                    beamVisual.localScale = new Vector3(
+                        beamThickness,
+                        beamThickness,
+                        distance
+                    );
                 }
 
                 elapsedTime += Time.deltaTime;

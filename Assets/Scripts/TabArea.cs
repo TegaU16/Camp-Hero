@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TabArea : MonoBehaviour
 {
-    public Tab[] tabs;
+    [SerializeField] private Tab[] tabs;
 
     void Start()
     {

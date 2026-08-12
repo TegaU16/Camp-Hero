@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 20
   icon: {fileID: 21300000, guid: d2ee464cb6c36a14ba5bf57b5126c110, type: 3}
   itemName: Cooked Beef
-  equippedPrefab: {fileID: 5958534300661063731, guid: 15c2f87ba45ca6b43ace0c154fd47c94, type: 3}
-  itemDrop: {fileID: 901433794703204569, guid: 41f902663e1a9524cbb95ca94f6549f9, type: 3}
+  equippedPrefab: {fileID: 8947628520662090267, guid: 15c2f87ba45ca6b43ace0c154fd47c94, type: 3}
+  itemDrop: {fileID: 5194415582708873464, guid: 41f902663e1a9524cbb95ca94f6549f9, type: 3}
   rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

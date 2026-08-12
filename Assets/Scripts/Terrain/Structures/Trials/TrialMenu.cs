@@ -7,15 +7,19 @@ using UnityEngine.UI;
 
 namespace Game.Terrain.Structures.Trials
 {
+    [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
     public class TrialMenu : MonoBehaviour
     {
         public static TrialMenu Instance;
 
         [Header("UI References")]
-        public GameObject waveEntryPrefab;
-        public Transform waveListContainer;
-        public Button startWaveButton;
-        public GameObject enemyIconPrefab;
+        [SerializeField] private GameObject waveEntryPrefab;
+        [SerializeField] private Transform waveListContainer;
+        [SerializeField] private Button startWaveButton;
+        [SerializeField] private GameObject enemyIconPrefab;
+
+        private RectTransform rectTransform;
+        private CanvasGroup canvasGroup;
 
         private TextMeshProUGUI startButtonText;
         private int selectedWave;
@@ -25,20 +29,33 @@ namespace Game.Terrain.Structures.Trials
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Instance = this;
+        }
+
+        private void Start()
+        {
+            rectTransform = GetComponent<RectTransform>();
+            canvasGroup = GetComponent<CanvasGroup>();
             startButtonText = startWaveButton.GetComponentInChildren<TextMeshProUGUI>();
         }
 
         public void Open(TrialAltar altar)
         {
             currentAltar = altar;
-            gameObject.SetActive(true);
 
             CameraControlToggle.Instance.SetCameraControl(false);
 
             TryGiveTrialQuest();
             BuildWaveList();
             UpdateButtons();
+
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
         }
 
         private void BuildWaveList()
@@ -67,12 +84,22 @@ namespace Game.Terrain.Structures.Trials
                 {
                     GameObject iconGO = Instantiate(enemyIconPrefab, enemyListContainer);
 
-                    Image icon = iconGO.transform.Find("Icon").GetComponent<Image>();
+                    Transform iconTransform = iconGO.transform.Find("Icon");
+                    if (iconTransform == null)
+                    {
+                        Debug.LogWarning("Missing Icon child");
+                        continue;
+                    }
+
+                    Image icon = iconTransform.GetComponent<Image>();
                     TextMeshProUGUI enemyCountText = iconGO.transform.Find("Enemy Count Text").GetComponent<TextMeshProUGUI>();
 
-                    if (waveEnemy.enemyPrefab == null || !waveEnemy.enemyPrefab.TryGetComponent(out Enemy enemy)) continue;
+                    if (waveEnemy.enemyPrefab == null || !waveEnemy.enemyPrefab.TryGetComponent(out EnemyCombat enemyCombat)) continue;
 
-                    icon.sprite = enemy.enemyIcon;
+                    if (enemyCombat.enemyIcon == null)
+                        Debug.LogWarning($"Missing icon for enemy: {enemyCombat.name}", enemyCombat);
+
+                    icon.sprite = enemyCombat.enemyIcon;
 
                     if (enemyCountText != null)
                         enemyCountText.text = waveEnemy.count.ToString();

@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   structureName: Cart Standing
   prefabParts:
-  - {fileID: 2079356759240114476, guid: fe1f49eb294744b429683839d768d3c4, type: 3}
-  localOffsets: []
+  - prefab: {fileID: 2079356759240114476, guid: fe1f49eb294744b429683839d768d3c4, type: 3}
+    localOffset: {x: 0, y: 0, z: 0}
+  lootTable: {fileID: 11400000, guid: 1168ce3bd2342c14c91e7f292d390fcb, type: 2}

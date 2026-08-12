@@ -167,12 +167,12 @@ namespace Game
                 player.healthBar.Initialize(player.health.maxHealth, player.health.GetHealth());
 
             if (player.staminaBar != null)
-                player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.staminaBar.GetStamina());
+                player.staminaBar.Initialize(player.playerAttributes.MaxStamina, (int)player.CurrentStamina);
 
             player.UpdateVitals();
         }
 
-        public IEnumerator RespawnPlayer(Player player)
+        public IEnumerator RespawnPlayer(Player player, SimpleRagdollController ragdollController)
         {
             if (player == null)
             {
@@ -194,6 +194,9 @@ namespace Game
             Vector3 respawnOffset = new(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
             Vector3 respawnPosition = campfirePosition + respawnOffset;
 
+            if (ragdollController != null)
+                ragdollController.DisableRagdoll();
+
             if (player.TryGetComponent(out CharacterController controller))
             {
                 controller.enabled = false;
@@ -205,7 +208,7 @@ namespace Game
                 player.transform.position = respawnPosition;
             }
 
-            player.health.SetHealth(player.health.maxHealth);
+            player.health.ResetHealth(player.health.maxHealth);
             player.staminaBar.SetNewStamina((int)player.staminaBar.maxStamina);
 
             BindPlayerUI(player);
@@ -279,7 +282,7 @@ namespace Game
 
             if (exit)
             {
-                foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars.ToList())
+                foreach (TrialAltar trialAltar in TrialAltarSpawner.Instance.activeTrialAltars.ToList())
                 {
                     if (trialAltar != null && trialAltar.IsWaveInProgress())
                         trialAltar.FailTrial();
@@ -477,7 +480,7 @@ namespace Game
             Cursor.visible = true;
 
             Button[] buttonsInScene = FindObjectsByType<Button>(FindObjectsSortMode.None);
-            Utility.DisableButtonsOutside(gameOverMenuUI.transform, buttonsInScene, true);
+            Utility.DisableButtonsOutside(gameOverMenuUI.transform, buttonsInScene, open: true);
 
             IsGameOver = true;
             if (win)

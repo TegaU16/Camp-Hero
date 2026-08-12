@@ -49,8 +49,19 @@ namespace Game.AI.Enemies
 
         public List<Targetable> GetActiveTargets()
         {
-            activeTargets.RemoveAll(t => t == null || !t.gameObject.activeInHierarchy);
+            activeTargets.RemoveAll(IsInvalidTarget);
             return activeTargets;
+        }
+
+        private bool IsInvalidTarget(Targetable target)
+        {
+            if (target == null || !target.gameObject.activeInHierarchy) return true;
+
+            if (target.TryGetComponent(out BreakableObject breakable)) return breakable.GetHealth() <= 0;
+
+            if (target.TryGetComponent(out Health health)) return health.GetHealth() <= 0;
+
+            return true;
         }
 
         private void Update()
@@ -62,7 +73,7 @@ namespace Game.AI.Enemies
             }
         }
 
-        IEnumerator RunGlobalScan()
+        private IEnumerator RunGlobalScan()
         {
             int batchSize = 10;
             for (int i = 0; i < activeEnemies.Count; i += batchSize)
@@ -71,9 +82,7 @@ namespace Game.AI.Enemies
                 for (int j = 0; j < count; j++)
                 {
                     Enemy enemy = activeEnemies[i + j];
-
-                    if (enemy.GetCurrentState() == Enemy.State.Idle || enemy.GetCurrentState() == Enemy.State.Chasing)
-                        enemy.AssignBestTarget(activeTargets);
+                    enemy.EnemyTargeting.AssignBestTarget(activeTargets);
                 }
                 yield return null; // wait for next frame
             }

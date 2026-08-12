@@ -7,11 +7,7 @@ namespace Game.Crafting
         public Sprite workbenchIcon;
         public Sprite ObjectIcon => workbenchIcon;
 
-        public void Interact()
-        {
-            if (CraftingManager.Instance != null)
-                CraftingUI.Instance.ToggleCraftingMenu(CraftingSource.Workbench);
-        }
+        public void Interact() => CraftingUI.Instance.OpenCraftingMenu(CraftingSource.Workbench);
 
         public string GetInteractText() => "Craft\n<color=#27ef60>\"E\"</color>";
 

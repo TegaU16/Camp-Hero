@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Game.Terrain
@@ -10,5 +12,14 @@ namespace Game.Terrain
         public NoiseSettings noiseSettings;
         public List<GameObject> treePrefabs = new();
         public List<GameObject> rockPrefabs = new();
+
+        [NonSerialized]
+        public NoiseLayer CachedNoiseLayer;
+
+        [NonSerialized]
+        public bool NoiseInitialized;
+
+        [NonSerialized]
+        public NativeArray<float> CachedCurveTable;
     }
 }

@@ -14,4 +14,10 @@ namespace Worlds
         Failed,
         Won
     }
+
+    public enum WorldType
+    {
+        Normal,
+        Tutorial
+    }
 }

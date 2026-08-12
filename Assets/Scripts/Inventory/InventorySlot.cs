@@ -77,7 +77,7 @@ namespace Game.Inventory
 
             // Reduce original count and refresh
             originalItem.count -= splitCount;
-            originalItem.RefreshCount();
+            StartCoroutine(originalItem.RefreshCount());
 
             // Instantiate the split item directly under the UI root to avoid a single-frame race
             GameObject splitItemGo = Instantiate(InventoryManager.Instance.inventoryItemPrefab, transform);
@@ -112,16 +112,16 @@ namespace Game.Inventory
 
             if (targetSlot.transform.childCount == 0)
             {
-                InventoryItem.selectedItem.PlaceInSlot(targetSlot.transform);
+                InventoryItem.selectedItem.PlaceInSlot(targetSlot);
                 DisableItemDrag();
                 return;
             }
 
             InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>(this);
-            if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
+            if (existingItem.item == InventoryItem.selectedItem.item)
                 StackItems(existingItem, InventoryItem.selectedItem);
             else
-                InventoryItem.selectedItem.RevertToOriginalSlot();
+                InventoryItem.selectedItem.SwapWith(existingItem);
 
             DisableItemDrag();
         }
@@ -205,15 +205,18 @@ namespace Game.Inventory
 
             if (targetSlot.transform.childCount == 0)
             {
-                InventoryItem.selectedItem.PlaceInSlot(targetSlot.transform);
+                InventoryItem.selectedItem.PlaceInSlot(targetSlot);
                 return;
             }
 
-            InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>(this);
-            if (existingItem != null && existingItem.item == InventoryItem.selectedItem.item)
+            InventoryItem existingItem = targetSlot.GetComponentInChildren<InventoryItem>();
+            if (existingItem.item == InventoryItem.selectedItem.item)
+            {
                 StackItems(existingItem, InventoryItem.selectedItem);
-            else
-                InventoryItem.selectedItem.RevertToOriginalSlot();
+                return;
+            }
+
+            InventoryItem.selectedItem.SwapWith(existingItem);
         }
 
         private InventorySlot FindTargetSlot(GameObject targetObject)
@@ -240,14 +243,14 @@ namespace Game.Inventory
             if (combinedCount <= maxStack)
             {
                 existingItem.count = combinedCount;
-                existingItem.RefreshCount();
+                StartCoroutine(existingItem.RefreshCount());
                 Destroy(selectedItem.gameObject);
                 InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
                 return;
             }
 
             existingItem.count = maxStack;
-            existingItem.RefreshCount();
+            StartCoroutine(existingItem.RefreshCount());
             InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
 
             int overflow = combinedCount - maxStack;
@@ -261,7 +264,7 @@ namespace Game.Inventory
             }
 
             selectedItem.count = overflow;
-            selectedItem.RefreshCount();
+            StartCoroutine(selectedItem.RefreshCount());
             selectedItem.RevertToOriginalSlot();
             InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
         }
@@ -274,12 +277,11 @@ namespace Game.Inventory
             Item item = inventoryItem.item;
             int remaining = inventoryItem.count;
 
-            // Remove source immediately
-            Destroy(inventoryItem.gameObject);
-
             // Move count elsewhere
             remaining = StackIntoExistingSlots(item, remaining, this);
             remaining = PlaceIntoEmptySlots(item, remaining, this);
+
+            Destroy(inventoryItem.gameObject);
 
             // If leftover exists, recreate in original slot
             if (remaining > 0)
@@ -303,6 +305,8 @@ namespace Game.Inventory
         {
             if (item == null || amount <= 0) return 0;
 
+            InventoryItem sourceItem = excludeSlot.GetComponentInChildren<InventoryItem>(this);
+
             foreach (InventorySlot slot in InventoryManager.Instance.InventorySlots)
             {
                 if (slot == excludeSlot || slot.transform.childCount <= 0) continue;
@@ -314,7 +318,15 @@ namespace Game.Inventory
                 int toMove = Mathf.Min(space, amount);
 
                 existing.count += toMove;
-                existing.RefreshCount();
+
+                InventoryAnimations.AnimateTransfer(
+                    sourceItem,
+                    slot,
+                    0.2f,
+                    () =>
+                    {
+                        existing.StartCoroutine(existing.RefreshCount());
+                    });
 
                 amount -= toMove;
                 if (amount <= 0) return 0;
@@ -327,12 +339,26 @@ namespace Game.Inventory
         {
             if (item == null || amount <= 0) return 0;
 
+            InventoryItem sourceItem = excludeSlot.GetComponentInChildren<InventoryItem>(this);
+
             foreach (InventorySlot slot in InventoryManager.Instance.InventorySlots)
             {
                 if (slot == excludeSlot || slot.transform.childCount != 0) continue;
 
                 int toPlace = Mathf.Min(amount, item.maxStack);
                 InventoryManager.Instance.SpawnNewItem(item, slot, toPlace);
+
+                GameObject itemObj = slot.GetComponentInChildren<InventoryItem>().gameObject;
+                itemObj.SetActive(false);
+
+                InventoryAnimations.AnimateTransfer(
+                    sourceItem,
+                    slot,
+                    0.2f,
+                    () =>
+                    {
+                        itemObj.SetActive(true);
+                    });
 
                 amount -= toPlace;
                 if (amount <= 0) return 0;
@@ -349,6 +375,7 @@ namespace Game.Inventory
             {
                 SlotType.Fuel => (item.itemTypes & ItemType.Fuel) != 0,
                 SlotType.Smelting => (item.itemTypes & ItemType.Smelting) != 0,
+                SlotType.Reforge => (item.itemTypes & ItemType.Reforging) != 0,
                 _ => true,
             };
         }
@@ -359,8 +386,10 @@ namespace Game.Inventory
 
             InventoryManager.Instance.DropItem(InventoryItem.selectedItem.item, InventoryItem.selectedItem.count);
             Destroy(InventoryItem.selectedItem.gameObject);
+
             ItemTooltipUI.Instance.HideTooltip();
             InventoryItem.selectedItem.DisableDragLayering();
+
             StopFollowCursor();
 
             InventoryManager.Instance.OnInventoryItemChanged?.Invoke(this);
@@ -368,7 +397,6 @@ namespace Game.Inventory
 
         #region Cursor Follow
 
-        // --- Cursor follow helpers (single coroutine)
         private void StartFollowCursor(InventoryItem item)
         {
             StopFollowCursor();

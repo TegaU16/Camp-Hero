@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 1
   icon: {fileID: 21300000, guid: 046ae971129910645b0f468be83e902a, type: 3}
   itemName: Red Gem
-  equippedPrefab: {fileID: 1618809588335297403, guid: 4a9eaf4fffb27da4d973a44bd0f59ecd, type: 3}
-  itemDrop: {fileID: 2168880673430411687, guid: fa05b98bb5dbc0c48977a0a1cbe3f07a, type: 3}
+  equippedPrefab: {fileID: 6904639582391422641, guid: 4a9eaf4fffb27da4d973a44bd0f59ecd, type: 3}
+  itemDrop: {fileID: 2634607642224027363, guid: fa05b98bb5dbc0c48977a0a1cbe3f07a, type: 3}
   rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

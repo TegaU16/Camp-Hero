@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Storage;
 using UnityEngine;
 
 namespace Game.Terrain.Structures
@@ -8,6 +9,9 @@ namespace Game.Terrain.Structures
     {
         public string structureName;
         public List<PrefabPart> prefabParts;
+
+        [Header("Optional")]
+        public LootTable lootTable;
     }
 
     [System.Serializable]

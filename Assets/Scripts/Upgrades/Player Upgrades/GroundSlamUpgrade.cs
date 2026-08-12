@@ -14,15 +14,18 @@ namespace Game.Upgrades
         public float radius = 5f;
         public StunEffect stun;
         public string slamAnimationTrigger = "Ground Slam";
+        [SerializeField] private AudioClip slamSound;
 
         public LayerMask enemyLayer;
+
+        public GameObject slamEffectPrefab;
 
         private Player player;
 
         public override void Activate(Player playerScript)
         {
             if (isOnCooldown) return;
-            if (player.CurrentStamina < staminaCost) return;
+            if (playerScript.CurrentStamina < staminaCost) return;
 
             player = playerScript;
             player.UseStamina(staminaCost);
@@ -36,9 +39,6 @@ namespace Game.Upgrades
             // Trigger the slam animation
             if (player.TryGetComponent(out Animator animator))
                 animator.SetTrigger(slamAnimationTrigger);
-
-            if (player.TryGetComponent(out ProceduralAnimator proceduralAnimator))
-                proceduralAnimator.enabled = false;
 
             player.StartCoroutine(CooldownRoutine()); // begins the cooldown timer
         }
@@ -74,8 +74,9 @@ namespace Game.Upgrades
                     stun.Apply(enemy);
             }
 
-            // Optionally add visual or sound effects here
-            // e.g. Instantiate(slamEffectPrefab, origin, Quaternion.identity);
+            AudioManager.Instance.PlaySFX(slamSound);
+
+            Instantiate(slamEffectPrefab, origin, Quaternion.identity);
         }
     }
 }

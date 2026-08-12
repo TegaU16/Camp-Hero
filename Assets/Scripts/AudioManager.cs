@@ -35,22 +35,20 @@ public class AudioManager : MonoBehaviour
     [Header("Music Settings")]
     public float musicFadeDuration = 1f;
     private Coroutine fadeCoroutine;
+    private Coroutine musicLoopCoroutine;
+    private string currentMusicCategory;
 
     void Awake()
     {
-        // Singleton pattern
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        // Build dictionaries
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         musicCategoryDict = new Dictionary<string, List<AudioClip>>();
         foreach (MusicCategory category in musicCategories)
         {
@@ -65,7 +63,6 @@ public class AudioManager : MonoBehaviour
                 sfxDict[clip.name] = clip;
         }
 
-        // Subscribe to scene changes
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -92,7 +89,7 @@ public class AudioManager : MonoBehaviour
     }
 
     // === MUSIC FUNCTIONS ===
-    public void PlayMusicCategory(string categoryName, bool loop = true)
+    public void PlayMusicCategory(string categoryName)
     {
         if (!musicCategoryDict.TryGetValue(categoryName, out List<AudioClip> clips) || clips.Count == 0)
         {
@@ -107,11 +104,15 @@ public class AudioManager : MonoBehaviour
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
 
-        fadeCoroutine = StartCoroutine(FadeMusicToClip(clip, loop));
+        fadeCoroutine = StartCoroutine(FadeMusicToClip(clip));
     }
 
-    private IEnumerator FadeMusicToClip(AudioClip newClip, bool loop)
+    private IEnumerator FadeMusicToClip(AudioClip newClip)
     {
+        // Stop any existing music loop logic
+        if (musicLoopCoroutine != null)
+            StopCoroutine(musicLoopCoroutine);
+
         // Fade out
         float startVolume = musicSource.volume;
         for (float t = 0; t < musicFadeDuration; t += Time.deltaTime)
@@ -124,7 +125,7 @@ public class AudioManager : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
 
         musicSource.clip = newClip;
-        musicSource.loop = loop;
+        musicSource.loop = false;
         musicSource.Play();
 
         // Fade in
@@ -133,15 +134,29 @@ public class AudioManager : MonoBehaviour
             musicSource.volume = Mathf.Lerp(0f, startVolume, t / musicFadeDuration);
             yield return null;
         }
+
+        musicLoopCoroutine = StartCoroutine(PlayNextMusicLoop());
     }
 
-    public void StopMusic()
+    private IEnumerator PlayNextMusicLoop()
     {
-        if (fadeCoroutine != null)
-            StopCoroutine(fadeCoroutine);
+        while (true)
+        {
+            yield return new WaitWhile(() => musicSource.isPlaying);
 
-        musicSource.Stop();
+            string currentCategory = GetCurrentCategoryFromScene();
+
+            if (!musicCategoryDict.TryGetValue(currentCategory, out List<AudioClip> clips) || clips.Count == 0)
+                yield break;
+
+            AudioClip nextClip = clips[Random.Range(0, clips.Count)];
+
+            musicSource.clip = nextClip;
+            musicSource.Play();
+        }
     }
+
+    private string GetCurrentCategoryFromScene() => currentMusicCategory;
 
     // === SFX FUNCTIONS ===
 
@@ -153,7 +168,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        PlaySFX(clip, loop, pitch, position); // reuse the clip overload
+        PlaySFX(clip, loop, pitch, position);
     }
 
     public void PlaySFX(AudioClip clip, bool loop = false, float pitch = 1f, Vector3? position = null)
@@ -178,7 +193,8 @@ public class AudioManager : MonoBehaviour
 
         src.Play();
 
-        StartCoroutine(ReturnAfter(src, clip.length / Mathf.Abs(Mathf.Max(0.0001f, pitch))));
+        if (!src.loop)
+            StartCoroutine(ReturnAfter(src, clip.length / Mathf.Abs(Mathf.Max(0.0001f, pitch))));
     }
 
     // === SCENE HANDLING ===
@@ -188,9 +204,11 @@ public class AudioManager : MonoBehaviour
         switch (scene.name)
         {
             case "MainMenuScene":
+                currentMusicCategory = "MainMenu";
                 PlayMusicCategory("MainMenu");
                 break;
             case "GameScene":
+                currentMusicCategory = "Game";
                 PlayMusicCategory("Game");
                 break;
         }

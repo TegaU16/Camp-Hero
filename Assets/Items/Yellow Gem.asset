@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 1
   icon: {fileID: 21300000, guid: f0ea71edcec82864588082540866641d, type: 3}
   itemName: Yellow Gem
-  equippedPrefab: {fileID: 3165396035135136774, guid: 8a1ffa93bed486b47893eb35a92fb5fb, type: 3}
-  itemDrop: {fileID: 5203723472698150520, guid: 91aa8488365786d4288f56f71ed49886, type: 3}
+  equippedPrefab: {fileID: 6888547327157229541, guid: 8a1ffa93bed486b47893eb35a92fb5fb, type: 3}
+  itemDrop: {fileID: 3094285812714276751, guid: 91aa8488365786d4288f56f71ed49886, type: 3}
   rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

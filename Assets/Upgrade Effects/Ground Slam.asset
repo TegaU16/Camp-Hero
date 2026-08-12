@@ -20,10 +20,12 @@ MonoBehaviour:
   activationKey: 120
   skillImagePrefab: {fileID: 4643298529219022040, guid: f6fd9f93f7ea2ea4ab743b1d3f3f86a2, type: 3}
   isOnCooldown: 0
-  damage: 100
+  slamDamage: 50
   radius: 5
   stun: {fileID: 11400000, guid: b65ada11cf8c62c47b7c9fa9b8802239, type: 2}
   slamAnimationTrigger: Ground Slam
+  slamSound: {fileID: 8300000, guid: 529e298e34d9e7d47bcdbd1c3fe3c84b, type: 3}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 128
+  slamEffectPrefab: {fileID: 6241881875699185523, guid: a063f427f22f48c4cac59e04a41d085a, type: 3}

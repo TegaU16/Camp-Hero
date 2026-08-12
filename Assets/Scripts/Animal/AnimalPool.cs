@@ -1,52 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Game.AI.Animals
 {
-    public class AnimalPool : MonoBehaviour
+    public class AnimalPool : ObjectPool<Animal>
     {
-        public static AnimalPool Instance;
+        [SerializeField] private Animal animalPrefab;
 
-        public AnimalSpawner animalSpawner;
-        public Animal animalPrefab;
-        public int initialPoolSize = 50;
-
-        public Vector3 poolGraveyardPosition = new(0, -1000, 0);
-
-        private Queue<Animal> pool = new();
-        private readonly List<Animal> activeAnimals = new();
-
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Instance = this;
         }
 
-        private void CreateAnimal()
-        {
-            Animal newAnimal = Instantiate(animalPrefab);
-            pool.Enqueue(newAnimal);
-            newAnimal.gameObject.SetActive(false);
-        }
-
-        public Animal GetAnimal(Vector3 spawnPos)
-        {
-            if (pool.Count == 0)
-                CreateAnimal();
-
-            Animal animal = pool.Dequeue();
-
-            animal.gameObject.SetActive(true);
-            animal.animator.enabled = false;
-            animal.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
-            animal.Init(spawnPos);
-            animal.animator.enabled = true;
-            activeAnimals.Add(animal);
-
-            return animal;
-        }
-
-        public void ReturnAnimal(Animal animal)
+        protected override void OnReturnObject(Animal animal)
         {
             animal.CancelInvoke();
             animal.StopAllCoroutines();
@@ -61,34 +27,15 @@ namespace Game.AI.Animals
                 ragdollController.DisableRagdoll();
 
             animal.IsActiveAI = false;
-
-            animal.transform.position = poolGraveyardPosition;
-            animal.gameObject.SetActive(false);
-
-            activeAnimals.Remove(animal);
-            pool.Enqueue(animal);
+            base.OnReturnObject(animal);
         }
 
-        public void ClearPoolForWorld(string worldName)
+        protected override Animal CreatePooledObject()
         {
-            // Remove any active or pooled animals that belong to this world
-            foreach (Animal animal in activeAnimals.ToArray())
-            {
-                if (animal == null || animal.worldName != worldName) continue;
-
-                Destroy(animal.gameObject);
-                activeAnimals.Remove(animal);
-            }
-
-            foreach (Animal animal in pool.ToArray())
-            {
-                if (animal == null || animal.worldName != worldName) continue;
-
-                Destroy(animal.gameObject);
-                pool = new Queue<Animal>(pool.Where(a => a != animal));
-            }
-
-            Debug.Log($"Animal pool cleared for world: {worldName}");
+            Animal animal = Instantiate(animalPrefab);
+            animal.gameObject.SetActive(false);
+            animal.transform.SetParent(transform);
+            return animal;
         }
     }
 }

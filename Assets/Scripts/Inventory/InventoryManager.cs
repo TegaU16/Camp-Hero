@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using Game.Crafting;
 using Game.Players;
 using Game.Reforge;
@@ -19,12 +20,11 @@ namespace Game.Inventory
         public static InventoryManager Instance;
         public static RectTransform InventoryUI { get; private set; }
 
-        [SerializeField]
-        private RectTransform inventoryUI;
+        [SerializeField] private RectTransform inventoryUI;
 
-        public Item[] startItems;
+        [SerializeField] private Item[] startItems;
 
-        public List<Item> discoveredItems = new();
+        [HideInInspector] public List<Item> discoveredItems = new();
 
         public const int numHotbarSlots = 7;
 
@@ -50,11 +50,11 @@ namespace Game.Inventory
         public GameObject darkBackground;
 
         [Header("Keys")]
-        public KeyCode inventoryToggleKey = KeyCode.Tab;
-        public KeyCode itemDropKey = KeyCode.Q;
-        public KeyCode itemStackDropKey = KeyCode.LeftControl;
-        public KeyCode exitExtensionKey = KeyCode.Escape;
-        public KeyCode tooltipExpansionKey = KeyCode.LeftControl;
+        [SerializeField] private KeyCode inventoryToggleKey = KeyCode.Tab;
+        [SerializeField] private KeyCode itemDropKey = KeyCode.Q;
+        [SerializeField] private KeyCode itemStackDropKey = KeyCode.LeftControl;
+        [SerializeField] private KeyCode exitExtensionKey = KeyCode.Escape;
+        [SerializeField] private KeyCode tooltipExpansionKey = KeyCode.LeftControl;
 
         [Header("Attribute Tables")]
         public ToolAttributeProbabilityTable toolAttributeTable;
@@ -116,8 +116,8 @@ namespace Game.Inventory
         {
             foreach (ItemData itemData in items)
             {
-                Item item = ItemRegistry.GetItemByName(itemData.itemName);
-                item.toolAttribute = ToolAtributeRegistry.GetToolAttributeByName(itemData.toolAttribute);
+                Item item = ItemRegistry.Instance.GetByKey(itemData.itemName);
+                item.toolAttribute = ToolAttributeRegistry.Instance.GetByKey(itemData.toolAttribute);
                 AddItem(item, itemData.count, itemData.position);
             }
         }
@@ -138,7 +138,7 @@ namespace Game.Inventory
 
                 ItemData itemData = new()
                 {
-                    itemName = item.name,
+                    itemName = item.itemName,
                     toolAttribute = hasToolattribute ? item.toolAttribute.attributeID : "",
                     count = invItem.count,
                     position = i
@@ -210,7 +210,7 @@ namespace Game.Inventory
                 if (itemInSlot.count > consumeCount)
                 {
                     itemInSlot.count -= consumeCount;
-                    itemInSlot.RefreshCount();
+                    StartCoroutine(itemInSlot.RefreshCount());
                     break;
                 }
 
@@ -256,7 +256,7 @@ namespace Game.Inventory
                     int itemsToAdd = Mathf.Min(count, availableSpace);
                     itemInSlot.count += itemsToAdd;
                     count -= itemsToAdd;
-                    itemInSlot.RefreshCount();
+                    StartCoroutine(itemInSlot.RefreshCount());
                 }
                 else
                 {
@@ -281,7 +281,7 @@ namespace Game.Inventory
                     itemInSlot.count += itemsToAdd;
                     count -= itemsToAdd;
 
-                    itemInSlot.RefreshCount();
+                    StartCoroutine(itemInSlot.RefreshCount());
                 }
 
                 // Pass 2: If any left, put in empty slots
@@ -344,7 +344,7 @@ namespace Game.Inventory
 
         public void LoadDiscoveredItems(List<string> itemNames)
         {
-            List<Item> items = ItemRegistry.GetItemsByName(itemNames);
+            List<Item> items = ItemRegistry.Instance.GetByKeys(itemNames);
             foreach (Item item in items)
                 TryDiscoverItem(item);
         }
@@ -406,13 +406,14 @@ namespace Game.Inventory
         public void DropItem(Item item, int count, bool scatter = false)
         {
             if (item == null || item.itemDrop == null) return;
+            if (!playerObject.TryGetComponent(out Player player)) return;
 
             Vector3 pos = playerObject.transform.position + Vector3.up * 1.5f;
 
-            float scatterDistance = 0.5f;
-            float scatterForce = 2f;
+            float scatterDistance = 1f;
+            float scatterForce = 3f;
 
-            ItemSpawner.Spawn(item, pos, count, torsoBone: null, scatter, scatterDistance, scatterForce);
+            ItemSpawner.Spawn(item, pos, count, player.torsoBone, scatter, scatterDistance, scatterForce);
         }
 
         #endregion
@@ -439,7 +440,7 @@ namespace Game.Inventory
             if (itemInSlot.count <= 0)
                 Destroy(itemInSlot.gameObject);
             else
-                itemInSlot.RefreshCount();
+                StartCoroutine(itemInSlot.RefreshCount());
 
             return itemInSlot.item;
         }
@@ -510,20 +511,37 @@ namespace Game.Inventory
             if (!Input.GetKeyDown(inventoryToggleKey)) return;
 
             if (IsExtensionOpen())
+            {
                 ResetExtensions();
-            else if (CraftingManager.Instance != null)
-                CraftingUI.Instance.ToggleCraftingMenu(CraftingSource.Base);
+            }
+            else
+            {
+                CraftingUI.Instance.OpenCraftingMenu(CraftingSource.Base);
+                OpenInventory();
+            }
         }
 
-        public void OnInventoryOpen()
+        private void OnInventoryOpen()
         {
             if (deleteSlot != null)
                 deleteSlot.SetActive(true);
 
             if (darkBackground != null)
-                darkBackground.SetActive(true);
+            {
+                CanvasGroup canvasGroup = darkBackground.GetComponent<CanvasGroup>();
+                UITween.FadeIn(canvasGroup);
+            }
 
             CameraControlToggle.Instance.SetCameraControl(false);
+        }
+
+        public void OpenInventory()
+        {
+            if (!mainInventory.TryGetComponent(out CanvasGroup canvasGroup)) return;
+            if (!mainInventory.TryGetComponent(out RectTransform rectTransform)) return;
+
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
+            OnInventoryOpen();
         }
 
         #endregion
@@ -567,8 +585,13 @@ namespace Game.Inventory
 
             for (int i = 0; i < inventoryExtensions.Count; i++)
             {
-                if (inventoryExtensions[i] != null)
-                    inventoryExtensions[i].SetActive(false);
+                GameObject extension = inventoryExtensions[i];
+                if (extension == null || !extension.activeInHierarchy) continue;
+
+                if (!extension.TryGetComponent(out CanvasGroup canvasGroup)) continue;
+                if (!extension.TryGetComponent(out RectTransform rectTransform)) continue;
+
+                UITween.DefaultCloseMenu(canvasGroup, rectTransform);
             }
 
             deleteSlot.SetActive(false);
@@ -590,10 +613,11 @@ namespace Game.Inventory
             if (!ItemTooltipUI.Instance.IsOpen || !IsExtensionOpen()) return;
 
             Item hoveredItem = ItemTooltipUI.Instance.HoveredItem;
-            if (hoveredItem == null || hoveredItem.toolAttribute == null) return;
+            if (hoveredItem == null) return;
+            if (hoveredItem.toolAttribute == null && hoveredItem.foodValue <= 0) return;
 
             if (Input.GetKeyDown(tooltipExpansionKey))
-                ItemTooltipUI.Instance.ExpandTooltip(expand: true);
+                ItemTooltipUI.Instance.ExpandTooltip();
         }
 
         #endregion

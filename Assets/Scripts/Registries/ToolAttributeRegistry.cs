@@ -1,35 +1,24 @@
-using System.Collections.Generic;
 using Game.Inventory;
-using UnityEngine;
 
 namespace Game.Registries
 {
-    public class ToolAtributeRegistry : MonoBehaviour
+    public class ToolAttributeRegistry : BaseRegistry<ToolAttribute, string>
     {
-        public ToolAttribute[] allAttributes;
+        public static ToolAttributeRegistry Instance;
 
-        private static Dictionary<string, ToolAttribute> attributeDict;
-
-        private void Awake()
+        private new void Awake()
         {
-            if (attributeDict != null && attributeDict.Count > 0) return;
-
-            attributeDict = new Dictionary<string, ToolAttribute>();
-
-            foreach (ToolAttribute attribute in allAttributes)
+            if (Instance != null && Instance != this)
             {
-                if (attribute != null && !attributeDict.ContainsKey(attribute.name))
-                    attributeDict[attribute.attributeID] = attribute;
+                Destroy(gameObject);
+                return;
             }
+
+            Instance = this;
+
+            base.Awake();
         }
 
-        public static ToolAttribute GetToolAttributeByName(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-            if (attributeDict != null && attributeDict.TryGetValue(name, out ToolAttribute attribute)) return attribute;
-
-            Debug.LogWarning($"ToolAttribute not found: {name}");
-            return null;
-        }
+        protected override string GetKey(ToolAttribute entry) => entry.attributeID;
     }
 }

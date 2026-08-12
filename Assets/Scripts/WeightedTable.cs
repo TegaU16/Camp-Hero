@@ -80,4 +80,33 @@ public class WeightedTable<T>
 
         return default;
     }
+
+    public T Roll(int hash)
+    {
+        float totalWeight = 0f;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].weight > 0f)
+                totalWeight += entries[i].weight;
+        }
+
+        if (totalWeight <= 0f) return default;
+
+        System.Random rng = new(hash);
+
+        float roll = (float)(rng.NextDouble() * totalWeight);
+        float cumulative = 0f;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            WeightedEntry<T> entry = entries[i];
+            if (entry.weight <= 0f) continue;
+
+            cumulative += entry.weight;
+            if (roll <= cumulative) return entry.value;
+        }
+
+        return entries[^1].value;
+    }
 }

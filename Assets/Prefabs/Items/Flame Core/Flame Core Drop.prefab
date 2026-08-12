@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 1192a92df3f98c142b2f882e4ab226e7, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1192a92df3f98c142b2f882e4ab226e7, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1192a92df3f98c142b2f882e4ab226e7, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1192a92df3f98c142b2f882e4ab226e7, type: 3}
       propertyPath: m_LocalPosition.x
@@ -147,8 +147,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.23999998, y: 0.24000004, z: 0.23999996}
-  m_Center: {x: 0.0000000074505793, y: 0.120000005, z: 0}
+  m_Size: {x: 0.11999999, y: 0.12000002, z: 0.12}
+  m_Center: {x: 0, y: 0.060000002, z: -0.0000000037252899}
 --- !u!114 &-3326463144733022800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,8 +163,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 8e768640c6ba9814fa50c16fbc306bba, type: 2}
   itemCount: 0
+  outlineWidth: 5
   maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
+  currentCell: {x: 0, y: 0}
 --- !u!114 &-2233546159201549999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,9 +178,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 0, g: 0.57156754, b: 1, a: 1}
-  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

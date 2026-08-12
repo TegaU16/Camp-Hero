@@ -20,7 +20,6 @@ MonoBehaviour:
     octaves: 4
     lacunarity: 2
     heightScale: 50
-    useHeightCurve: 1
     heightCurve:
       serializedVersion: 2
       m_Curve:
@@ -47,8 +46,6 @@ MonoBehaviour:
       m_RotationOrder: 4
     heightExponent: 2
   treePrefabs:
-  - {fileID: 5711773323634268441, guid: 0b670481dae22f64da8670e6c03a76f7, type: 3}
-  - {fileID: 148668723942211389, guid: 9457c69857c418a4eacf0cef7775e7ff, type: 3}
   - {fileID: 1244159935425263200, guid: 57821cfde7c434d429f63454073bd8d1, type: 3}
   - {fileID: 2961914770492385751, guid: 45725f0cd4e852c4997c3de99dbb9323, type: 3}
   rockPrefabs:
@@ -56,11 +53,14 @@ MonoBehaviour:
   - {fileID: 6980805669621672227, guid: 695f5246824d31945813b61d66e30c5e, type: 3}
   - {fileID: 5661660572344256593, guid: 51ba4b156a4733b4297ca6d2f976313b, type: 3}
   - {fileID: 4094715403816992159, guid: f6e1c55b9a007f14ea8845d967704afa, type: 3}
+  - {fileID: 3716327581577924430, guid: 6b5fba7588ebde94fba17982febfbdd7, type: 3}
   - {fileID: 2527292952302796928, guid: 7630f60af37b14246a22b752e19a1ecc, type: 3}
   - {fileID: 6196374234330043479, guid: 7db5eab72485e1646986bdd76e84269e, type: 3}
   - {fileID: 4852622152021468619, guid: 2b0c39a2e19b71c43b13ca5c9876508f, type: 3}
   - {fileID: 7068911554908581258, guid: 0d58b83ac0a63a54aa7652b4158ca114, type: 3}
+  - {fileID: 8379490236234132928, guid: 0bf3db5da5468aa4a8e53b06b19edb97, type: 3}
   - {fileID: 8164382500153716626, guid: 0d5926a33e7da74469c1154419d57243, type: 3}
   - {fileID: 946390360417431685, guid: 96a825a364895a040973f876deb45978, type: 3}
   - {fileID: 3732672999671428406, guid: 4eb18c819dc19014f96713bb8befdada, type: 3}
   - {fileID: 738387895656935829, guid: ccbaa2cfaf306d449ba01d1f852a96fb, type: 3}
+  - {fileID: 5817642064018779756, guid: d20114fa035dc934495b836b7dc30c77, type: 3}

@@ -92,6 +92,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0707b7e48d0bda429bd6bd92ebd6ec5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5730652744640681663}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0707b7e48d0bda429bd6bd92ebd6ec5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1744089631631923325}
   m_SourcePrefab: {fileID: 100100000, guid: f0707b7e48d0bda429bd6bd92ebd6ec5, type: 3}
 --- !u!1 &1958796894287830418 stripped
 GameObject:
@@ -158,11 +161,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
-  item: {fileID: 0}
+  item: {fileID: 11400000, guid: 7873d2c9f68f27149833b856f6bdbb86, type: 2}
   itemCount: 1
-  maxItemCount: 100
   outlineWidth: 5
-  CurrentCell: {x: 0, y: 0}
+  maxItemCount: 100
+  currentCell: {x: 0, y: 0}
 --- !u!114 &5730652744640681663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176,3 +179,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
   prefabKey: reforge_table_drop
+--- !u!114 &-1744089631631923325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958796894287830418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []

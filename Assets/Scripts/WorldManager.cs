@@ -14,26 +14,26 @@ namespace Worlds
         private string selectedSeed;
 
         [Header("World Selection Menu")]
-        public Button playButton;
-        public Button deleteButton;
-        public Button editButton;
+        [SerializeField] private Button playButton;
+        [SerializeField] private Button deleteButton;
+        [SerializeField] private Button editButton;
 
-        public Transform worldListParent;
+        [SerializeField] private Transform worldListParent;
 
-        public GameObject worldButtonPrefab;
-        public GameObject retryConfirmMenu;
-        public GameObject deleteConfirmMenu;
+        [SerializeField] private GameObject worldButtonPrefab;
+        [SerializeField] private GameObject retryConfirmMenu;
+        [SerializeField] private GameObject deleteConfirmMenu;
 
         [Header("World Create Menu")]
-        public TMP_InputField worldNameInput;
-        public TMP_InputField seedInput;
-        public Button createWorldButton;
-        public GameObject[] difficultyLabels;
+        [SerializeField] private TMP_InputField worldNameInput;
+        [SerializeField] private TMP_InputField seedInput;
+        [SerializeField] private Button createWorldButton;
+        [SerializeField] private GameObject[] difficultyLabels;
         private Difficulty pendingDifficulty = Difficulty.Easy;
 
         [Header("World Edit Menu")]
-        public TMP_InputField worldNameEditInput;
-        public GameObject[] difficultyLabelsEdit;
+        [SerializeField] private TMP_InputField worldNameEditInput;
+        [SerializeField] private GameObject[] difficultyLabelsEdit;
         private Difficulty editingDifficulty;
 
         private string WorldsPath => Path.Combine(Application.persistentDataPath, "Worlds");
@@ -83,7 +83,7 @@ namespace Worlds
             };
 
             string metaPath = Path.Combine(worldDir, "meta.json");
-            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, prettyPrint: true));
 
             selectedWorldName = worldName;
             selectedSeed = seedString;
@@ -188,7 +188,7 @@ namespace Worlds
             }
 
             metadata.lastPlayedDate = System.DateTime.Now.ToString();
-            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, prettyPrint: true));
 
             StartCoroutine(LoadGameRoutine());
         }
@@ -258,7 +258,7 @@ namespace Worlds
             SaveSystem.SaveWorldMeta(newMeta);
 
             newMeta.lastPlayedDate = System.DateTime.Now.ToString();
-            File.WriteAllText(metaPath, JsonUtility.ToJson(newMeta, true));
+            File.WriteAllText(metaPath, JsonUtility.ToJson(newMeta, prettyPrint: true));
 
             StartCoroutine(LoadGameRoutine());
         }
@@ -274,6 +274,7 @@ namespace Worlds
             SceneLoader.Instance.LoadScene("GameScene");
         }
 
+        // Called by button
         public void SetDifficulty(bool right)
         {
             int cycleStep = right ? 1 : -1;
@@ -299,7 +300,7 @@ namespace Worlds
             metadata.difficulty = next;
             UpdateDifficultyLabels(next);
 
-            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, prettyPrint: true));
         }
 
         private void UpdateDifficultyLabels(Difficulty difficulty)
@@ -385,7 +386,7 @@ namespace Worlds
             metadata.difficulty = editingDifficulty;
             metadata.lastPlayedDate = System.DateTime.Now.ToString();
 
-            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, true));
+            File.WriteAllText(metaPath, JsonUtility.ToJson(metadata, prettyPrint: true));
 
             // Refresh state
             selectedWorldName = newName;

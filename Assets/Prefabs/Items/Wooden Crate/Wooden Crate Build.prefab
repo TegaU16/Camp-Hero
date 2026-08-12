@@ -113,12 +113,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e039c3fb1ef0f8a488cc74463ebabd37, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Storage.StorageUnit
-  chestName: Storage Chest
-  maxSlots: 16
+  m_EditorClassIdentifier: 
   items: []
+  chestName: Wooden Crate
+  maxSlots: 16
   inventorySlots: []
-  storageUnitIcon: {fileID: 0}
+  storageUnitIcon: {fileID: 21300000, guid: e432df3956a9d234e822bfac4a7d4808, type: 3}
 --- !u!114 &1411224309377135264
 MonoBehaviour:
   m_ObjectHideFlags: 0

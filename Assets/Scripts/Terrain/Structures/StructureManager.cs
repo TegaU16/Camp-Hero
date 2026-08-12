@@ -10,8 +10,8 @@ namespace Game.Terrain.Structures
     {
         public static StructureManager Instance;
 
-        [SerializeField] private List<StructureTemplate> structureTemplates;
-        [SerializeField] private List<WorldStructure> activeStructures = new();
+        [SerializeField] private StructureTable structureTable;
+        private readonly List<WorldStructure> activeStructures = new();
 
         [Range(0f, 0.5f), SerializeField] private float outerRadius;
 
@@ -42,6 +42,8 @@ namespace Game.Terrain.Structures
 
         public void SpawnStructuresInChunk(VoxelChunk chunk)
         {
+            if (chunk.heightMap == null) return;
+
             float worldSideLength = chunkSize * gridSize;
             float maxDistanceFromCenter = worldSideLength * outerRadius;
 
@@ -60,8 +62,7 @@ namespace Game.Terrain.Structures
                     int globalX = chunkX * chunkSize + cx;
                     int globalZ = chunkZ * chunkSize + cz;
 
-                    if (chunk.heightMap == null) continue;
-                    float y = chunk.heightMap[cx, cz];
+                    float y = chunk.heightMap[cx + cz * chunkSize];
 
                     Vector3 basePosition = chunkPosition + new Vector3((cx + 0.5f) * voxelSize, y, (cz + 0.5f) * voxelSize);
 
@@ -90,7 +91,8 @@ namespace Game.Terrain.Structures
 
                     if (tooClose) continue;
 
-                    StructureTemplate template = SelectDeterministicStructure(globalX, globalZ, seed);
+                    int hash = globalX * 73856093 ^ globalZ * 19349663 ^ seed;
+                    StructureTemplate template = structureTable.GetRandomStructure(hash);
                     if (template == null) continue;
                     if (!IsValidPlacement(structureSpawnPos, template)) continue;
 
@@ -104,7 +106,6 @@ namespace Game.Terrain.Structures
                     VoxelChunk targetChunk = VoxelGrid.Instance.chunkMap[chunkKey];
 
                     WorldStructure structure = GenerateStructure(template, structureSpawnPos, targetChunk);
-                    structure.worldOrigin = structureSpawnPos;
                     activeStructures.Add(structure);
 
                     return;
@@ -117,7 +118,8 @@ namespace Game.Terrain.Structures
             WorldStructure structure = new()
             {
                 structureName = template.structureName,
-                worldOrigin = origin
+                worldOrigin = origin,
+                lootTableName = template.lootTable.name
             };
 
             for (int i = 0; i < template.prefabParts.Count; i++)
@@ -128,17 +130,16 @@ namespace Game.Terrain.Structures
                 if (prefab == null) continue;
 
                 Vector3 partPosition = origin + prefabPart.localOffset;
+                partPosition.y = prefabPart.localOffset.y;
 
                 int partPosX = Mathf.FloorToInt(partPosition.x);
                 int partPosZ = Mathf.FloorToInt(partPosition.z);
 
                 float height = Utility.GetHeightAt(partPosX, partPosZ);
-                partPosition.y = height;
+                partPosition.y += height;
 
-                // Only keep valid placements
-                if (Utility.AreaCheck(prefab, partPosition, VoxelGrid.Instance.IsOccupied)) continue;
+                if (Utility.AreaCheck(prefab, partPosition, TerrainGenerator.Instance.IsOccupied)) continue;
 
-                // Add to saved objects WITHOUT instantiating
                 SpawnedObjectData data = new(partPosition, prefab, prefab)
                 {
                     structureRef = structure,
@@ -171,48 +172,38 @@ namespace Game.Terrain.Structures
             {
                 for (int z = minZ; z <= maxZ; z++)
                 {
-                    float[,] heightMap = GetHeightMapForChunk(x / chunkSize, z / chunkSize);
+                    float[] heightMap = GetHeightMapForChunk(x / chunkSize, z / chunkSize);
                     if (heightMap == null) return false;
 
                     int localX = x % chunkSize;
                     int localZ = z % chunkSize;
                     if (localX < 0 || localZ < 0 || localX >= chunkSize || localZ >= chunkSize) continue;
 
-                    float h = heightMap[localX, localZ];
-                    sampledHeights.Add(h);
+                    float height = heightMap[localX + localZ * chunkSize];
+                    sampledHeights.Add(height);
                 }
             }
 
             if (sampledHeights.Count == 0) return false;
 
-            float minH = sampledHeights.Min();
-            float maxH = sampledHeights.Max();
-            if (maxH - minH > tolerance) return false;
+            float minHeight = sampledHeights.Min();
+            float maxHeight = sampledHeights.Max();
+            if (maxHeight - minHeight > tolerance) return false;
 
-            foreach (float h in sampledHeights)
+            foreach (float height in sampledHeights)
             {
-                if (Mathf.Abs(origin.y - h) > tolerance) return false;
+                if (Mathf.Abs(origin.y - height) > tolerance) return false;
             }
 
             return true;
         }
 
-        private float[,] GetHeightMapForChunk(int chunkX, int chunkZ)
+        private float[] GetHeightMapForChunk(int chunkX, int chunkZ)
         {
             Vector2Int chunkKey = new(chunkX, chunkZ);
             if (VoxelGrid.Instance.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk)) return chunk.heightMap;
 
             return null;
-        }
-
-        private StructureTemplate SelectDeterministicStructure(int globalX, int globalZ, int seed)
-        {
-            if (structureTemplates.Count == 0) return null;
-
-            int hash = globalX * 73856093 ^ globalZ * 19349663 ^ (seed * 83492791);
-            int randomIndex = Mathf.Abs(hash) % structureTemplates.Count;
-
-            return structureTemplates[randomIndex];
         }
     }
 
@@ -220,6 +211,7 @@ namespace Game.Terrain.Structures
     public class WorldStructure
     {
         public string structureName;
+        public string lootTableName;
         public Vector3 worldOrigin;
     }
 }

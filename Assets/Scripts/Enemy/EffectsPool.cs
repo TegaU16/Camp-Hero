@@ -47,6 +47,7 @@ namespace Game
         {
             GameObject effectInstance = Instantiate(effect, poolGraveyardPosition, Quaternion.identity);
             effectInstance.SetActive(false);
+            effectInstance.transform.SetParent(transform);
             return effectInstance.GetComponent<ParticleSystem>();
         }
 
@@ -66,7 +67,10 @@ namespace Game
                 return newParticleSystem;
             }
 
-            return particleSystems.Dequeue();
+            ParticleSystem particleSystem = particleSystems.Dequeue();
+            particleSystem.gameObject.SetActive(true);
+
+            return particleSystem;
         }
 
         public void ReturnParticleSystem(ParticleSystem effect)
@@ -75,7 +79,7 @@ namespace Game
             effect.gameObject.SetActive(false);
 
             PrefabID id = effect.GetComponent<PrefabID>();
-            GameObject prefab = PrefabRegistry.GetPrefabByKey(id.prefabKey);
+            GameObject prefab = PrefabRegistry.Instance.GetByKey(id.prefabKey);
 
             if (pools.TryGetValue(prefab, out Queue<ParticleSystem> pool))
                 pool.Enqueue(effect);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Game.AI.Enemies;
 using Game.Inventory;
 using UnityEngine;
@@ -6,23 +7,19 @@ using UnityEngine;
 namespace Game.Players
 {
     [RequireComponent(typeof(Animator))]
-    [RequireComponent(typeof(ProceduralAnimator))]
     [RequireComponent(typeof(Health))]
     [RequireComponent(typeof(Player))]
     public class PlayerCombat : MonoBehaviour
     {
-        [SerializeField] private float comboResetTime = 1f;
         [SerializeField] private int baseDamage = 1;
+        [SerializeField] private int staminaCost = 10;
 
-        private int comboStep = 0;
-        private float lastAttackTime;
-        private bool canChain = false;
-        private bool attackQueued;
+        [SerializeField] private GameObject lowStaminaNotification;
+
         [HideInInspector] public bool canAttack = true;
 
         private Player player;
         private Animator animator;
-        private ProceduralAnimator proceduralAnimator;
         private Health health;
 
         [SerializeField] private AttackSet defaultAttackSet;
@@ -48,30 +45,44 @@ namespace Game.Players
         public delegate int LifestealDelegate(int damageDealt);
         public event LifestealDelegate OnLifesteal;
 
-        public event System.Action OnCriticalHit;
+        public event Action OnCriticalHit;
 
-        void Start()
+        private static readonly int AttackTriggerHash = Animator.StringToHash("Attack");
+
+        [SerializeField] private string attackLayerName = "Upper Body";
+        private int attackLayerIndex = -1;
+
+        private void Awake()
         {
-            player = GetComponent<Player>();
             animator = GetComponent<Animator>();
-            proceduralAnimator = GetComponent<ProceduralAnimator>();
+            player = GetComponent<Player>();
             health = GetComponent<Health>();
+
+            attackLayerIndex = animator.GetLayerIndex(attackLayerName);
+
+            if (attackLayerIndex >= 0)
+                animator.SetLayerWeight(attackLayerIndex, 1f);
         }
 
-        void Update()
+        private void Update()
         {
             if (Input.GetMouseButtonDown(0))
                 HandleComboAttack();
-
-            if (comboStep > 0 && Time.time - lastAttackTime > comboResetTime)
-                ResetCombo();
         }
 
         private void HandleComboAttack()
         {
-			if (!GameManager.Instance.IsGameActive) return;
-			if (InventoryManager.Instance.IsExtensionOpen()) return;
+            if (!GameManager.Instance.IsGameActive) return;
+            if (InventoryManager.Instance.IsExtensionOpen()) return;
             if (!canAttack) return;
+
+            if (player.CurrentStamina < staminaCost)
+            {
+                TextNotification lowStamina = TextNotificationPool.Instance.Get(lowStaminaNotification, isPoolStatic: false);
+                lowStamina.Setup();
+
+                return;
+            }
 
             Item selectedItem = InventoryManager.Instance.GetSelectedItem(delete: false);
             AttackSet set = (selectedItem != null && selectedItem.attackSet != null)
@@ -80,76 +91,30 @@ namespace Game.Players
 
             if (set.comboAttacks == null || set.comboAttacks.Length == 0) return;
 
-            if (currentAttackSet != set)
-            {
-                comboStep = 0;
-                canChain = true;
-                attackQueued = false;
-                currentAttackSet = set;
-            }
+            currentAttackSet = set;
 
-            if (!canChain && comboStep != 0)
-            {
-                attackQueued = true;
-                return;
-            }
-
-            attackQueued = false;
-            comboStep++;
-
-            int attackIndex = Mathf.Min(comboStep - 1, set.comboAttacks.Length - 1);
-            AttackData attack = set.comboAttacks[attackIndex];
-
-            if (attack.staminaCost > player.staminaBar.GetStamina())
-            {
-                comboStep = 0;
-                return;
-            }
-
-            proceduralAnimator.SetAttacking(true);
-            proceduralAnimator.SetProceduralOverrides(
-                legs: attack.overrideLegs,
-                arms: attack.overrideArms,
-                torso: attack.overrideTorso
-            );
-
-            playerAttackHitbox.SetAttackData(attack);
-
-            animator.applyRootMotion = attack.useRootMotion;
             animator.speed = player.TotalAttackSpeedMultiplier;
 
-            // Determine if this is the first attack in the combo
-            bool firstAttack = comboStep == 1;
+            if (attackLayerIndex >= 0)
+                animator.SetLayerWeight(attackLayerIndex, 1f);
 
-            if (firstAttack && !string.IsNullOrEmpty(attack.animationTrigger))
-                animator.SetTrigger(attack.animationTrigger); // start combo
-            else
-                animator.SetInteger("Combo Step", comboStep); // chain rest
-
-            // 6️⃣ Track timing for combo chaining
-            lastAttackTime = Time.time;
-            canChain = false; // will be re-enabled by animation event
+            animator.SetTrigger(AttackTriggerHash);
         }
 
-        // animation event calls this
-        private void EnableNextComboWindow()
-        {
-            canChain = true;
-
-            if (attackQueued)
-                HandleComboAttack();
-        }
-
+        // Optional animation event at end of combo / recovery
         private void ResetCombo()
         {
             animator.applyRootMotion = false;
+            animator.speed = 1f;
 
-            comboStep = 0;
-            attackQueued = false;
-            animator.SetInteger("Combo Step", 0);
-            canChain = false;
+            animator.ResetTrigger(AttackTriggerHash);
+        }
 
-            proceduralAnimator.SetAttacking(false);
+        private void SetAttackByIndex(int index)
+        {
+            if (index < 0 || index >= currentAttackSet.comboAttacks.Length) return;
+
+            playerAttackHitbox.SetAttackData(currentAttackSet.comboAttacks[index]);
         }
 
         public int ItemDamage(BreakableObject hitObject, Item selectedItem)
@@ -162,11 +127,12 @@ namespace Game.Players
 
             float minDamage = selectedItem.attackDamage[0];
             float maxDamage = selectedItem.attackDamage[1];
-            float damage = Random.Range(minDamage, maxDamage);
+            float damage = UnityEngine.Random.Range(minDamage, maxDamage);
 
             float critChanceWithLuck = selectedItem.critChance * player.TotalCritChanceMultiplier;
             critChanceWithLuck = Mathf.Clamp(critChanceWithLuck, 0f, 100f);
-            bool isCrit = Random.Range(0f, 100f) < critChanceWithLuck;
+
+            bool isCrit = UnityEngine.Random.Range(0f, 100f) < critChanceWithLuck;
 
             bool isTypeMatched = IsTypeMatched(hitObject, selectedItem);
             bool isToolLevelSufficient = selectedItem.toolLevel >= hitObject.objectLevel;
@@ -187,28 +153,23 @@ namespace Game.Players
         {
             isCritical = isCrit;
 
-            float damageMultiplier = player.TotalDamageMultiplier;
-            float damage = baseDamage;
             float critFactor = selectedItem.critFactor * player.TotalCritFactorMultiplier;
+            float damage = baseDamage;
 
-            // Critical scaling from AttackData
             if (isCritical)
             {
                 damage *= critFactor;
-                OnCriticalHit?.Invoke(); // Notify listeners of a crit
+                OnCriticalHit?.Invoke();
             }
 
-            // Apply tool reduction if invalid
             if (!isToolValid)
             {
-                float reduction = isCritical ? critFactor / reductionFactor : 1 / reductionFactor;
+                float reduction = isCritical ? critFactor / reductionFactor : 1f / reductionFactor;
                 damage *= reduction;
             }
 
-            // Event-driven passive damage modifiers
             if (OnModifyDamage != null)
                 damage = OnModifyDamage.Invoke((int)damage, isCritical);
-            // Pass base damage and crit flag; subscribers return new modified damage
 
             return Mathf.RoundToInt(damage);
         }
@@ -225,43 +186,38 @@ namespace Game.Players
         {
             foreach ((ToolType tool, HashSet<ObjectType> breakables) in toolToObjectMap)
             {
-                if ((selectedItem.toolType & tool) != 0 && breakables.Contains(hitObject.objectType)) return true;
+                if ((selectedItem.toolType & tool) != 0 &&
+                    breakables.Contains(hitObject.objectType))
+                    return true;
             }
 
             return false;
         }
 
-        // Called by animation event
         private void PlayWhooshSound()
         {
-            float pitchVariance = 0.1f;
-            float pitch = 1f + UnityEngine.Random.Range(-pitchVariance, pitchVariance);
-
+            float pitch = 1f + UnityEngine.Random.Range(-0.1f, 0.1f);
             AudioManager.Instance.PlaySFX(swordWhoosh, pitch: pitch);
         }
 
-        // Called by animation event
         private void StartWeaponSlash()
         {
             GameObject equippedItem = ItemEquip.Instance.HeldItem;
             if (equippedItem == null) return;
 
-            SlashEffect slashEffect = equippedItem.GetComponentInChildren<SlashEffect>();
-            if (slashEffect == null) return;
-
-            slashEffect.StartSlash();
+            WeaponSlash slash = equippedItem.GetComponentInChildren<WeaponSlash>();
+            if (slash != null)
+                slash.StartSlash();
         }
 
-        // Called by animation event
         private void EndWeaponSlash()
         {
             GameObject equippedItem = ItemEquip.Instance.HeldItem;
             if (equippedItem == null) return;
 
-            SlashEffect slashEffect = equippedItem.GetComponentInChildren<SlashEffect>();
-            if (slashEffect == null) return;
-
-            slashEffect.StopSlash();
+            WeaponSlash slash = equippedItem.GetComponentInChildren<WeaponSlash>();
+            if (slash != null)
+                slash.EndSlash();
         }
     }
 }

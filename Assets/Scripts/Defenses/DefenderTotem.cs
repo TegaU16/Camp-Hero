@@ -6,10 +6,10 @@ namespace Game.Defenses
 {
     public class DefenderTotem : Defense
     {
-        public float pulseRadius = 5f;
-        public int pulseDamage = 15;
-        public float pulseInterval = 2f; // Time between pulses
-        public ParticleSystem pulseEffect;
+        [SerializeField] private float pulseRadius = 5f;
+        [SerializeField] private int pulseDamage = 15;
+        [SerializeField] private float pulseInterval = 2f; // Time between pulses
+        [SerializeField] private ParticleSystem pulseEffect;
 
         private float pulseTimer = 0f;
 
@@ -57,11 +57,13 @@ namespace Game.Defenses
                     enemy.breakableObject.TakeDamage(attackDamageInfo);
                 }
 
-                enemy.OnAttacked(transform);
+                enemy.EnemyCombat.OnAttacked(transform);
             }
 
             if (pulseEffect != null)
                 pulseEffect.Play();
+
+            AudioManager.Instance.PlaySFX(shotSound, position: transform.position);
         }
 
         private bool HasEnemiesInRange()

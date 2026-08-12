@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using Game.Terrain;
 using UnityEngine;
 using Worlds;
@@ -13,25 +12,28 @@ namespace Game.AI.Animals
     [RequireComponent(typeof(Animator))]
     public class Animal : MonoBehaviour, ISimulatable
     {
+        private static readonly int SpeedHash = Animator.StringToHash("Speed");
         private static readonly WaitForSeconds _waitForSeconds1 = new(1f);
 
         [Header("Components")]
         private Transform myTransform;  // Cached transform
-        public Animator animator;
+        [HideInInspector] public Animator animator;
         private BreakableObject breakableObject;
         private SimpleRagdollController ragdollController;
-        public VoxelAgent agent;
+        [HideInInspector] public VoxelAgent agent;
         private CharacterController characterController;
 
         [Header("Wander Settings")]
-        public float wanderRadius = 10f;
-        public float waitTimeMin = 2f;
-        public float waitTimeMax = 5f;
+        [SerializeField] private float wanderRadius = 10f;
+        [SerializeField] private float waitTimeMin = 2f;
+        [SerializeField] private float waitTimeMax = 5f;
 
         [Header("Movement Settings")]
         [SerializeField] private float gravity = -9.8f;
+        [SerializeField] private float moveSpeed = 2f;
         private float verticalVelocity = 0f;
 
+        private bool queuedForWander = false;
         private Coroutine wanderCoroutine;
 
         [HideInInspector] public string worldName;
@@ -42,6 +44,13 @@ namespace Game.AI.Animals
         private bool justSpawned = false;
 
         private Vector3 knockbackVelocity = Vector3.zero;
+
+        [Header("Flee Settings")]
+        [SerializeField] private float fleeDistance = 12f;
+        [SerializeField] private float fleeSpeedMultiplier = 2f;
+
+        private bool isFleeing = false;
+        private Vector3 fleeDirection;
 
         public bool IsActiveAI { get; set; } = false;
 
@@ -81,7 +90,7 @@ namespace Game.AI.Animals
                 verticalVelocity = 0f;
                 knockbackVelocity = Vector3.zero;
 
-                animator.SetFloat("Speed", 0f, 0.2f, Time.fixedDeltaTime);
+                animator.SetFloat(SpeedHash, 0f, 0.2f, Time.fixedDeltaTime);
                 return;
             }
 
@@ -97,10 +106,11 @@ namespace Game.AI.Animals
             move += knockbackVelocity;
             knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.fixedDeltaTime * 5f);
 
-            characterController.Move(move * Time.fixedDeltaTime);
+            float finalSpeed = isFleeing ? moveSpeed * fleeSpeedMultiplier : moveSpeed;
+            characterController.Move(finalSpeed * Time.fixedDeltaTime * move);
 
             float speed = agent.GetCurrentSpeedFraction();
-            animator.SetFloat("Speed", speed, 0.2f, Time.fixedDeltaTime);
+            animator.SetFloat(SpeedHash, speed, 0.2f, Time.fixedDeltaTime);
         }
 
         void OnAnimatorMove()
@@ -161,54 +171,37 @@ namespace Game.AI.Animals
                 breakableObject.DestroyObject();
 
             wanderCoroutine = null;
-            AnimalPool.Instance.ReturnAnimal(this);
+            AnimalPool.Instance.Return(this);
         }
 
-        IEnumerator WanderRoutine()
+        private IEnumerator WanderRoutine()
         {
             yield return _waitForSeconds1;
 
             while (true)
             {
-                Vector3Int targetGrid = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
-                agent.CancelPath();
+                if (!queuedForWander)
+                {
+                    queuedForWander = true;
+                    WanderManager.Instance.Enqueue(this);
+                }
 
-                if (agent.CanWalkDirectly(currentGridPos, targetGrid))
-                    agent.SetDirectTarget(targetGrid);
-                else
-                    agent.RequestPath(targetGrid);
-
-                while (agent.HasPath)
+                while (agent.HasPath || agent.WantsToMove())
                     yield return null;
 
                 yield return new WaitForSeconds(Random.Range(waitTimeMin, waitTimeMax));
             }
         }
 
-        public List<Vector3Int> ComputeWanderPathAsync(Vector3Int targetGrid)
+        public void StartWanderStep()
         {
-            PathfinderManager pfm = PathfinderManager.Instance;
+            queuedForWander = false;
+            Vector3Int targetGrid = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
 
-            if (!VoxelGrid.Instance.IsWalkable(targetGrid))
-            {
-                Vector3Int fallback = pfm.FindNearestUnblocked(targetGrid);
-                targetGrid = fallback;
-            }
-
-            GridAStar pathfinder = pfm.BuildLocalPathfinder();
-            return pathfinder.FindPath(currentGridPos, targetGrid);
-        }
-
-        public void ApplyWanderPath(List<Vector3Int> newPath)
-        {
-            if (newPath == null || newPath.Count == 0)
-            {
-                Vector3Int newTarget = PickRandomNearbyGrid(currentGridPos, (int)wanderRadius);
-                WanderManager.Instance.Enqueue(new WanderRequest(this, newTarget, () => { }));
-                return;
-            }
-
-            agent.OnPathResult(newPath);
+            if (agent.CanWalkDirectly(currentGridPos, targetGrid))
+                agent.SetDirectTarget(targetGrid);
+            else
+                agent.RequestPath(targetGrid);
         }
 
         private Vector3Int WorldToGrid(Vector3 worldPos)
@@ -222,24 +215,48 @@ namespace Game.AI.Animals
 
         private Vector3Int PickRandomNearbyGrid(Vector3Int center, int radius)
         {
-            Vector3Int offset = new(
-                Random.Range(-radius, radius + 1),
-                0,
-                Random.Range(-radius, radius + 1)
-            );
+            for (int i = 0; i < 10; i++)
+            {
+                Vector3Int offset = new(
+                    Random.Range(-radius, radius + 1),
+                    0,
+                    Random.Range(-radius, radius + 1)
+                );
 
-            Vector3Int target = center + offset;
+                Vector3Int target = center + offset;
 
-            target.x = Mathf.Clamp(target.x, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
-            target.z = Mathf.Clamp(target.z, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
+                target.x = Mathf.Clamp(target.x, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
+                target.z = Mathf.Clamp(target.z, 0, VoxelGrid.Instance.gridSize * VoxelGrid.Instance.chunkSize - 1);
 
-            float height = Utility.GetHeightAt(target.x, target.z);
-            target.y = Mathf.FloorToInt(height);
+                target.y = Mathf.FloorToInt(Utility.GetHeightAt(target.x, target.z));
 
-            return target;
+                if (TerrainGenerator.Instance.IsWalkable(target)) return target;
+            }
+
+            return center;
         }
 
-        public void ApplyKnockback(Vector3 dir, float strength) => knockbackVelocity = dir.normalized * strength;
+        public void ApplyKnockback(Vector3 dir, float strength)
+        {
+            knockbackVelocity = dir.normalized * strength;
+            StartFlee(dir);
+        }
+
+        private void StartFlee(Vector3 hitDirection)
+        {
+            isFleeing = true;
+
+            fleeDirection = hitDirection.normalized;
+
+            agent.CancelPath();
+
+            Vector3Int fleeTarget = WorldToGrid(myTransform.position + fleeDirection * fleeDistance);
+
+            if (agent.CanWalkDirectly(currentGridPos, fleeTarget))
+                agent.SetDirectTarget(fleeTarget);
+            else
+                agent.RequestPath(fleeTarget);
+        }
 
         public void ResetAnimatorPose()
         {

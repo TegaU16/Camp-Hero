@@ -147,8 +147,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.120000005, y: 0.98, z: 0.5199999}
-  m_Center: {x: 0.00000006332993, y: 0.49, z: 0.11999998}
+  m_Size: {x: 0.12000004, y: 0.32, z: 0.7799999}
+  m_Center: {x: 0.000000026077029, y: -0.099999994, z: 0.38999996}
 --- !u!114 &5125702734063977802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,8 +163,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: f6ca558b36613e34bbe8df775e8261f0, type: 2}
   itemCount: 0
+  outlineWidth: 5
   maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
+  currentCell: {x: 0, y: 0}
 --- !u!114 &4787992188561876739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,9 +178,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

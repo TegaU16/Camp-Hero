@@ -8,22 +8,24 @@ namespace Game.Terrain.Structures
     {
         public static GemAltarSpawner Instance;
 
-        public GameObject[] altarPrefabs; // Array of 4 altar prefabs
-        public Vector3 worldCenter = Vector3.zero;
-        public float offsetFromEdge = 20f;
-        [SerializeField] private LayerMask terrainMask;
+        [SerializeField] private GameObject[] altarPrefabs;
+        [HideInInspector] public Vector3 worldCenter = Vector3.zero;
+        [SerializeField] private float offsetFromEdge = 45f;
 
         private void Awake()
         {
-            if (Instance == null)
-                Instance = this;
-            else
+            if (Instance != null && Instance != this)
+            {
                 Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
         }
 
-        public IEnumerator SpawnAltarsRoutine(float worldSize, System.Action<float> onProgress = null)
+        public IEnumerator SpawnGemAltars(float worldSize, System.Action<float> onProgress = null)
         {
-            if (altarPrefabs.Length < 4)
+            if (altarPrefabs.Length != 4)
             {
                 Debug.LogError("AltarSpawner requires exactly 4 altar prefabs.");
                 yield break;
@@ -41,8 +43,15 @@ namespace Game.Terrain.Structures
 
             for (int i = 0; i < altarPositions.Length; i++)
             {
-                Vector3 spawnPos = AdjustHeightToTerrain(altarPositions[i]);
-                GameObject gemAltar = Instantiate(altarPrefabs[i], spawnPos, Quaternion.identity);
+                Vector3 altarPos = altarPositions[i];
+                Vector3Int voxelPos = Utility.WorldToVoxelCoord(altarPos);
+                Vector3 spawnPos = voxelPos + new Vector3(VoxelGrid.Instance.voxelSize / 2f, 0, VoxelGrid.Instance.voxelSize / 2f);
+
+                int posX = Mathf.FloorToInt(spawnPos.x);
+                int posZ = Mathf.FloorToInt(spawnPos.z);
+                float height = Utility.GetHeightAt(posX, posZ);
+
+                spawnPos.y = height;
 
                 int chunkX = Mathf.FloorToInt(spawnPos.x / VoxelGrid.Instance.chunkSize);
                 int chunkZ = Mathf.FloorToInt(spawnPos.z / VoxelGrid.Instance.chunkSize);
@@ -50,29 +59,14 @@ namespace Game.Terrain.Structures
                 Vector2Int chunkKey = new(chunkX, chunkZ);
                 VoxelChunk chunk = VoxelGrid.Instance.chunkMap[chunkKey];
 
-                gemAltar.transform.parent = chunk.chunkObject.transform;
-                chunk.objects.Add(gemAltar);
-
-                SpawnedObjectData data = new(spawnPos, gemAltar, altarPrefabs[i]);
+                GameObject gemAltar = altarPrefabs[i];
+                SpawnedObjectData data = new(spawnPos, gemAltar, gemAltar);
                 Utility.AddObjectDataToChunk(data, spawnPos, chunk);
 
-                VoxelGrid.Instance.MarkVoxelArea(gemAltar, buildable: false);
-
-                // Report progress (0 to 1)
                 onProgress?.Invoke((float)(i + 1) / altarPositions.Length);
 
-                // Yield so loading bar can update
                 yield return null;
             }
-        }
-
-        private Vector3 AdjustHeightToTerrain(Vector3 position)
-        {
-            Vector3 rayStart = position + Vector3.up * 200f;
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 500f, terrainMask)) return hit.point;
-
-            Debug.LogWarning($"No terrain found below altar position: {position}");
-            return position;
         }
     }
 }

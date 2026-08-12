@@ -10,10 +10,13 @@ using static Game.Players.PlayerStats;
 
 namespace Game.Upgrades
 {
-    [RequireComponent(typeof(RectTransform))]
+    [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
     public class UpgradeTooltipMenu : MonoBehaviour
     {
         public static UpgradeTooltipMenu Instance;
+
+        private RectTransform rectTransform;
+        private CanvasGroup canvasGroup;
 
         [Header("UI References")]
         [SerializeField] private TextMeshProUGUI nameText;
@@ -51,6 +54,12 @@ namespace Game.Upgrades
             AddEvent(trigger, EventTriggerType.PointerExit, (e) => TryHide());
         }
 
+        private void Start()
+        {
+            rectTransform = GetComponent<RectTransform>();
+            canvasGroup = GetComponent<CanvasGroup>();
+        }
+
         private void AddEvent(EventTrigger trigger, EventTriggerType type, System.Action<BaseEventData> callback)
         {
             EventTrigger.Entry entry = new() { eventID = type };
@@ -66,12 +75,10 @@ namespace Game.Upgrades
             currentPosition = position;
             currentShowLevelRequirement = showLevelRequirement;
 
-            // Set text fields
             nameText.text = upgradeBase.UpgradeName;
             descriptionText.text = upgradeBase.effect.description;
             costText.text = $"<color=#{costTextColor.ToHexString()}>{upgradeBase.Cost}</color>";
 
-            // Campfire upgrades have LevelRequirement
             if (showLevelRequirement && upgradeBase is CampfireUpgrade campfire)
                 levelRequiredText.text = $"<color=#{levelTextColor.ToHexString()}>LV</color> {campfire.LevelRequirement}";
             else
@@ -79,24 +86,21 @@ namespace Game.Upgrades
 
             purchaseText.text = upgradeBase.purchased ? "Purchased" : "Purchase";
 
-            // Reset hold progress
             holdProgressImage.fillAmount = upgradeBase.purchased ? 1f : 0f;
             isHovered = true;
 
             holdToPurchase.SetCurrentUpgrade(currentUpgrade);
 
-            // Activate tooltip
-            gameObject.SetActive(true);
-
-            // Move tooltip correctly
-            RectTransform rect = GetComponent<RectTransform>();
             Vector2 offset = new(96, -50);
-            rect.anchoredPosition = (Vector2)position + offset;
+            rectTransform.localPosition = (Vector2)position + offset;
+
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
         }
 
         public void TryHide()
         {
             isHovered = false;
+
             // Delay hide slightly to allow mouse movement between button and tooltip
             CancelInvoke(nameof(HideInstant));
             Invoke(nameof(HideInstant), 0.15f);

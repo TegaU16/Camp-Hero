@@ -8,10 +8,21 @@ namespace Game.Inventory
     {
         public static ItemTooltipUI Instance;
 
-        [SerializeField] private GameObject expandedContentRoot;
+        [SerializeField] private GameObject attributeContentRoot;
+        private RectTransform attributeRect;
+        private CanvasGroup attributeGroup;
+
+        [SerializeField] private GameObject foodContentRoot;
+        private RectTransform foodRect;
+        private CanvasGroup foodGroup;
+
+        [SerializeField] private GameObject tooltipExpansionSuggestion;
+
         [SerializeField] private RectTransform backgroundRect;
+
         [SerializeField] private TextMeshProUGUI titleText;
         [SerializeField] private TextMeshProUGUI attributesText;
+        [SerializeField] private TextMeshProUGUI healthGainText;
         private RectTransform currentTarget;
 
         [SerializeField] private float padding = 10f;
@@ -26,15 +37,18 @@ namespace Game.Inventory
             HideTooltip();
         }
 
+        private void Start()
+        {
+            attributeRect = attributeContentRoot.GetComponent<RectTransform>();
+            attributeGroup = attributeContentRoot.GetComponent<CanvasGroup>();
+
+            foodRect = foodContentRoot.GetComponent<RectTransform>();
+            foodGroup = foodContentRoot.GetComponent<CanvasGroup>();
+        }
+
         private void Update()
         {
-            if (currentTarget == null)
-            {
-                HideTooltip();
-                return;
-            }
-
-            if (!currentTarget.gameObject.activeInHierarchy)
+            if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
                 HideTooltip();
         }
 
@@ -52,15 +66,26 @@ namespace Game.Inventory
         {
             if (item == null) return;
 
+            tooltipExpansionSuggestion.SetActive(false);
+            attributeContentRoot.SetActive(false);
+            foodContentRoot.SetActive(false);
+
             HoveredItem = item;
 
             currentTarget = itemTransform;
             titleText.text = item.itemName;
 
             if (item.toolAttribute != null)
+            {
                 attributesText.text = item.toolAttribute.GetAttributesText();
+                tooltipExpansionSuggestion.SetActive(true);
+            }
 
-            expandedContentRoot.SetActive(false);
+            if (item.foodValue > 0)
+            {
+                healthGainText.text = $"+{item.foodValue}";
+                tooltipExpansionSuggestion.SetActive(true);
+            }
 
             // Fix height
             titleText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, fixedHeight);
@@ -74,13 +99,27 @@ namespace Game.Inventory
             Vector3[] corners = new Vector3[4];
             itemTransform.GetWorldCorners(corners); // [0]=bottom-left, [1]=top-left, [2]=top-right, [3]=bottom-right
 
-            transform.position = corners[2];
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, corners[2]);
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                (RectTransform)transform.parent,
+                screenPoint,
+                null,
+                out Vector2 localPoint
+            );
+
+            ((RectTransform)transform).anchoredPosition = localPoint;
             gameObject.SetActive(true);
         }
 
-        public void ExpandTooltip(bool expand)
+        public void ExpandTooltip()
         {
-            expandedContentRoot.SetActive(expand);
+            tooltipExpansionSuggestion.SetActive(false);
+
+            if (HoveredItem.toolAttribute != null)
+                UITween.PopIn(attributeRect, attributeGroup);
+            else if (HoveredItem.foodValue > 0)
+                UITween.PopIn(foodRect, foodGroup);
 
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(backgroundRect);
@@ -90,39 +129,29 @@ namespace Game.Inventory
 
         private void ClampToScreen()
         {
-            RectTransform tooltipRect = transform as RectTransform;
+            RectTransform tooltipRect = (RectTransform)transform;
+            RectTransform canvasRect = tooltipRect.root as RectTransform;
 
-            Vector3[] corners = new Vector3[4];
-            tooltipRect.GetWorldCorners(corners);
+            Vector2 anchoredPos = tooltipRect.anchoredPosition;
 
-            Vector3 offset = Vector3.zero;
+            Vector2 min = canvasRect.rect.min;
+            Vector2 max = canvasRect.rect.max;
 
-            float screenWidth = Screen.width;
-            float screenHeight = Screen.height;
+            Vector2 size = tooltipRect.rect.size;
 
-            // Right edge
-            if (corners[2].x > screenWidth)
-                offset.x = screenWidth - corners[2].x;
+            float halfWidth = size.x * 0.5f;
+            float halfHeight = size.y * 0.5f;
 
-            // Left edge
-            if (corners[0].x < 0)
-                offset.x = -corners[0].x;
+            anchoredPos.x = Mathf.Clamp(anchoredPos.x, min.x + halfWidth, max.x - halfWidth);
+            anchoredPos.y = Mathf.Clamp(anchoredPos.y, min.y + halfHeight, max.y - halfHeight);
 
-            // Top edge
-            if (corners[1].y > screenHeight)
-                offset.y = screenHeight - corners[1].y;
-
-            // Bottom edge
-            if (corners[0].y < 0)
-                offset.y = -corners[0].y;
-
-            tooltipRect.position += offset;
+            tooltipRect.anchoredPosition = anchoredPos;
         }
 
         public void HideTooltip()
         {
             HoveredItem = null;
-            expandedContentRoot.SetActive(false);
+            attributeContentRoot.SetActive(false);
             gameObject.SetActive(false);
         }
     }

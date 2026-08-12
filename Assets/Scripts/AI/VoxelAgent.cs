@@ -84,7 +84,7 @@ namespace Game.AI
                 float currentHeight = Utility.GetHeightAt(x, z);
                 Vector3Int checkPos = new(x, Mathf.RoundToInt(currentHeight), z);
 
-                if (!VoxelGrid.Instance.IsWalkable(checkPos)) return false;
+                if (!TerrainGenerator.Instance.IsWalkable(checkPos)) return false;
 
                 if (i > 0)
                 {
@@ -101,7 +101,7 @@ namespace Game.AI
             return true;
         }
 
-        public void UpdateAgent()
+        public void UpdateAgent(bool allowMovementAndRotation = true)
         {
             Vector3 currentPos = transform.position;
 
@@ -141,6 +141,23 @@ namespace Game.AI
             {
                 DesiredPosition = currentPos;
                 velocity = Vector3.zero;
+            }
+
+            if (!allowMovementAndRotation)
+            {
+                velocity = Vector3.zero;
+
+                if (animator != null)
+                {
+                    animator.SetFloat(
+                        speedParam,
+                        0f,
+                        dampTime: 0.1f,
+                        Time.deltaTime
+                    );
+                }
+
+                return;
             }
 
             Vector3 directWorldTarget = GridToWorld(directTarget);

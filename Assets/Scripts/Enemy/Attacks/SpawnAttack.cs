@@ -10,7 +10,7 @@ namespace Game.AI.Enemies.Attacks
         [SerializeField] private float warningDuration = 1f; // How long the warning lasts
         [SerializeField] private int damage;
 
-        public string AttackName => "SpawnOnTarget";
+        public RangedAttackType AttackType => RangedAttackType.Spawn;
 
         public void ExecuteAttack(Transform attacker, Transform target, int damage)
         {

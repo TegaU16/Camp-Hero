@@ -25,7 +25,7 @@ public class GameOverUI : MonoBehaviour
 
         // --- Categories ---
         AddCategoryHeader("Survival");
-        AddStat("Days Survived", stats.daysSurvived.ToString("0.0"));
+        AddStat("Days Survived", stats.daysSurvived.ToString("0.#"));
         AddStat("Player Deaths", stats.playerDeaths.ToString());
         AddStat("Damage Taken", stats.damageTaken.ToString());
 

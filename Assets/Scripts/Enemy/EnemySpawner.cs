@@ -74,7 +74,7 @@ namespace Game.AI.Enemies
             if (!VoxelGrid.Instance.IsWithinBorders(spawnPos)) return;
 
             Vector3Int spawnPosInt = Utility.WorldToVoxelCoord(spawnPos);
-            if (!VoxelGrid.Instance.IsWalkable(spawnPosInt)) return;
+            if (!TerrainGenerator.Instance.IsWalkable(spawnPosInt)) return;
 
             int day = dayNightCycle.GetCurrentDay();
             List<EnemyTier> availableTiers = enemyPool.GetAvailableTiers(day);
@@ -135,11 +135,12 @@ namespace Game.AI.Enemies
                 Vector3 spawnPos = elitePos + offset;
 
                 Vector3Int spawnPosInt = Utility.WorldToVoxelCoord(spawnPos);
-                if (!VoxelGrid.Instance.IsWalkable(spawnPosInt)) continue;
+                if (!TerrainGenerator.Instance.IsWalkable(spawnPosInt)) continue;
 
                 Enemy enemy = enemyPool.GetEnemy(regularPrefab, spawnPos);
-                if (enemy != null)
-                    currentEnemyCount++;
+                if (enemy == null) continue;
+
+                currentEnemyCount++;
             }
         }
 
@@ -189,7 +190,7 @@ namespace Game.AI.Enemies
 
             foreach (EnemySaveData data in savedEnemies)
             {
-                GameObject prefab = PrefabRegistry.GetPrefabByKey(data.prefabName);
+                GameObject prefab = PrefabRegistry.Instance.GetByKey(data.prefabName);
                 if (prefab == null) continue;
 
                 Enemy enemy;
@@ -205,6 +206,7 @@ namespace Game.AI.Enemies
                 {
                     // Use pool for regular enemies
                     enemy = enemyPool.GetEnemy(prefab, data.position);
+                    if (enemy == null) continue;
                 }
 
                 // Restore health

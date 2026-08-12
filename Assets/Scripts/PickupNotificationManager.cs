@@ -6,19 +6,22 @@ public class PickupNotificationManager : MonoBehaviour
 {
     public static PickupNotificationManager Instance;
 
-    public PickupNotification pickupPrefab;
-    public Transform notificationsParent;
-    public float verticalSpacing = 60f;
+    [SerializeField] private PickupNotification pickupPrefab;
+    [SerializeField] private Transform notificationsParent;
+    [SerializeField] private float verticalSpacing = 60f;
 
     private readonly List<PickupNotification> activeNotifications = new();
     private readonly Queue<PickupNotification> notificationPool = new();
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
+        if (Instance != null && Instance != this)
+        {
             Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
     }
 
     public void ShowPickup(Item item, int count)

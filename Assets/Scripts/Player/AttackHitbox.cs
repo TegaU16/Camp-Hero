@@ -3,7 +3,9 @@ using Game.AI.Animals;
 using Game.AI.Enemies;
 using Game.Inventory;
 using Game.StatusEffects;
+using Game.Terrain;
 using UnityEngine;
+using Worlds;
 using static BreakableObject;
 
 namespace Game.Players
@@ -84,14 +86,32 @@ namespace Game.Players
             Utility.SetMultiplierSource(this, attackData.damageMultiplier, player.damageMultiplier);
             int itemDamage = playerCombat.ItemDamage(breakable, selectedItem);
 
+            WorldSession.CurrentRunStats.totalDamageDealt += itemDamage;
+            if (breakable.TryGetComponent(out ObjectCategory _))
+                WorldSession.CurrentRunStats.damageDealtToResources += itemDamage;
+
+            float finalKnockbackForce = attackData.knockbackForce * player.TotalKnockbackForceMultiplier;
+
             DamageInfo attackDamageInfo = new
             (
                 damage: itemDamage,
                 poiseDamage: attackData.poiseDamage,
                 crit: playerCombat.isCritical,
                 hitPoint: targetHitPoint,
-                hitNormal: targetHitNormal
+                hitNormal: targetHitNormal,
+                knockbackDirection: knockbackDir,
+                knockbackForce: finalKnockbackForce
             );
+
+            if (breakable.TryGetComponent(out HitStopController hitStop))
+            {
+                float duration = attackData.hitStopDuration;
+
+                if (playerCombat.isCritical)
+                    duration *= 1.5f;
+
+                hitStop.ApplyHitStop(duration);
+            }
 
             breakable.TakeDamage(attackDamageInfo);
             alreadyHit.Add(breakable);
@@ -99,31 +119,28 @@ namespace Game.Players
             AudioManager.Instance.PlaySFX(hitSound);
 
             Enemy enemy = breakable.GetComponentInParent<Enemy>();
-            if (enemy != null && attackData.statusEffects != null)
+            if (enemy != null)
             {
-                foreach (StatusEffect effect in attackData.statusEffects)
+                enemy.EnemyCombat.OnAttacked(transform);
+                WorldSession.CurrentRunStats.damageDealtToEnemies += itemDamage;
+
+                if (attackData.statusEffects != null)
                 {
-                    if (effect != null)
-                        effect.Apply(enemy);
+                    foreach (StatusEffect effect in attackData.statusEffects)
+                    {
+                        if (effect != null)
+                            effect.Apply(enemy);
+                    }
                 }
             }
 
             Animal animal = breakable.GetComponentInParent<Animal>();
+            if (animal != null && attackData.applyKnockback)
+                animal.ApplyKnockback(knockbackDir, finalKnockbackForce);
 
-            // Extra effects
-            if (attackData.applyKnockback)
-            {
-                float finalKnockbackForce = attackData.knockbackForce * player.TotalKnockbackForceMultiplier;
-
-                if (enemy != null)
-                {
-                    enemy.OnAttacked(transform);
-                    enemy.ApplyKnockback(knockbackDir, finalKnockbackForce);
-                }
-
-                if (animal != null)
-                    animal.ApplyKnockback(knockbackDir, finalKnockbackForce);
-            }
+            DamageFlash damageFlash = breakable.GetComponentInParent<DamageFlash>();
+            if (damageFlash != null)
+                damageFlash.Flash();
 
             // VFX / SFX
             if (attackData.hitEffectPrefab != null)

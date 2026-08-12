@@ -359,5 +359,4 @@ namespace Game.Players
             Instantiate(skillPrefab, skillsListMenu.transform);
         }
     }
-
 }

@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34,15 +34,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.7071067
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1fbcdb227fe25b047a3ab41be719b7b0, type: 3}
       propertyPath: m_LocalRotation.z
@@ -116,8 +116,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.78573716, y: 1.3095621, z: 0.9166933}
-  m_Center: {x: -0.000000029802317, y: 0.65478104, z: 0.06547809}
+  m_Size: {x: 0.39999995, y: 0.7800001, z: 0.49999994}
+  m_Center: {x: 0, y: 0.39000005, z: 0.049999967}
 --- !u!114 &2044743899682015316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,24 +130,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47fffb3c7342c5b4aae29ad005a5699e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FurnaceUnit
+  items: []
   fuel:
     maxFuel: 100
     currentFuel: 0
     fuelUseRate: 1
-  inputData:
-    itemName: 
-    count: 0
-  outputData:
-    itemName: 
-    count: 0
-  fuelData:
-    itemName: 
-    count: 0
-  furnaceSlots: []
   inputSlot: {fileID: 0}
   outputSlot: {fileID: 0}
   fuelSlot: {fileID: 0}
-  inventorySlots: []
   selectedItem: {fileID: 0}
   smeltProgress: 0
   smeltDuration: 5

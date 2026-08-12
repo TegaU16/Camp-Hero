@@ -47,9 +47,9 @@ public class ToolAttributeProbabilityTableEditor : Editor
 
             drawElementCallback = (rect, index, isActive, isFocused) =>
             {
-                SerializedProperty element = entriesProp.GetArrayElementAtIndex(index);
-                SerializedProperty value = element.FindPropertyRelative("value");
-                SerializedProperty weight = element.FindPropertyRelative("weight");
+                SerializedProperty attributeEntry = entriesProp.GetArrayElementAtIndex(index);
+                SerializedProperty toolAttribute = attributeEntry.FindPropertyRelative("value");
+                SerializedProperty weight = attributeEntry.FindPropertyRelative("weight");
 
                 float line = EditorGUIUtility.singleLineHeight;
                 rect.y += 2;
@@ -58,7 +58,7 @@ public class ToolAttributeProbabilityTableEditor : Editor
 
                 EditorGUI.PropertyField(
                     new Rect(rect.x, rect.y, rect.width * 0.55f, line),
-                    value,
+                    toolAttribute,
                     GUIContent.none
                 );
 

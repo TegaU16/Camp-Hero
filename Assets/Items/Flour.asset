@@ -15,10 +15,10 @@ MonoBehaviour:
   itemTypes: 1
   actionType: 0
   maxStack: 20
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 80b0ef8585d063346bf6906e642a38f9, type: 3}
   itemName: Flour
-  equippedPrefab: {fileID: 0}
-  itemDrop: {fileID: 0}
+  equippedPrefab: {fileID: 2627150411984690184, guid: de8355e8c5787da4c82a391d307802f4, type: 3}
+  itemDrop: {fileID: 1285808408995483895, guid: e21e6d3b4d2af0844a3a7709b2ca9e6d, type: 3}
   rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

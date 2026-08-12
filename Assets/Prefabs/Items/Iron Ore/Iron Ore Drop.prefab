@@ -1,113 +1,107 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &4690013680020972372
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.8
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.8
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.8
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_ConstrainProportionsScale
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_Name
-      value: Iron Ore Drop
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_Layer
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9072500256340790135}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4394508259670830512}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7377326590310409786}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2896595843225297033}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9214786255482390966}
-  m_SourcePrefab: {fileID: 100100000, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
---- !u!1 &5609003839569157637 stripped
+--- !u!1 &4227606778090023464
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 674a007444a1ad949b7266cbf7b38ca6, type: 3}
-  m_PrefabInstance: {fileID: 4690013680020972372}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &9072500256340790135
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 292261249133529432}
+  - component: {fileID: 2392243081018609100}
+  - component: {fileID: 2515466485236718588}
+  - component: {fileID: 7946712858299136853}
+  - component: {fileID: 6712303262461355171}
+  - component: {fileID: 5942666720257631916}
+  - component: {fileID: 1518568388335429274}
+  - component: {fileID: 6885889460896481824}
+  m_Layer: 6
+  m_Name: Iron Ore Drop
+  m_TagString: Pickable
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &292261249133529432
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227606778090023464}
+  serializedVersion: 2
+  m_LocalRotation: {x: 6.1232336e-17, y: 1, z: 6.1232336e-17, w: 0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &2392243081018609100
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227606778090023464}
+  m_Mesh: {fileID: 4308292583003311895, guid: fe240365de6972348bc227b2440605d3, type: 3}
+--- !u!23 &2515466485236718588
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227606778090023464}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 251352810516194989, guid: fe240365de6972348bc227b2440605d3, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7946712858299136853
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5609003839569157637}
+  m_GameObject: {fileID: 4227606778090023464}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -120,15 +114,15 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28, y: 0.20000002, z: 0.26}
-  m_Center: {x: -0.039999995, y: 0.099999994, z: 0.009999998}
---- !u!54 &4394508259670830512
+  m_Size: {x: 0.27999997, y: 0.2, z: 0.26}
+  m_Center: {x: 0.03999999, y: 0.09999999, z: -0.009999994}
+--- !u!54 &6712303262461355171
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5609003839569157637}
+  m_GameObject: {fileID: 4227606778090023464}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -149,13 +143,28 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &7377326590310409786
+--- !u!114 &5942666720257631916
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5609003839569157637}
+  m_GameObject: {fileID: 4227606778090023464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &1518568388335429274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227606778090023464}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
@@ -163,36 +172,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: f226f58a459e96c4e8e68c4633c1ae94, type: 2}
   itemCount: 1
-  maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
---- !u!114 &2896595843225297033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5609003839569157637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
   outlineWidth: 5
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
---- !u!114 &9214786255482390966
+  maxItemCount: 100
+  currentCell: {x: 0, y: 0}
+--- !u!114 &6885889460896481824
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5609003839569157637}
+  m_GameObject: {fileID: 4227606778090023464}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
-  prefabKey: iron_ore_drop
+  prefabKey: iron_ore

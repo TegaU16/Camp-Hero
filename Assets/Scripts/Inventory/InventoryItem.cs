@@ -1,3 +1,5 @@
+using System.Collections;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,15 +15,15 @@ namespace Game.Inventory
 
         [HideInInspector] public Item item;
 
-        public int count = 1;
-        public TextMeshProUGUI countText;
+        [HideInInspector] public int count = 1;
+        [SerializeField] private TextMeshProUGUI countText;
 
-        public float padding;
+        [SerializeField] private float padding;
 
         [HideInInspector] public Image image;
 
         [HideInInspector] public bool isBeingDragged;
-        private Transform originalParentSlot;
+        private InventorySlot originalParentSlot;
 
         private Canvas dragCanvas;
 
@@ -29,12 +31,10 @@ namespace Game.Inventory
 
         private void Start()
         {
-            RefreshCount();
-            originalParentSlot = transform.parent; // Set the original parent
+            countText.raycastTarget = false;
 
-            // Disable raycast on countText to prevent it from interfering with slot detection
-            if (countText != null)
-                countText.raycastTarget = false;
+            StartCoroutine(RefreshCount());
+            originalParentSlot = transform.parent.GetComponent<InventorySlot>();
         }
 
         private void OnDestroy()
@@ -68,19 +68,22 @@ namespace Game.Inventory
             // Set the image to match the parent's size
             imageRect.sizeDelta = slotRect.sizeDelta;
 
-            RefreshCount();
+            if (isActiveAndEnabled)
+                StartCoroutine(RefreshCount());
             StretchToFit(padding);
         }
 
-        public void PlaceInSlot(Transform slotTransform)
+        public void PlaceInSlot(InventorySlot slot)
         {
-            transform.SetParent(slotTransform);
+            if (slot == null) return;
+
+            transform.SetParent(slot.transform);
             transform.localPosition = Vector3.zero;
             transform.localScale = Vector3.one;
 
             StretchToFit(padding);
 
-            originalParentSlot = slotTransform;
+            originalParentSlot = slot;
             isBeingDragged = false;
 
             // Re-enable raycast targeting once placed in the slot
@@ -91,7 +94,6 @@ namespace Game.Inventory
             if (originalParentSlot.TryGetComponent(out InventorySlot parentSlot))
                 InventoryManager.Instance.OnInventoryItemChanged?.Invoke(parentSlot);
 
-            if (!slotTransform.TryGetComponent(out InventorySlot slot)) return;
             if (!InventoryManager.Instance.InventorySlots.Contains(slot)) return;
 
             InventoryManager.Instance.SetTutorialForItem(item);
@@ -99,16 +101,20 @@ namespace Game.Inventory
 
         public void RevertToOriginalSlot() => PlaceInSlot(originalParentSlot);
 
-        public void RefreshCount()
+        public IEnumerator RefreshCount()
         {
             if (count <= 1)
             {
                 countText.gameObject.SetActive(false);
-                return;
+                yield break;
             }
 
             countText.text = count.ToString();
             countText.gameObject.SetActive(true);
+
+            RectTransform rect = (RectTransform)countText.transform;
+            yield return UITween.ScaleOut(rect, to: 0.8f, disableOnComplete: false).WaitForCompletion();
+            yield return UITween.ScaleIn(rect, from: 0.8f).WaitForCompletion();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -157,6 +163,21 @@ namespace Game.Inventory
 
             dragCanvas.overrideSorting = false;
             dragCanvas.sortingOrder = 0;
+        }
+
+        public void SwapWith(InventoryItem other)
+        {
+            if (other == null) return;
+
+            InventorySlot mySlot = originalParentSlot;
+            InventorySlot otherSlot = other.transform.parent.GetComponent<InventorySlot>();
+
+            if (mySlot == null || otherSlot == null) return;
+
+            other.PlaceInSlot(mySlot);
+            PlaceInSlot(otherSlot);
+
+            ItemTooltipUI.Instance.HideTooltip();
         }
     }
 }

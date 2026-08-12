@@ -7,20 +7,10 @@ namespace Game.Players
     public class AttackData : ScriptableObject
     {
         [Header("Animation")]
-        public string animationTrigger;   // e.g. "LightAttack1", "HeavyAttack2"
-        public bool useRootMotion;        // does this attack rely on root motion?
+        public string animationTrigger;
 
         [Header("Combat")]
         public float damageMultiplier = 1f;
-        public float attackDistance = 2f;     // how far the hitbox should extend
-
-        [Header("Timing")]
-        public float comboWindowOpenTime = 0.3f;   // when you can chain
-        public float comboWindowCloseTime = 0.8f;  // when window closes
-
-        [Header("Hitbox Timing (in seconds)")]
-        public float hitboxEnableTime = 0.2f;   // when during the anim the hitbox activates
-        public float hitboxDuration = 0.4f;     // how long it stays active
 
         [Header("Hitbox Override")]
         public bool overrideHitbox = false;
@@ -30,8 +20,9 @@ namespace Game.Players
         [Header("Impact Effects")]
         public bool applyKnockback = false;
         public float knockbackForce = 5f;
+        public float hitStopDuration = 0.15f;
 
-        [Header("Extra Effects")]
+        [Header("Status Effects")]
         public StatusEffect[] statusEffects;
 
         [Header("VFX / SFX")]
@@ -39,12 +30,6 @@ namespace Game.Players
         public AudioClip hitSound;
 
         [Header("Combat Values")]
-        public float staminaCost = 10f;
         public int poiseDamage = 5;
-
-        [Header("Procedural Override")]
-        public bool overrideLegs = false;
-        public bool overrideArms = false;
-        public bool overrideTorso = false;
     }
 }

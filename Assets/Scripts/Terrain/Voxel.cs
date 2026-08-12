@@ -16,31 +16,30 @@ namespace Game.Terrain
 
     public class VoxelChunk
     {
+        public MeshFilter meshFilter;
+        public MeshRenderer meshRenderer;
+        public MeshCollider meshCollider;
+        public SurfaceType surfaceType;
+
         public GameObject chunkObject;
         public Vector3 chunkPosition; // Use as cached world pos
 
         [System.NonSerialized]
         public Voxel[,] voxels;
 
-        public List<GameObject> objects = new();
         public List<Vector3> savedObjectPositions = new();
         public List<Vector3Int> savedObjectPositionsInt = new();
         public List<SpawnedObjectData> savedObjects = new();
         public List<ISimulatable> simulatedEntities = new();
         public BiomeData biome;
         public Mesh generatedMesh;
-        public float[,] heightMap;
+        public float[] heightMap;
+        public List<Matrix4x4> grassMatrices = new();
 
-        public bool visualsEnabled = false;
-        public bool simulationEnabled = false;
-        public bool objectsSpawned = false;
+        public bool grassGenerated = false;
         public bool structureSpawned = false;
         public bool objectsGenerated = false;
         public bool objectsInstantiated = false;
-        public bool hasNaturalObjects = false;
-        public bool hasKeyStructure = false;
-        public bool wasLoadedFromSave = false;
-        public bool isLoading = false;
 
         public MeshRenderer[] cachedRenderers;
         public Collider[] cachedColliders;
@@ -50,7 +49,7 @@ namespace Game.Terrain
             this.chunkObject = chunkObject;
             chunkPosition = chunkObject.transform.position;
             voxels = new Voxel[chunkSize, chunkSize];
-            heightMap = new float[chunkSize, chunkSize];
+            heightMap = new float[chunkSize * chunkSize];
 
             // Cache renderers and colliders at creation
             cachedRenderers = chunkObject.GetComponentsInChildren<MeshRenderer>();
@@ -67,7 +66,6 @@ namespace Game.Terrain
         public int octaves = 4;
         public float lacunarity = 2f;
         public float heightScale = 10f;
-        public bool useHeightCurve = true;
         public AnimationCurve heightCurve = AnimationCurve.Linear(0, 0, 1, 1);
         public float heightExponent = 2f;
     }

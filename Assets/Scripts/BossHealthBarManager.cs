@@ -8,10 +8,10 @@ public class BossHealthBarManager : MonoBehaviour
 
     private readonly List<BossHealthBar> bossHealthBars = new();
 
-    public GameObject healthBarPrefab;
-    public GameObject healthBarsParent;
+    [SerializeField] private GameObject healthBarPrefab;
+    [SerializeField] private GameObject healthBarsParent;
 
-    public float baseWidth = 600f; // width of a single boss bar
+    [SerializeField] private float baseWidth = 600f; // width of a single boss bar
 
     private void Awake()
     {
@@ -27,7 +27,10 @@ public class BossHealthBarManager : MonoBehaviour
 
         GameObject bossHealthBarInstance = Instantiate(healthBarPrefab, healthBarsParent.transform);
         if (bossHealthBarInstance != null && bossHealthBarInstance.TryGetComponent(out BossHealthBar bossHealthBar))
+        {
             RegisterHealthBar(bossHealthBar, enemy);
+            Canvas.ForceUpdateCanvases();
+        }
     }
 
     private void RegisterHealthBar(BossHealthBar healthBar, GameObject enemy)
@@ -63,8 +66,13 @@ public class BossHealthBarManager : MonoBehaviour
 
             layout.minWidth = resizedWidth;
             layout.preferredWidth = resizedWidth;
-            layout.flexibleWidth = 0f; // do NOT stretch, keep exact pixels
+            layout.flexibleWidth = 0f;
+
+            RectTransform rect = bar.GetComponent<RectTransform>();
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, resizedWidth);
         }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(healthBarsParent.GetComponent<RectTransform>());
     }
 
     public void ClearHealthBars()

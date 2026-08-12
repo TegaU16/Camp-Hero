@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 20
   icon: {fileID: 21300000, guid: e1e2e2e61076f7344bd2a72bb127260c, type: 3}
   itemName: Raw Beef
-  equippedPrefab: {fileID: 6931524597629100174, guid: 8a3f747699da3334292eef5ad36a9619, type: 3}
-  itemDrop: {fileID: 1672656946408486178, guid: d380fe42786ae984b808b2fd275a28b7, type: 3}
+  equippedPrefab: {fileID: 6417466794872928023, guid: 8a3f747699da3334292eef5ad36a9619, type: 3}
+  itemDrop: {fileID: 9040658711469903312, guid: d380fe42786ae984b808b2fd275a28b7, type: 3}
   rarity: 0
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

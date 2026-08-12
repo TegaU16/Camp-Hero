@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Game.Inventory;
 using Game.Quests;
-using Game.Registries;
 using Game.Saving;
 using UnityEngine;
 using Worlds;
@@ -27,6 +26,7 @@ namespace Game.Terrain.Structures.Trials
     {
         public Transform[] spawnPoints;
         private List<TrialWave> waves = new();
+        [SerializeField] private List<GameObject> enemyPrefabs;
         public Item key;
 
         [HideInInspector] public int currentWave = 0;
@@ -36,12 +36,16 @@ namespace Game.Terrain.Structures.Trials
         private bool waveFail = false;
 
         [Header("Barrier Settings")]
-        public bool useBarrier = true;
-        public float barrierHalfSize = 15f;
-        public float barrierHeight = 10f;
-        public float barrierThickness = 0.5f;
-        public string barrierLayerName = "TrialBarrier";
-        public bool oneWayAllowInsideToExitOnly = false;
+        [SerializeField] private Material barrierMaterial;
+        
+        [SerializeField] private float barrierHalfSize = 15f;
+        [SerializeField] private float barrierHeight = 10f;
+        [SerializeField] private float barrierThickness = 0.5f;
+
+        [SerializeField] private string barrierLayerName = "TrialBarrier";
+
+        [SerializeField] private bool useBarrier = true;
+        [SerializeField] private bool oneWayAllowInsideToExitOnly = false;
 
         [Header("Wave Settings")]
         [SerializeField] private int minWaves = 2;
@@ -73,9 +77,6 @@ namespace Game.Terrain.Structures.Trials
             // Combine world seed + altar position for uniqueness
             int altarSeed = Utility.ConsistentHash(WorldSession.CurrentSeed) ^ transform.position.GetHashCode();
             System.Random rng = new(altarSeed);
-
-            List<GameObject> enemyPrefabs =
-                PrefabRegistry.GetPrefabsInCategory("Enemies");
 
             if (enemyPrefabs.Count == 0)
             {
@@ -129,8 +130,6 @@ namespace Game.Terrain.Structures.Trials
 
         private IEnumerator StartWaveRoutine()
         {
-            if (waveFail) yield break;
-
             waveInProgress = true;
             SetBarrierActive(true);
 
@@ -257,8 +256,6 @@ namespace Game.Terrain.Structures.Trials
             }
             barrierRoot.layer = barrierLayer;
 
-            // Create 4 walls (positive X, negative X, positive Z, negative Z)
-            // Normal points inward (toward altar) so the OneWay script can know "which side is outside".
             CreateWall("Wall+X", new Vector3(barrierHalfSize, barrierHeight * 0.5f - 2f, 0f),
                        new Vector3(barrierThickness, barrierHeight, barrierHalfSize * 2f),
                        Vector3.left, barrierLayer);
@@ -297,7 +294,7 @@ namespace Game.Terrain.Structures.Trials
                 mf.mesh = BuildQuadMesh(size.z, size.y, Vector3.right);
 
             MeshRenderer mr = wall.AddComponent<MeshRenderer>();
-            mr.material = BarrierMaterial.Instance.GetMaterial();
+            mr.material = barrierMaterial;
 
             if (oneWayAllowInsideToExitOnly)
             {
@@ -360,8 +357,7 @@ namespace Game.Terrain.Structures.Trials
 
         public void FailTrial()
         {
-            if (barrierRoot != null)
-                barrierRoot.SetActive(false);
+            SetBarrierActive(false);
 
             foreach (GameObject trialEnemy in TrialEnemyPool.Instance.activeEnemies.ToList())
                 TrialEnemyPool.Instance.ReturnTrialEnemy(trialEnemy);

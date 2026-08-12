@@ -28,7 +28,7 @@ namespace Game.Storage
             storageUI.Open(this);
         }
 
-        public string GetInteractText() => $"Open {chestName}";
+        public string GetInteractText() => $"Open {chestName}\n<color=#27ef60>\"E\"</color>";
 
         public Transform GetTransform() => transform;
 

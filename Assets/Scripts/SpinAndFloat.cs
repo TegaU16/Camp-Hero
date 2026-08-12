@@ -3,11 +3,11 @@ using UnityEngine;
 public class SpinAndFloat : MonoBehaviour
 {
     [Header("Rotation Settings")]
-    public float rotationSpeed = 20f; // degrees per second
+    [SerializeField] private float rotationSpeed = 20f;
 
     [Header("Float Settings")]
-    public float floatAmplitude = 0.5f; // how high/low it moves
-    public float floatFrequency = 1f;   // how fast it oscillates
+    [SerializeField] private float floatAmplitude = 0.5f;
+    [SerializeField] private float floatFrequency = 1f;
 
     private Vector3 startPos;
 

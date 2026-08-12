@@ -3,13 +3,23 @@ using UnityEngine;
 
 namespace Game.Reforge
 {
+    [RequireComponent(typeof(CanvasGroup), typeof(RectTransform))]
     public class ReforgeTableUI : MonoBehaviour
     {
-        public InventorySlot toolSlot;
-        public InventorySlot materialSlot;
+        private CanvasGroup canvasGroup;
+        private RectTransform rectTransform;
+
+        [SerializeField] private InventorySlot toolSlot;
+        [SerializeField] private InventorySlot materialSlot;
 
         private bool isOpen;
         private ReforgeTable linkedTable;
+
+        private void Awake()
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            rectTransform = GetComponent<RectTransform>();
+        }
 
         public void Open(ReforgeTable reforgeTable)
         {
@@ -17,14 +27,14 @@ namespace Game.Reforge
 
             isOpen = true;
             linkedTable = reforgeTable;
-            gameObject.SetActive(true);
-            InventoryManager.Instance.mainInventory.SetActive(true);
-            InventoryManager.Instance.OnInventoryOpen();
+            InventoryManager.Instance.OpenInventory();
 
             linkedTable.toolSlot = this.toolSlot;
             linkedTable.materialSlot = this.materialSlot;
 
             linkedTable.LoadUI();
+
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
         }
 
         public void Close()
@@ -43,10 +53,6 @@ namespace Game.Reforge
 
                 linkedTable = null;
             }
-
-            gameObject.SetActive(false);
-            InventoryManager.Instance.mainInventory.SetActive(false);
-            InventoryManager.Instance.darkBackground.SetActive(false);
         }
 
         // Called by button

@@ -17,9 +17,9 @@ MonoBehaviour:
   maxStack: 20
   icon: {fileID: 21300000, guid: 1a3a233ad0de1684c844a9a3175c5c3e, type: 3}
   itemName: Mithril Ore
-  equippedPrefab: {fileID: 5839194763466920450, guid: 58260c7a985d649479d1b6ee96a1d51e, type: 3}
-  itemDrop: {fileID: 1612894569515296370, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
-  rarity: 1
+  equippedPrefab: {fileID: 6005870591019324848, guid: 58260c7a985d649479d1b6ee96a1d51e, type: 3}
+  itemDrop: {fileID: 5647575939050413649, guid: acbb9a26ebfd8b842973c4b16749d5ad, type: 3}
+  rarity: 2
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}
   attackSet: {fileID: 11400000, guid: 190c83edeac2df249be353b1c84da518, type: 2}

@@ -3,6 +3,7 @@ using Game.AI.Enemies;
 using Game.Players;
 using Game.Terrain.Structures;
 using UnityEngine;
+using Worlds;
 
 public class Health : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public class Health : MonoBehaviour
     public event PreDamageDelegate OnPreDamage;
 
     public bool IsFull => currentHealth >= maxHealth;
+    public float HealthPercent => (float)currentHealth / maxHealth;
 
     private void Start()
     {
@@ -51,13 +53,18 @@ public class Health : MonoBehaviour
     {
         if (isDead || isImmune) return;
 
-        if (TryGetComponent(out Player player) && attacker != null)
+        if (TryGetComponent(out Player player))
         {
-            if (attacker.TryGetComponent(out Enemy enemy) && enemy.breakableObject != null)
-                OnHit?.Invoke(amount, enemy.breakableObject);
+            WorldSession.CurrentRunStats.damageTaken += amount;
 
-            if (OnPreDamage != null)
-                amount = OnPreDamage.Invoke(amount);
+            if (attacker != null)
+            {
+                if (attacker.TryGetComponent(out Enemy enemy) && enemy.breakableObject != null)
+                    OnHit?.Invoke(amount, enemy.breakableObject);
+
+                if (OnPreDamage != null)
+                    amount = OnPreDamage.Invoke(amount);
+            }
         }
 
         // Shield absorbs first

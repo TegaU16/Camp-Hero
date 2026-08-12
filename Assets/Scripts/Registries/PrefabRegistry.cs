@@ -1,38 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.Registries
 {
-    public class PrefabRegistry : MonoBehaviour
+    [Serializable]
+    public class PrefabCategory
     {
-        [Serializable]
-        public class PrefabCategory
-        {
-            public string categoryName;
-            public List<GameObject> prefabs = new();
-        }
+        public string categoryName;
+        public List<GameObject> prefabs = new();
+    }
 
-        private static readonly string[] RequiredCategories =
-        {
-            "Resources",
-            "Builds",
-            "Drops",
-            "Enemies",
-            "Animals",
-            "General Structures",
-            "Important Structures",
-            "Effects",
-            "Text Notifications"
-        };
-
+    public class PrefabRegistry : BaseRegistry<GameObject, string>
+    {
+        public static PrefabRegistry Instance;
         public List<PrefabCategory> categories = new();
 
-        public static PrefabRegistry Instance { get; private set; }
-
-        private static Dictionary<string, GameObject> prefabDict;
-
-        private void Awake()
+        private new void Awake()
         {
             if (Instance != null && Instance != this)
             {
@@ -42,47 +27,54 @@ namespace Game.Registries
 
             Instance = this;
 
-            if (prefabDict != null && prefabDict.Count > 0) return;
+            allEntries = categories
+            .SelectMany(c => c.prefabs)
+            .Where(p => p != null)
+            .Distinct()
+            .ToArray();
 
-            prefabDict = new();
-
-            foreach (PrefabCategory category in categories)
-            {
-                foreach (GameObject prefab in category.prefabs)
-                {
-                    if (prefab == null) continue;
-
-                    PrefabID id = prefab.GetComponent<PrefabID>();
-                    if (id == null || string.IsNullOrEmpty(id.prefabKey))
-                    {
-                        Debug.LogWarning($"Prefab {prefab.name} in {category.categoryName} has no PrefabID key!");
-                        continue;
-                    }
-
-                    prefabDict[id.prefabKey] = prefab;
-                }
-            }
+            base.Awake();
         }
 
-        private void OnValidate()
+        protected override string GetKey(GameObject entry)
         {
-            foreach (string categoryName in RequiredCategories)
+            if (!entry.TryGetComponent(out PrefabID id))
             {
-                if (!categories.Exists(c => c.categoryName == categoryName))
-                    categories.Add(new PrefabCategory { categoryName = categoryName });
+                Debug.LogWarning($"{entry.name} has NO PrefabID component!");
+                return null;
+            }
+
+            return id.prefabKey;
+        }
+
+        protected override string GetCategoryName(GameObject entry)
+        {
+            foreach (PrefabCategory category in categories)
+            {
+                if (category.prefabs.Contains(entry)) return category.categoryName;
+            }
+
+            return null;
+        }
+
+        protected override void OnValidate()
+        {
+            if (requiredCategories == null || requiredCategories.Length == 0) return;
+
+            foreach (string catName in requiredCategories)
+            {
+                if (!categories.Exists(c => c.categoryName == catName))
+                    categories.Add(new PrefabCategory { categoryName = catName });
             }
 
             categories.Sort((a, b) =>
-                Array.IndexOf(RequiredCategories, a.categoryName)
-                .CompareTo(Array.IndexOf(RequiredCategories, b.categoryName)));
+                Array.IndexOf(requiredCategories, a.categoryName)
+                .CompareTo(Array.IndexOf(requiredCategories, b.categoryName)));
         }
 
-        public static GameObject GetPrefabByKey(string key) =>
-            prefabDict.TryGetValue(key, out GameObject prefab) ? prefab : null;
-
-        public static List<GameObject> GetPrefabsInCategory(string categoryName)
+        public List<GameObject> GetPrefabsInCategory(string categoryName)
         {
-            PrefabCategory category = Instance.categories.Find(c => c.categoryName == categoryName);
+            PrefabCategory category = categories.Find(c => c.categoryName == categoryName);
             return category != null ? category.prefabs : new List<GameObject>();
         }
     }

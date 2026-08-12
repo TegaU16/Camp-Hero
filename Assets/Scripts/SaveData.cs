@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Game.Inventory;
 using Game.Storage;
 using Game.Terrain.Structures;
 using UnityEngine;
@@ -64,6 +63,7 @@ namespace Game.Saving
         public string lastPlayedDate;
         public Difficulty difficulty;
         public WorldState worldState = WorldState.Active;
+        public WorldType worldType;
         public RunStats worldStats;
     }
 
@@ -72,8 +72,6 @@ namespace Game.Saving
     {
         public Vector3 chunkPosition;
         public List<SpawnedObjectData> spawnedObjects;
-        public bool hasNaturalObjects;
-        public bool hasKeyStructure;
 
         public List<string> furnaceStates = new();
         public List<string> storageStates = new();
@@ -128,7 +126,6 @@ namespace Game.Saving
             }
 
             savedStateJson = JsonUtility.ToJson(new MultiSaveData { states = allStates });
-
         }
     }
 
@@ -142,6 +139,7 @@ namespace Game.Saving
     public class InteractableItemData
     {
         public string itemName;
+        public string toolAttribute;
         public int count;
     }
 

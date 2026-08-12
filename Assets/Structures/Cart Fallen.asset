@@ -18,3 +18,4 @@ MonoBehaviour:
     localOffset: {x: 0, y: 0.68, z: 0}
   - prefab: {fileID: 1225668700139714346, guid: da9dc4e1327235544a8fb291365dfb82, type: 3}
     localOffset: {x: 2, y: 0, z: 0}
+  lootTable: {fileID: 11400000, guid: 8ee357e2221cd8a46be73081908921c4, type: 2}

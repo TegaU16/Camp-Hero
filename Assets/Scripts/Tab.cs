@@ -3,9 +3,10 @@ using UnityEngine.UI;
 
 public class Tab : MonoBehaviour
 {
-    public Image image;
-    public Sprite selectedImage, unselectedImage;
-    public GameObject menu;
+    [SerializeField] private Image image;
+    [SerializeField] private Sprite selectedImage;
+    [SerializeField] private Sprite unselectedImage;
+    [SerializeField] private GameObject menu;
 
     private TabArea tabArea;
 

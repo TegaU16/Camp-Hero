@@ -5,22 +5,18 @@ namespace Game.AI.Enemies
     [System.Serializable]
     public class TargetScore
     {
-        // Runtime target (live game)
-        public Transform target;
+        private readonly Transform target;
 
-        // Editor-only / simulation
         public string targetName = "Null";
         public Vector3 simulatedPosition;
         public bool wasAttacker;
         public float timeSinceAttack = Mathf.Infinity;
 
-        // Scoring weights
         public int priority;
         public float distance;
         public float lastDamageScore;
         public float objectiveThreatScore;
 
-        // Final score for personality comparison
         public float finalScore;
 
         // Constructor for runtime target

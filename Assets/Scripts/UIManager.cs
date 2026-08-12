@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Game.Players;
@@ -60,14 +61,10 @@ public class UIManager : MonoBehaviour
     {
         if (!text.TryGetComponent(out CanvasGroup canvasGroup)) yield break;
 
-        text.gameObject.SetActive(true);
-
-        yield return StartCoroutine(Utility.Fade(canvasGroup, 0f, 1f, fadeInTime));
+        yield return UITween.FadeIn(canvasGroup, fadeInTime);
 
         yield return new WaitForSeconds(displayTime);
 
-        yield return StartCoroutine(Utility.Fade(canvasGroup, 1f, 0f, fadeOutTime));
-
-        text.gameObject.SetActive(false);
+        yield return UITween.FadeOut(canvasGroup, fadeOutTime);
     }
 }

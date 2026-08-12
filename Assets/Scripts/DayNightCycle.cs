@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using Game;
-using Game.AI.Enemies;
 using Game.Saving;
 using TMPro;
 using UnityEngine;
@@ -28,8 +27,13 @@ public class DayNightCycle : MonoBehaviour
     [SerializeField] private Light sun;
     [SerializeField] private Light moon;
 
+    [SerializeField] private Transform sunVisual;
+    [SerializeField] private Transform moonVisual;
+
     [SerializeField] private AnimationCurve starVisibilityCurve = AnimationCurve.Linear(0f, 1f, 1f, 1f);
     [SerializeField] private AnimationCurve atmosphereThickness;
+    [SerializeField] private AnimationCurve sunIntensityCurve;
+    [SerializeField] private AnimationCurve moonIntensityCurve;
 
     [SerializeField] private Gradient sunColor;
     [SerializeField] private Gradient moonColor;
@@ -51,17 +55,19 @@ public class DayNightCycle : MonoBehaviour
     private bool isNight;
 
     [Header("References")]
-    public DayTextUI dayTextUI;
-    public EnemyPool enemyPool;
+    [SerializeField] private DayTextUI dayTextUI;
 
     public Action<int> OnDayAdvanced;
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
+        if (Instance != null && Instance != this)
+        {
             Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
     }
 
     void Start()
@@ -72,6 +78,9 @@ public class DayNightCycle : MonoBehaviour
         isNight = IsNight();
         UpdateDayUI();
         StartCoroutine(ShowDayTextAfterDelay(3f));
+
+        sunVisual.localPosition = -Vector3.forward * 500f;
+        moonVisual.localPosition = -Vector3.forward * 500f;
     }
 
     void Update()
@@ -79,7 +88,6 @@ public class DayNightCycle : MonoBehaviour
         if (!GameManager.Instance.IsGameActive) return;
         if (sun == null || moon == null) return;
 
-        // Update time
         timeOfDay += (24f / dayDurationInSeconds) * Time.deltaTime;
 
         if (timeOfDay >= 24f)
@@ -91,13 +99,11 @@ public class DayNightCycle : MonoBehaviour
 
         bool nightNow = IsNight();
 
-        // Detect transition
         if (nightNow != isNight)
         {
             isNight = nightNow;
             UpdateDayNightIcon();
 
-            // Day advancing logic (only when entering daytime)
             if (!nightNow && timeOfDay >= nightEnd && !hasAdvancedDayToday)
             {
                 AdvanceDay();
@@ -105,14 +111,23 @@ public class DayNightCycle : MonoBehaviour
             }
         }
 
-        // Reset the day advance lock at midnight
         if (nightNow && timeOfDay < nightEnd)
             hasAdvancedDayToday = false;
 
-        // Normalized time (0 = midnight, 0.5 = noon, 1 = next midnight)
         float normalizedTime = timeOfDay / 24f;
 
-        // Set sun and moon directions (already done above)
+        Color sunlightColor = sunColor.Evaluate(normalizedTime);
+        Color moonlightColor = moonColor.Evaluate(normalizedTime);
+
+        sun.color = sunlightColor;
+        moon.color = moonlightColor;
+
+        float sunIntensity = sunIntensityCurve.Evaluate(normalizedTime);
+        float moonIntensity = moonIntensityCurve.Evaluate(normalizedTime);
+
+        sun.intensity = sunIntensity;
+        moon.intensity = moonIntensity;
+
         Quaternion sunRotation = Quaternion.Euler((timeOfDay - 6f) * 15f, 170f, 0);
         Vector3 sunDirection = sunRotation * Vector3.forward;
         Vector3 moonDirection = -sunDirection;
@@ -120,45 +135,31 @@ public class DayNightCycle : MonoBehaviour
         // Apply data to the shader
         if (proceduralSkybox != null)
         {
-            // Set time of day
             proceduralSkybox.SetFloat("_Time_of_Day", normalizedTime);
             
-            // Set zenith and horizon colors from gradients
             Color zenithColor = zenithGradient.Evaluate(normalizedTime);
             Color horizonColor = horizonGradient.Evaluate(normalizedTime);
 
             proceduralSkybox.SetColor("_Zenith_Color", zenithColor);
             proceduralSkybox.SetColor("_Horizon_Color", horizonColor);
 
-            // Sun and moon
-            proceduralSkybox.SetVector("_Sun_Direction", sunDirection);
-            proceduralSkybox.SetVector("_Moon_Direction", moonDirection);
-            proceduralSkybox.SetColor("_Sun_Color", sunColor.Evaluate(normalizedTime));
-            proceduralSkybox.SetColor("_Moon_Color", moonColor.Evaluate(normalizedTime));
-
-            // Stars
             float starIntensity = Mathf.Clamp01(starVisibilityCurve.Evaluate(normalizedTime));
             proceduralSkybox.SetFloat("_Star_Intensity", starIntensity);
 
             DynamicGI.UpdateEnvironment();
         }
 
-        if (player != null)
-        {
-            // Compute the pivot point (center of sky rotation) to be the player
-            Vector3 center = player.transform.position;
+        if (player == null) return;
 
-            // Sun position & rotation
-            Vector3 sunPosition = center - sunDirection * sunDistance;
-            sun.transform.position = sunPosition;
-            sun.transform.LookAt(center); // Ensures the directional light is centered on the player
+        Vector3 center = player.transform.position;
 
-            // Moon direction is opposite the sun
-            Vector3 moonPosition = center - moonDirection * moonDistance;
+        Vector3 sunPosition = center - sunDirection * sunDistance;
+        sunVisual.transform.position = sunPosition;
+        sun.transform.rotation = Quaternion.LookRotation(sunDirection);
 
-            moon.transform.position = moonPosition;
-            moon.transform.LookAt(center);
-        }
+        Vector3 moonPosition = center - moonDirection * moonDistance;
+        moonVisual.transform.position = moonPosition;
+        moon.transform.rotation = Quaternion.LookRotation(moonDirection);
     }
 
     public void SetPlayer(GameObject player)

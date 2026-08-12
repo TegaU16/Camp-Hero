@@ -162,8 +162,8 @@ public class LootTableEditor : Editor
 
         if (GUILayout.Button("Preview Loot Roll", GUILayout.Height(22)))
         {
-            List<ItemData> loot = table.GetRandomLoot();
-            if (loot.Count == 0)
+            ItemData[] loot = table.GetRandomLoot(Vector3.zero, storageSlots: 8);
+            if (loot.Length == 0)
             {
                 Debug.Log("No loot rolled.");
             }

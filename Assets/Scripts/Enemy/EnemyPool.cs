@@ -1,41 +1,30 @@
 ﻿using System.Collections.Generic;
-using Game.Registries;
 using UnityEngine;
 
 namespace Game.AI.Enemies
 {
-    public class EnemyPool : MonoBehaviour
+    public class EnemyPool : MultiObjectPool<Enemy>
     {
-        public static EnemyPool Instance;
-
+        private static readonly int SpeedHash = Animator.StringToHash("Speed");
         [SerializeField] private List<EnemyTier> enemyTiers;
-
-        private readonly Dictionary<GameObject, Queue<Enemy>> pools = new();
         private readonly Dictionary<GameObject, int> currentPoolSizes = new();
 
-        [SerializeField] private Vector3 poolGraveyardPosition = new(0, -1000, 0);
-
-        [Tooltip("How much the pool increases per day (as a multiplier). Example: 0.1 = 10% more per day.")]
+        [Tooltip("How much the pool increases per day")]
         [SerializeField] private float dailyGrowthRate = 0.1f;
 
-        [Tooltip("Maximum allowed pool size multiplier (to prevent infinite growth).")]
+        [Tooltip("Maximum allowed pool size multiplier")]
         [SerializeField] private float maxGrowthMultiplier = 3f;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
+            base.Awake();
             Instance = this;
         }
 
-        void Start()
+        private void Start()
         {
             DayNightCycle.Instance.OnDayAdvanced += AdjustPoolsForNewDay;
-            InitializePools(GameManager.Instance != null ? DayNightCycle.Instance.GetCurrentDay() : 1);
+            InitializePools(DayNightCycle.Instance.GetCurrentDay());
         }
 
         public void InitializePools(int currentDay)
@@ -45,22 +34,59 @@ namespace Game.AI.Enemies
                 int adjustedPoolSize = CalculateAdjustedPoolSize(tier.poolSize, currentDay);
 
                 Queue<Enemy> pool = new();
+
                 for (int i = 0; i < adjustedPoolSize; i++)
-                {
-                    Enemy enemy = CreatePooledEnemy(tier.prefab);
-                    pool.Enqueue(enemy);
-                }
+                    pool.Enqueue(CreatePooledObject(tier.prefab));
 
                 pools[tier.prefab] = pool;
                 currentPoolSizes[tier.prefab] = adjustedPoolSize;
             }
         }
 
-        private Enemy CreatePooledEnemy(GameObject prefab)
+        protected override Enemy CreatePooledObject(GameObject prefab)
         {
-            GameObject enemyPrefab = Instantiate(prefab, poolGraveyardPosition, Quaternion.identity);
-            enemyPrefab.SetActive(false);
-            return enemyPrefab.GetComponent<Enemy>();
+            GameObject enemyObj = Instantiate(prefab, poolGraveyardPosition, Quaternion.identity);
+            enemyObj.SetActive(false);
+            enemyObj.transform.SetParent(transform);
+            return enemyObj.GetComponent<Enemy>();
+        }
+
+        protected override void OnGetObject(Enemy enemy) => enemy.gameObject.SetActive(true);
+
+        protected override void OnReturnObject(Enemy enemy)
+        {
+            enemy.CancelInvoke();
+            enemy.StopAllCoroutines();
+
+            if (enemy.TryGetComponent(out Animator animator))
+            {
+                animator.enabled = true;
+                animator.SetFloat(SpeedHash, 0f);
+            }
+
+            if (enemy.TryGetComponent(out SimpleRagdollController ragdoll))
+                ragdoll.DisableRagdoll();
+
+            base.OnReturnObject(enemy);
+        }
+
+        public Enemy GetEnemy(GameObject prefab, Vector3 spawnPosition)
+        {
+            if (!pools.ContainsKey(prefab))
+            {
+                Debug.LogWarning($"No pool found for prefab: {prefab.name}");
+                return null;
+            }
+
+            Enemy enemy = Get(prefab);
+            if (enemy == null) return null;
+
+            enemy.animator.enabled = false;
+            enemy.transform.SetPositionAndRotation(spawnPosition, Quaternion.identity);
+            enemy.Init(spawnPosition);
+            enemy.animator.enabled = true;
+
+            return enemy;
         }
 
         private int CalculateAdjustedPoolSize(int baseSize, int currentDay)
@@ -69,62 +95,6 @@ namespace Game.AI.Enemies
             return Mathf.RoundToInt(baseSize * multiplier);
         }
 
-        public Enemy GetEnemy(GameObject prefab, Vector3 spawnPosition)
-        {
-            if (!pools.ContainsKey(prefab))
-            {
-                Debug.LogWarning("No pool found for prefab: " + prefab.name);
-                return null;
-            }
-
-            Queue<Enemy> pool = pools[prefab];
-
-            if (pool.Count == 0)
-            {
-                Enemy newEnemy = CreatePooledEnemy(prefab);
-                currentPoolSizes[prefab]++;
-                return PrepareEnemy(newEnemy, spawnPosition);
-            }
-
-            Enemy enemy = pool.Dequeue();
-            return PrepareEnemy(enemy, spawnPosition);
-        }
-
-        private Enemy PrepareEnemy(Enemy enemy, Vector3 spawnPosition)
-        {
-            enemy.gameObject.SetActive(true);
-            enemy.animator.enabled = false;
-            enemy.transform.SetPositionAndRotation(spawnPosition, Quaternion.identity);
-            enemy.Init(spawnPosition);
-            enemy.animator.enabled = true;
-            return enemy;
-        }
-
-        public void ReturnEnemy(Enemy enemy)
-        {
-            enemy.CancelInvoke();
-            enemy.StopAllCoroutines();
-
-            if (enemy.TryGetComponent(out Animator animator))
-            {
-                animator.enabled = true;
-                animator.SetFloat("Speed", 0f);
-            }
-
-            if (enemy.TryGetComponent(out SimpleRagdollController ragdollController))
-                ragdollController.DisableRagdoll();
-
-            enemy.transform.position = poolGraveyardPosition;
-            enemy.gameObject.SetActive(false);
-
-            PrefabID id = enemy.GetComponent<PrefabID>();
-            GameObject prefab = PrefabRegistry.GetPrefabByKey(id.prefabKey);
-
-            if (pools.TryGetValue(prefab, out Queue<Enemy> pool))
-                pool.Enqueue(enemy);
-        }
-
-        // Called when a new day starts
         public void AdjustPoolsForNewDay(int currentDay)
         {
             foreach (EnemyTier tier in enemyTiers)
@@ -135,28 +105,23 @@ namespace Game.AI.Enemies
                 if (desiredSize <= currentSize) continue;
 
                 int toAdd = desiredSize - currentSize;
-                if (!pools.TryGetValue(tier.prefab, out var pool))
+
+                if (!pools.TryGetValue(tier.prefab, out Queue<Enemy> pool))
                 {
                     pool = new Queue<Enemy>();
                     pools[tier.prefab] = pool;
                 }
 
                 for (int i = 0; i < toAdd; i++)
-                    pool.Enqueue(CreatePooledEnemy(tier.prefab));
+                    pool.Enqueue(CreatePooledObject(tier.prefab));
 
                 currentPoolSizes[tier.prefab] = desiredSize;
-                Debug.Log($"Expanded pool for {tier.prefab.name} to {desiredSize}");
             }
         }
 
-        // Return all tiers unlocked for the current day
-        public List<EnemyTier> GetAvailableTiers(int currentDay)
-        {
-            return enemyTiers.FindAll(tier => currentDay >= tier.unlockDay);
-        }
+        public List<EnemyTier> GetAvailableTiers(int currentDay) => enemyTiers.FindAll(tier => currentDay >= tier.unlockDay);
 
-        // Return all tiers of a specific type unlocked for the current day
-        public List<EnemyTier> GetTiersByType(Enemy.EnemyType type, int currentDay)
+        private List<EnemyTier> GetTiersByType(Enemy.EnemyType type, int currentDay)
         {
             return enemyTiers.FindAll(tier =>
             {
@@ -165,11 +130,11 @@ namespace Game.AI.Enemies
             });
         }
 
-        // Return a random prefab for a type, considering unlock day
         public GameObject GetTierPrefab(Enemy.EnemyType type, int currentDay)
         {
             List<EnemyTier> tiers = GetTiersByType(type, currentDay);
             if (tiers.Count == 0) return null;
+
             return tiers[Random.Range(0, tiers.Count)].prefab;
         }
 
@@ -190,8 +155,6 @@ namespace Game.AI.Enemies
         public GameObject prefab;
         public int unlockDay;
         public int poolSize = 10;
-
-        [Header("Optional Grouping for Elite")]
         public List<GameObject> regularsToSpawnWith;
     }
 }

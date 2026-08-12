@@ -78,12 +78,11 @@ namespace Game.Crafting
 
         private IEnumerator DelayedAddCraftedItem(Item item)
         {
-            yield return null; // wait 1 frame
+            yield return null;
 
             if (InventoryManager.Instance.IsInventoryFullForItem(item))
             {
-                TextNotification fullInv = TextNotificationPool.Instance.GetTextNotification(fullInventoryNotification);
-                fullInv.gameObject.SetActive(true);
+                TextNotification fullInv = TextNotificationPool.Instance.Get(fullInventoryNotification, isPoolStatic: false);
                 fullInv.Setup();
                 yield break;
             }
@@ -99,7 +98,6 @@ namespace Game.Crafting
             data.lastTriggered = Time.time;
             List<CraftingItem> matches = new();
 
-            // Find UI items matching the recipe(s)
             foreach (CraftingItem itemUI in GetUnlockedCraftingItems())
             {
                 foreach (CraftingRecipe recipe in data.targetRecipes)
@@ -114,11 +112,9 @@ namespace Game.Crafting
 
             if (matches.Count == 0) return;
 
-            // Highlight each target recipe
             foreach (CraftingItem item in matches)
                 AnimateRecipeHighlight(item);
 
-            // Auto-stop after duration
             if (data.highlightDuration > 0)
                 StartCoroutine(StopRecipeHighlightAfterDelay(matches, data.highlightDuration));
         }
@@ -133,7 +129,6 @@ namespace Game.Crafting
 
         public void HighlightSuggestedRecipe()
         {
-            // Find all craftable but NOT YET CRAFTED recipes
             List<CraftingItem> possible = new();
 
             foreach (CraftingItem itemUI in GetUnlockedCraftingItems())
@@ -144,9 +139,7 @@ namespace Game.Crafting
 
             if (possible.Count == 0) return;
 
-            // Choose the best one (e.g., first unlocked or easiest to craft)
             CraftingItem suggestion = possible[0];
-
             AnimateRecipeHighlight(suggestion);
         }
 
@@ -193,11 +186,9 @@ namespace Game.Crafting
         {
             CraftingSaveData saveData = new();
 
-            // Save unlocked recipes
             foreach (CraftingRecipe recipe in unlockedRecipes)
                 saveData.unlockedRecipeIDs.Add(recipe.name);
 
-            // Save which recipes were crafted before
             foreach (CraftingRecipe recipe in craftingDatabase.allRecipes)
             {
                 if (recipe.hasBeenCraftedBefore)

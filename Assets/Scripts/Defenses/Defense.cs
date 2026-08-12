@@ -5,18 +5,18 @@ namespace Game.Defenses
 {
     public class Defense : MonoBehaviour
     {
-        public float range = 10f;
-        public int damage = 20;
-        public float fireRate = 1f;
-        public float rotationSpeed = 5f;
+        [SerializeField] protected float range = 10f;
+        [SerializeField] protected int damage = 20;
+        [SerializeField] protected float fireRate = 1f;
+        [SerializeField] protected float rotationSpeed = 5f;
 
-        public Transform firePoint;
-        public GameObject projectilePrefab;
+        [SerializeField] protected Transform firePoint;
+        [SerializeField] protected GameObject projectilePrefab;
 
         protected float fireCooldown;
         protected Transform currentTarget;
 
-        public AudioClip shotSound;
+        [SerializeField] protected AudioClip shotSound;
 
         protected virtual void Update()
         {
@@ -71,6 +71,12 @@ namespace Game.Defenses
         protected virtual void Fire()
         {
             if (currentTarget == null) return;
+
+            if (!IsTargetAlive(currentTarget.transform))
+            {
+                currentTarget = null;
+                return;
+            }
 
             GameObject projectileObj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
             if (projectileObj.TryGetComponent(out Projectile projectile))

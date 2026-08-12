@@ -11,13 +11,10 @@ namespace Game.AI.Enemies
         public float lastDamageWeight = 1f;
         public float objectiveThreatWeight = 1f;
 
-        /// <summary>
-        /// Applies weights to a TargetScore and returns the final score.
-        /// </summary>
         public float CalculateScore(TargetScore ts)
         {
             float score = 0;
-            score += ts.priority * -priorityWeight;
+            score += ts.priority * priorityWeight;
             score += ts.distance * -distanceWeight;
             score += ts.lastDamageScore * lastDamageWeight;
             score += ts.objectiveThreatScore * objectiveThreatWeight;
@@ -33,7 +30,7 @@ namespace Game.AI.Enemies
                 ? lastDamageWeight * Mathf.Max(0f, 1f - ts.timeSinceAttack / simulatedRetaliateDuration)
                 : 0f;
             float objectiveScore = ts.objectiveThreatScore * objectiveThreatWeight;
-            float priorityScore = ts.priority * -priorityWeight;
+            float priorityScore = ts.priority * priorityWeight;
 
             float baseScore = priorityScore + distanceScore + retaliationScore + objectiveScore;
 

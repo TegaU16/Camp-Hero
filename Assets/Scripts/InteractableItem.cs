@@ -8,6 +8,7 @@ using Game.Saving;
 using Game.Terrain;
 using UnityEngine;
 
+[RequireComponent(typeof(Collider))]
 public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 {
     public Item item;
@@ -20,6 +21,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
     private bool canPickup = true;
 
     private Rigidbody rb;
+    private Collider col;
 
     [HideInInspector] public VoxelChunk owningChunk;
     [HideInInspector] public Vector2Int currentCell;
@@ -41,6 +43,8 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         this.rb = rb;
         rb.linearDamping = 2f;
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+
+        col = GetComponent<Collider>();
     }
 
     private void OnEnable()
@@ -71,14 +75,9 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
     {
         if (isSleeping) return;
 
-        UpdateGrid();
-        CheckGround();
-        CheckSleep(deltaTime);
-    }
-
-    private void UpdateGrid()
-    {
         ItemGrid.UpdateItemCell(this);
+        CheckSleep(deltaTime);
+        CheckGround();
     }
 
     private void CheckSleep(float dt)
@@ -102,6 +101,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
         if (rb != null)
         {
+            rb.isKinematic = false;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
@@ -118,30 +118,49 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         sleepTimer = 0f;
 
         if (rb != null)
+        {
             rb.isKinematic = false;
+            rb.useGravity = true;
+        }
 
         InteractableItemManager.Instance.Register(this);
     }
 
-    public void CheckGround()
+    private void CheckGround()
     {
-        if (transform.position.y >= -0.1f) return;
+        if (rb == null || isSleeping || col == null) return;
 
-        Vector3 origin = transform.position + Vector3.up * 100f;
+        int x = Mathf.FloorToInt(transform.position.x);
+        int z = Mathf.FloorToInt(transform.position.z);
 
-        if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
-        {
-            Destroy(gameObject);
-            return;
-        }
+        float groundY = Utility.GetHeightAt(x, z);
+
+        float bottomY = col.bounds.min.y;
+        float distanceToGround = bottomY - groundY;
+
+        // Small tolerance
+        if (distanceToGround < -1f)
+            SnapToGround(groundY);
+    }
+
+    private void SnapToGround(float y)
+    {
+        transform.position = new Vector3(
+            transform.position.x,
+            y,
+            transform.position.z
+        );
 
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+
+            rb.useGravity = false;     // ← key part
+            rb.isKinematic = true;     // ← stop physics completely
         }
 
-        transform.position = hit.point + Vector3.up * 0.25f;
+        Sleep();
     }
 
     public void TryMergeNearby()
@@ -244,6 +263,7 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
         return JsonUtility.ToJson(new InteractableItemData
         {
             itemName = item != null ? item.itemName : "",
+            toolAttribute = item.toolAttribute != null ? item.toolAttribute.attributeID : "",
             count = itemCount
         });
     }
@@ -254,7 +274,8 @@ public class InteractableItem : MonoBehaviour, IInteractable, ISaveableObject
 
         if (data == null) return;
 
-        item = ItemRegistry.GetItemByName(data.itemName);
+        item = ItemRegistry.Instance.GetByKey(data.itemName);
+        item.toolAttribute = ToolAttributeRegistry.Instance.GetByKey(data.toolAttribute);
         itemCount = data.count;
     }
 }

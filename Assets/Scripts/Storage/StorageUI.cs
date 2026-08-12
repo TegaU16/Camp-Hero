@@ -6,19 +6,23 @@ using Game.Registries;
 
 namespace Game.Storage
 {
+    [RequireComponent(typeof(CanvasGroup), typeof(RectTransform))]
     public class StorageUI : MonoBehaviour
     {
         public static StorageUI Instance;
 
-        public GameObject slotPrefab;
-        public Transform slotParent;
+        [SerializeField] private GameObject slotPrefab;
+        [SerializeField] private Transform slotParent;
 
         private StorageUnit linkedStorage;
         private readonly List<InventorySlot> slotInstances = new();
 
         private bool isOpen;
         private float menuHeight;
-        public float slotHeight = 36f;
+        private readonly float slotHeight = 36f;
+
+        private CanvasGroup canvasGroup;
+        private RectTransform storageRect;
 
         private void Awake()
         {
@@ -29,6 +33,9 @@ namespace Game.Storage
             }
 
             Instance = this;
+
+            canvasGroup = GetComponent<CanvasGroup>();
+            storageRect = GetComponent<RectTransform>();
         }
 
         public void Open(StorageUnit storage)
@@ -38,17 +45,14 @@ namespace Game.Storage
             isOpen = true;
             linkedStorage = storage;
 
-            if (linkedStorage.TryGetComponent(out Animator animator))
-                animator.SetTrigger("Open");
-
-            ClearSlots();
-
-            InventoryManager.Instance.mainInventory.SetActive(true);
-            InventoryManager.Instance.OnInventoryOpen();
+            if (linkedStorage is Chest chest)
+                chest.ToggleChest();
+            
             BuildSlots();
+            InventoryManager.Instance.OpenInventory();
 
             linkedStorage.inventorySlots = slotInstances;
-            gameObject.SetActive(true);
+            UITween.DefaultOpenMenu(canvasGroup, storageRect);
         }
 
         public void Close()
@@ -59,19 +63,17 @@ namespace Game.Storage
             SaveItemsToStorage();
             ClearSlots();
 
-            if (linkedStorage.TryGetComponent(out Animator animator))
-                animator.SetTrigger("Close");
-
-            InventoryManager.Instance.mainInventory.SetActive(false);
-            InventoryManager.Instance.darkBackground.SetActive(false);
+            if (linkedStorage is Chest chest)
+                chest.ToggleChest();
 
             linkedStorage.inventorySlots = null;
             linkedStorage = null;
-            gameObject.SetActive(false);
         }
 
         private void BuildSlots()
         {
+            ClearSlots();
+
             for (int i = 0; i < linkedStorage.maxSlots; i++)
             {
                 GameObject slot = Instantiate(slotPrefab, slotParent);
@@ -84,13 +86,16 @@ namespace Game.Storage
                 ItemData storedItem = linkedStorage.items[i];
                 if (storedItem == null) continue;
 
-                Item baseItem = ItemRegistry.GetItemByName(storedItem.itemName);
+                Item baseItem = ItemRegistry.Instance.GetByKey(storedItem.itemName);
                 if (baseItem == null) continue;
 
                 Item item = baseItem.maxStack > 1 ? baseItem : Instantiate(baseItem);
-                ToolAttribute toolAttribute = ToolAtributeRegistry.GetToolAttributeByName(storedItem.toolAttribute);
-                item.toolAttribute = toolAttribute;
-
+                if (storedItem.toolAttribute != null)
+                {
+                    ToolAttribute toolAttribute = ToolAttributeRegistry.Instance.GetByKey(storedItem.toolAttribute);
+                    item.toolAttribute = toolAttribute;
+                }
+                
                 InventoryManager.Instance.SpawnNewItem(item, inventorySlot, storedItem.count);
             }
 
@@ -130,10 +135,10 @@ namespace Game.Storage
                 return;
             }
 
-            int itemCount = linkedStorage.items.Length;
-            linkedStorage.items = new ItemData[itemCount];
+            int slotCount = linkedStorage.maxSlots;
+            linkedStorage.items = new ItemData[slotCount];
 
-            for (int i = 0; i < itemCount; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 InventorySlot slot = slotInstances[i];
                 if (slot == null) return;
@@ -141,10 +146,14 @@ namespace Game.Storage
                 InventoryItem inventoryItem = slot.GetComponentInChildren<InventoryItem>();
                 if (inventoryItem == null || inventoryItem.item == null) continue;
 
+                bool hasToolAttribute = inventoryItem.item.toolAttribute != null;
+
                 ItemData stored = new()
                 {
                     itemName = inventoryItem.item.itemName,
-                    count = Mathf.Max(1, inventoryItem.count)
+                    count = Mathf.Max(1, inventoryItem.count),
+                    toolAttribute =  hasToolAttribute ? inventoryItem.item.toolAttribute.attributeID : "",
+                    position = i
                 };
 
                 linkedStorage.items[i] = stored;

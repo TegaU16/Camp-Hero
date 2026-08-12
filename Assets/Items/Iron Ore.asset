@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 20
   icon: {fileID: 21300000, guid: b3e9c8e3aa5d1434e8c1457ed458734f, type: 3}
   itemName: Iron Ore
-  equippedPrefab: {fileID: 1156680863850993675, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
-  itemDrop: {fileID: 5609003839569157637, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
+  equippedPrefab: {fileID: 1408586736877066008, guid: 3d984725b6e38ca468099bd2785d9c8e, type: 3}
+  itemDrop: {fileID: 4227606778090023464, guid: a4e2e871847cb2e40a7ef2e43ab5183b, type: 3}
   rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

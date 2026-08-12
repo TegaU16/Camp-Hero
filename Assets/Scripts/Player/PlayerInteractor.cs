@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Game.Players
 {
+    [RequireComponent(typeof(PlayerDeath))]
     public class PlayerInteractor : MonoBehaviour
     {
         public float interactionRange = 3f;
@@ -21,8 +22,12 @@ namespace Game.Players
 
         private readonly Collider[] hits = new Collider[32];
 
+        private PlayerDeath playerDeath;
+
         private void Start()
         {
+            playerDeath = GetComponent<PlayerDeath>();
+
             if (currentUIInstance != null) return;
 
             currentUIInstance = Instantiate(worldUIIndicatorPrefab);
@@ -34,6 +39,7 @@ namespace Game.Players
         void Update()
         {
             if (!GameManager.Instance.IsGameActive) return;
+            if (playerDeath.IsDead) return;
             if (InventoryManager.Instance.IsExtensionOpen()) return;
 
             searchTimer += Time.deltaTime;
@@ -53,7 +59,10 @@ namespace Game.Players
                 if (currentInteractable != nearest)
                 {
                     currentInteractable = nearest;
-                    currentUIInstance.SetActive(true);
+
+                    if (currentUIInstance != null)
+                        currentUIInstance.SetActive(true);
+
                     currentUI.Setup(currentInteractable);
                 }
             }
@@ -108,7 +117,7 @@ namespace Game.Players
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if (!hit.gameObject.CompareTag("Pickable")) return;
+            if (!hit.gameObject.CompareTag("Pickable") || playerDeath.IsDead) return;
 
             InteractableItem interactable = hit.gameObject.GetComponentInParent<InteractableItem>();
             if (interactable != null)

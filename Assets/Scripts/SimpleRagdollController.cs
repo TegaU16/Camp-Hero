@@ -12,7 +12,6 @@ public class SimpleRagdollController : MonoBehaviour
     [SerializeField] private VoxelAgent agent;
 
     [Header("For Procedural Animations")]
-    [SerializeField] private ProceduralAnimator proceduralAnimator;
 
     public bool IsSetup { get; private set; } = true;
 
@@ -57,9 +56,6 @@ public class SimpleRagdollController : MonoBehaviour
         if (animator != null)
             animator.enabled = false;
 
-        if (proceduralAnimator != null)
-            proceduralAnimator.enabled = true;
-
         if (agent != null)
             agent.enabled = false;
 
@@ -99,9 +95,6 @@ public class SimpleRagdollController : MonoBehaviour
             animator.Rebind();    // reset animator state
             animator.Update(0f);
         }
-
-        if (proceduralAnimator != null)
-            proceduralAnimator.enabled = true;
 
         if (agent != null)
         {

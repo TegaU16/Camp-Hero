@@ -90,7 +90,7 @@ namespace Game.Quests
                     Quest quest = new(
                         questSaveData.questID,
                         questSaveData.questTitle,
-                        ItemRegistry.GetItemsByName(questSaveData.requiredItems),
+                        ItemRegistry.Instance.GetByKeys(questSaveData.requiredItems),
                         questSaveData.requiredCount
                         )
                     {

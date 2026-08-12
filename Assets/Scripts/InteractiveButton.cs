@@ -9,9 +9,9 @@ using System.Collections.Generic;
 public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("References")]
-    public Image image;
-    public List<TextMeshProUGUI> buttonTexts;
-    public ButtonVisualProfile visualProfile;
+    [SerializeField] private Image image;
+    [SerializeField] private List<TextMeshProUGUI> buttonTexts;
+    [SerializeField] private ButtonVisualProfile visualProfile;
 
     [SerializeField] private bool isSelected = false;
     private bool isPressed = false;

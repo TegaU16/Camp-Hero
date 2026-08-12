@@ -1,26 +1,31 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(RectTransform))]
 public class CompassBar : MonoBehaviour
 {
-    public RectTransform bar;
+    private RectTransform bar;
     private Camera mainCam;
 
-    public RectTransform northMarker;
-    public RectTransform eastMarker;
-    public RectTransform southMarker;
-    public RectTransform westMarker;
+    [SerializeField] private RectTransform northMarker;
+    [SerializeField] private RectTransform eastMarker;
+    [SerializeField] private RectTransform southMarker;
+    [SerializeField] private RectTransform westMarker;
 
-    private Transform campfireTransform;
-    public RectTransform campfireIcon;
+    private Vector3 campfirePosition;
+    [SerializeField] private RectTransform campfireMarker;
+
+    private Vector3 deathPosition;
+    [SerializeField] private RectTransform deathMarker;
 
     [Range(30f, 360f)]
-    public float visibleFOV = 180f;
+    [SerializeField] private float visibleFOV = 180f;
 
     private float barWidth;
 
     void Start()
     {
+        bar = GetComponent<RectTransform>();
         barWidth = bar.rect.width;
         mainCam = Camera.main;
     }
@@ -35,7 +40,10 @@ public class CompassBar : MonoBehaviour
         float cameraAngle = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
 
         MoveCardinalMarkers(cameraAngle);
-        MoveCampfireIcon(cameraAngle);
+        MoveIcon(campfireMarker, campfirePosition, cameraAngle);
+
+        if (deathPosition != Vector3.zero)
+            MoveIcon(deathMarker, deathPosition, cameraAngle);
     }
 
     private void MoveCardinalMarkers(float cameraAngle)
@@ -46,29 +54,29 @@ public class CompassBar : MonoBehaviour
         SetMarkerPosition(westMarker, cameraAngle, 270);
     }
 
-    private void MoveCampfireIcon(float cameraAngle)
+    private void MoveIcon(RectTransform marker, Vector3 target, float cameraAngle)
     {
-        if (campfireTransform == null || campfireIcon == null) return;
+        if (target == null || marker == null) return;
 
-        Vector3 toCampfire = campfireTransform.position - mainCam.transform.position;
-        toCampfire.y = 0;
+        Vector3 toTarget = target - mainCam.transform.position;
+        toTarget.y = 0;
 
-        if (toCampfire.sqrMagnitude < 0.01f) return; // avoid NaN
+        if (toTarget.sqrMagnitude < 0.01f) return; // avoid NaN
 
-        float campfireAngle = Mathf.Atan2(toCampfire.x, toCampfire.z) * Mathf.Rad2Deg;
-        float relativeAngle = Mathf.DeltaAngle(cameraAngle, campfireAngle);
+        float targetAngle = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+        float relativeAngle = Mathf.DeltaAngle(cameraAngle, targetAngle);
         float offset = (relativeAngle / visibleFOV) * barWidth;
-        campfireIcon.anchoredPosition = new Vector2(offset, campfireIcon.anchoredPosition.y);
+        marker.anchoredPosition = new Vector2(offset, marker.anchoredPosition.y);
 
         float distanceFromCenter = Mathf.Abs(offset);
         if (distanceFromCenter > barWidth / 2f)
         {
-            SetAlpha(campfireIcon, 0f);
+            SetAlpha(marker, 0f);
             return;
         }
 
         float alpha = Mathf.Clamp01(1f - (distanceFromCenter / (barWidth / 2f)));
-        SetAlpha(campfireIcon, alpha);
+        SetAlpha(marker, alpha);
     }
 
     private void SetMarkerPosition(RectTransform marker, float cameraAngle, float markerAngle)
@@ -109,6 +117,19 @@ public class CompassBar : MonoBehaviour
     public void SetCampfireTransform(GameObject campfire)
     {
         if (campfire != null) 
-            campfireTransform = campfire.transform;
+            campfirePosition = campfire.transform.position;
+    }
+
+    public void SetDeathMarkerActive(bool active, Vector3 deathPos)
+    {
+        if (!active)
+        {
+            deathMarker.gameObject.SetActive(false);
+            deathPosition = Vector3.zero;
+            return;
+        }
+
+        deathPosition = deathPos;
+        deathMarker.gameObject.SetActive(true);
     }
 }

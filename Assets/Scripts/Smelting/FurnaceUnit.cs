@@ -24,7 +24,7 @@ namespace Game.Smelting
 
         [HideInInspector] public float smeltProgress;
 
-        public float smeltDuration = 5f;
+        [SerializeField] private float smeltDuration = 5f;
         private float smeltRate;
 
         public Sprite furnaceIcon;
@@ -34,9 +34,9 @@ namespace Game.Smelting
         private int Output => (int)SlotIndex.Output;
         private int Fuel => (int)SlotIndex.Fuel;
 
-        public Item InputItem => GetItemFromSlot(Input);
-        public Item OutputItem => GetItemFromSlot(Output);
-        public Item FuelItem => GetItemFromSlot(Fuel);
+        private Item InputItem => GetItemFromSlot(Input);
+        private Item OutputItem => GetItemFromSlot(Output);
+        private Item FuelItem => GetItemFromSlot(Fuel);
 
         private bool suppressSave;
 
@@ -159,7 +159,7 @@ namespace Game.Smelting
 
         public void Interact() => FurnaceManager.Instance.furnaceUI.Open(this);
 
-        public string GetInteractText() => "Use Furnace";
+        public string GetInteractText() => "Use Furnace\n<color=#27ef60>\"E\"</color>";
 
         public Transform GetTransform() => transform;
 

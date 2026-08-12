@@ -13,23 +13,14 @@ MonoBehaviour:
   m_Name: Default Attack Data
   m_EditorClassIdentifier: Assembly-CSharp::AttackData
   animationTrigger: Attack
-  useRootMotion: 1
   damageMultiplier: 1
-  attackDistance: 2
-  comboWindowOpenTime: 0.3
-  comboWindowCloseTime: 0.8
-  hitboxEnableTime: 0.2
-  hitboxDuration: 0.4
   overrideHitbox: 0
   hitboxCenter: {x: 0, y: 0, z: 0}
   hitboxSize: {x: 1, y: 1, z: 1}
   applyKnockback: 1
-  knockbackForce: 5
+  knockbackForce: 4
+  hitStopDuration: 0.2
   statusEffects: []
   hitEffectPrefab: {fileID: 0}
   hitSound: {fileID: 0}
-  staminaCost: 10
   poiseDamage: 5
-  overrideLegs: 1
-  overrideArms: 0
-  overrideTorso: 0

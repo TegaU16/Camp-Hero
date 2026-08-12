@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Reforging Table
   m_EditorClassIdentifier: Assembly-CSharp::Game.Inventory.Item
   itemTypes: 3
-  actionType: 0
+  actionType: 1
   maxStack: 1
   icon: {fileID: 21300000, guid: 3abc6220664d34c4a858a07a0908bd20, type: 3}
   itemName: Reforging Table

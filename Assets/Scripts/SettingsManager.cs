@@ -6,7 +6,7 @@ public class SettingsManager : MonoBehaviour
     public static SettingsManager Instance { get; private set; }
 
     [Header("References")]
-    public AudioMixer audioMixer; // For controlling volume levels
+    [SerializeField] private AudioMixer audioMixer; // For controlling volume levels
 
     public GameSettingsData currentSettings = new();
 
@@ -14,16 +14,15 @@ public class SettingsManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            LoadSettings();
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        LoadSettings();
     }
 
     public void ApplySettings()

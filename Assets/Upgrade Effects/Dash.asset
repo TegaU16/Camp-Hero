@@ -48,3 +48,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   dashStreakPrefab: {fileID: 6441971390562665597, guid: a5470c61dfbca074686d99cc44934ab7, type: 3}
   dashAnimationTrigger: Dash
+  meshRefreshRate: 0.1
+  meshDestroyDelay: 2
+  trailMaterial: {fileID: 2100000, guid: cd653a587868cc14190dac0e4ad4522d, type: 2}
+  shaderVariableReference: _Alpha
+  shaderVariableRate: 0.1
+  shaderVariableRefreshRate: 0.05

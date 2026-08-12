@@ -5,7 +5,7 @@ public class CameraControlToggle : MonoBehaviour
 {
     public static CameraControlToggle Instance;
 
-    public CinemachineCamera cinemachineCamera;
+    [SerializeField] private CinemachineCamera cinemachineCamera;
 
     private CinemachineOrbitalFollow orbitalFollow;
     private bool allowCameraControl = true;

@@ -20,6 +20,12 @@ namespace Game.Terrain.Structures.Trials
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Instance = this;
         }
 
@@ -76,7 +82,7 @@ namespace Game.Terrain.Structures.Trials
             enemy.gameObject.SetActive(false);
 
             PrefabID id = enemyObj.GetComponent<PrefabID>();
-            GameObject enemyPrefab = PrefabRegistry.GetPrefabByKey(id.prefabKey);
+            GameObject enemyPrefab = PrefabRegistry.Instance.GetByKey(id.prefabKey);
 
             Queue<TrialEnemyMarker> pool = pools[enemyPrefab];
             TrialEnemyMarker trialEnemy = enemyObj.GetComponent<TrialEnemyMarker>();

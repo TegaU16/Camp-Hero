@@ -4,11 +4,11 @@ using static UnityEngine.ParticleSystem;
 public class ParticleEffectScaler : MonoBehaviour
 {
     [Tooltip("Optional override. If empty, uses all child renderers.")]
-    public Renderer[] targetRenderers;
+    [SerializeField] private Renderer[] targetRenderers;
 
-    public float sizeMultiplier = 1f;
-    public float speedMultiplier = 1f;
-    public float emissionMultiplier = 1f;
+    [SerializeField] private float sizeMultiplier = 1f;
+    [SerializeField] private float speedMultiplier = 1f;
+    [SerializeField] private float emissionMultiplier = 1f;
 
     private Bounds bounds;
 
@@ -23,8 +23,8 @@ public class ParticleEffectScaler : MonoBehaviour
             targetRenderers = GetComponentsInChildren<Renderer>();
 
         bounds = targetRenderers[0].bounds;
-        foreach (Renderer r in targetRenderers)
-            bounds.Encapsulate(r.bounds);
+        foreach (Renderer rend in targetRenderers)
+            bounds.Encapsulate(rend.bounds);
     }
 
     public void ApplyTo(ParticleSystem ps)

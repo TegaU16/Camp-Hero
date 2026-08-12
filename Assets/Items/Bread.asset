@@ -15,10 +15,10 @@ MonoBehaviour:
   itemTypes: 5
   actionType: 1
   maxStack: 20
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 86ee76810afe92448ab72f74714840be, type: 3}
   itemName: Bread
-  equippedPrefab: {fileID: 0}
-  itemDrop: {fileID: 0}
+  equippedPrefab: {fileID: 529879587727293550, guid: 0b83d2fb28d9a894eafb21e464f342e0, type: 3}
+  itemDrop: {fileID: 2086501252220403576, guid: 7252c5cf3976f8b49b875bd5a9a0310c, type: 3}
   rarity: 1
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

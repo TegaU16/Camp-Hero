@@ -16,7 +16,7 @@ namespace Game.Quests
 
         public int currentCount;
 
-        private readonly List<string> collectedItemNames = new();
+        private List<string> collectedItemNames;
 
         public Quest(string id, string title, List<Item> requiredItems, int requiredCount)
         {
@@ -26,6 +26,8 @@ namespace Game.Quests
             this.requiredCount = requiredCount;
             this.isCompleted = false;
             this.currentCount = 0;
+
+            this.collectedItemNames = new List<string>();
         }
 
         public void AddProgress(int amount = 1)
@@ -39,6 +41,8 @@ namespace Game.Quests
 
         public void OnItemCollected(Item item)
         {
+            collectedItemNames ??= new List<string>();
+
             if (isCompleted) return;
             if (item == null) return;
 

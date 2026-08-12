@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3903e82d5188598488e57b0128cd6afa, type: 3}
+  m_Name: Green Trial Altar
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Terrain.Structures.StructureTemplate
+  structureName: Green Trial Altar
+  prefabParts:
+  - prefab: {fileID: 4780350024921714806, guid: d5f29b75edd430c489c8ed3e184b3161, type: 3}
+    localOffset: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 7374758380472724114, guid: b8df7e33f58499d4fa1eeefea9761885, type: 3}
+    localOffset: {x: 3, y: 0, z: 3}
+  - prefab: {fileID: 7374758380472724114, guid: b8df7e33f58499d4fa1eeefea9761885, type: 3}
+    localOffset: {x: 3, y: 0, z: -3}
+  - prefab: {fileID: 7374758380472724114, guid: b8df7e33f58499d4fa1eeefea9761885, type: 3}
+    localOffset: {x: -3, y: 0, z: 3}
+  - prefab: {fileID: 7374758380472724114, guid: b8df7e33f58499d4fa1eeefea9761885, type: 3}
+    localOffset: {x: -3, y: 0, z: -3}
+  lootTable: {fileID: 0}

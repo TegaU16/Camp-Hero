@@ -8,11 +8,21 @@ namespace Game.Upgrades
     public class DashUpgrade : ActiveUpgradeEffect
     {
         [Header("Dash Settings")]
-        public float dashForce = 20f;
-        public float dashDuration = 0.2f;
-        public AnimationCurve dashSpeedCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
-        public GameObject dashStreakPrefab;
-        public string dashAnimationTrigger = "Dash";
+        [SerializeField] private float dashForce = 20f;
+        [SerializeField] private float dashDuration = 0.2f;
+        [SerializeField] private AnimationCurve dashSpeedCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+        [SerializeField] private string dashAnimationTrigger = "Dash";
+
+        [Header("Trail Settings")]
+        [SerializeField] private float meshRefreshRate = 0.1f;
+        [SerializeField] private float meshDestroyDelay = 2f;
+        [SerializeField] private Material trailMaterial;
+        [SerializeField] private string shaderVariableReference;
+        [SerializeField] private float shaderVariableRate = 0.1f;
+        [SerializeField] private float shaderVariableRefreshRate = 0.05f;
+
+        private MeshRenderer[] meshRenderers;
+        private bool isTrailActive;
 
         public override void Activate(Player player)
         {
@@ -21,6 +31,12 @@ namespace Game.Upgrades
             if (player.CurrentStamina < staminaCost) return;
 
             player.StartCoroutine(DashRoutine(player));
+
+            if (!isTrailActive)
+            {
+                isTrailActive = true;
+                player.StartCoroutine(ActivateTrail(player));
+            }
 
             if (player.TryGetComponent(out Health health))
                 health.isImmune = true;
@@ -32,9 +48,6 @@ namespace Game.Upgrades
             if (player.TryGetComponent(out Animator animator))
                 animator.SetTrigger(dashAnimationTrigger);
 
-            if (player.TryGetComponent(out ProceduralAnimator proceduralAnimator))
-                proceduralAnimator.enabled = false;
-
             player.StartCoroutine(CooldownRoutine());
         }
 
@@ -42,9 +55,6 @@ namespace Game.Upgrades
         {
             // Deduct stamina
             player.UseStamina(staminaCost);
-
-            if (dashStreakPrefab != null)
-                Instantiate(dashStreakPrefab, player.speedLinesSpawn);
 
             if (!player.TryGetComponent(out CharacterController cc)) yield break;
 
@@ -61,6 +71,60 @@ namespace Game.Upgrades
 
                 elapsed += Time.deltaTime;
                 yield return null;
+            }
+        }
+
+        private IEnumerator ActivateTrail(Player player)
+        {
+            float timeActive = 0;
+
+            while (timeActive < dashDuration)
+            {
+                timeActive += meshRefreshRate;
+                meshRenderers ??= player.GetComponentsInChildren<MeshRenderer>();
+
+                foreach (MeshRenderer meshRenderer in meshRenderers)
+                {
+                    MeshFilter sourceFilter = meshRenderer.GetComponent<MeshFilter>();
+                    if (sourceFilter == null || sourceFilter.sharedMesh == null) continue;
+
+                    GameObject snapshot = new();
+
+                    snapshot.transform.SetPositionAndRotation(meshRenderer.transform.position, meshRenderer.transform.rotation);
+                    snapshot.transform.localScale = meshRenderer.transform.lossyScale;
+
+                    MeshFilter filter = snapshot.AddComponent<MeshFilter>();
+                    MeshRenderer renderer = snapshot.AddComponent<MeshRenderer>();
+
+                    filter.mesh = Instantiate(sourceFilter.sharedMesh);
+
+                    renderer.sharedMaterial = trailMaterial;
+
+                    player.StartCoroutine(AnimateMaterialFloat(
+                        material: renderer.sharedMaterial,
+                        goal: 0f,
+                        rate: shaderVariableRate,
+                        refreshRate: shaderVariableRefreshRate
+                    ));
+
+                    Destroy(snapshot, meshDestroyDelay);
+                }
+
+                yield return new WaitForSeconds(meshRefreshRate);
+            }
+
+            isTrailActive = false;
+        }
+
+        private IEnumerator AnimateMaterialFloat(Material material, float goal, float rate, float refreshRate)
+        {
+            float valueToAnimate = material.GetFloat(shaderVariableReference);
+
+            while (valueToAnimate > goal)
+            {
+                valueToAnimate -= rate;
+                material.SetFloat(shaderVariableReference, valueToAnimate);
+                yield return new WaitForSeconds(refreshRate);
             }
         }
     }

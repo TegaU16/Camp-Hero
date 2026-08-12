@@ -14,7 +14,7 @@ namespace Game.Storage
             if (index < 0 || index >= items.Length) return null;
             if (items[index] == null || string.IsNullOrEmpty(items[index].itemName)) return null;
 
-            return ItemRegistry.GetItemByName(items[index].itemName);
+            return ItemRegistry.Instance.GetByKey(items[index].itemName);
         }
 
         protected void SaveSlot(InventorySlot slot, int index)
@@ -31,6 +31,10 @@ namespace Game.Storage
 
             items[index].itemName = invItem.item.itemName;
             items[index].count = invItem.count;
+            items[index].position = index;
+
+            if (invItem.item.toolAttribute != null)
+                items[index].toolAttribute = invItem.item.toolAttribute.attributeID;
         }
 
         protected void RefreshSlot(InventorySlot slot, ItemData data)
@@ -46,13 +50,13 @@ namespace Game.Storage
                 return;
             }
 
-            Item item = ItemRegistry.GetItemByName(data.itemName);
+            Item item = ItemRegistry.Instance.GetByKey(data.itemName);
             if (item == null) return;
 
             if (existing != null && existing.item == item)
             {
                 existing.count = data.count;
-                existing.RefreshCount();
+                StartCoroutine(existing.RefreshCount());
                 return;
             }
 
@@ -63,7 +67,7 @@ namespace Game.Storage
             if (newItem != null)
             {
                 newItem.count = data.count;
-                newItem.RefreshCount();
+                StartCoroutine(newItem.RefreshCount());
             }
         }
     }

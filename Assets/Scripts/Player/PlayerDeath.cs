@@ -3,6 +3,7 @@ using Game.Inventory;
 using Game.Terrain.Structures.Trials;
 using Unity.Cinemachine;
 using UnityEngine;
+using Worlds;
 
 namespace Game.Players
 {
@@ -19,6 +20,8 @@ namespace Game.Players
         public float cameraMoveDuration = 2f;
         [SerializeField] private Transform deathCameraPoint;
         private bool isDead;
+
+        public bool IsDead => isDead;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -44,11 +47,13 @@ namespace Game.Players
             InventoryManager.Instance.ResetExtensions();
             InventoryManager.Instance.DropAllItems();
 
-            foreach (TrialAltar trialAltar in KeyStructureSpawner.Instance.activeTrialAltars)
+            foreach (TrialAltar trialAltar in TrialAltarSpawner.Instance.activeTrialAltars)
             {
                 if (trialAltar != null && trialAltar.IsWaveInProgress())
                     trialAltar.FailTrial();
             }
+
+            WorldSession.CurrentRunStats.playerDeaths++;
 
             StartCoroutine(MoveCamera());
 
@@ -89,8 +94,8 @@ namespace Game.Players
 
         private void Despawn()
         {
-            ragdollController.DisableRagdoll();
-            StartCoroutine(GameManager.Instance.RespawnPlayer(player));
+            StartCoroutine(GameManager.Instance.RespawnPlayer(player, ragdollController));
+            isDead = false;
         }
     }
 }

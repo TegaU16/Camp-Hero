@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1615fd4221f97fd41a3472daa7c26230, type: 3}
+  m_Name: Structure Table
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Terrain.Structures.StructureTable
+  weightedTable:
+    entries:
+    - value: {fileID: 11400000, guid: c30ab130aaf95644f9b0608315c1c223, type: 2}
+      weight: 1
+    - value: {fileID: 11400000, guid: fea5ef5167ee88f4799399d70af4442b, type: 2}
+      weight: 1

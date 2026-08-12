@@ -1,14 +1,15 @@
 using Game.Players;
 using UnityEngine;
+using static Game.Players.PlayerStats;
 
 public class BlessingAltar : MonoBehaviour, IInteractable
 {
     private bool hasBeenUsed = false;
 
-    public Sprite altarIcon;
+    [SerializeField] private Sprite altarIcon;
     public Sprite ObjectIcon => altarIcon;
 
-    public string GetInteractText() => "";
+    public string GetInteractText() => "Receive Blessing\n<color=#27ef60>\"E\"</color>";
 
     public Transform GetTransform() => transform;
 
@@ -19,15 +20,11 @@ public class BlessingAltar : MonoBehaviour, IInteractable
         hasBeenUsed = true;
 
         PlayerStatsManager statsManager = PlayerStatsManager.Instance;
-        PlayerStats stats = statsManager.stats;
 
-        statsManager.UpgradeStat(stats.strength, 5);
-        statsManager.UpgradeStat(stats.vitality, 5);
-        statsManager.UpgradeStat(stats.endurance, 5);
-        statsManager.UpgradeStat(stats.stamina, 5);
-        statsManager.UpgradeStat(stats.luck, 5);
+        foreach (Stat stat in statsManager.AllStats)
+            statsManager.UpgradeStat(stat, 5);
 
-        stats.goldenPoints++;
+        statsManager.AddPoints(regularPoints: 0, goldenPoints: 5);
 
         Player player = FindFirstObjectByType<Player>();
         player.UpdateVitals();

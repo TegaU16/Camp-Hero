@@ -147,8 +147,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.68000025, y: 0.33999997, z: 0.48000017}
-  m_Center: {x: 0.00082473474, y: 0.006940558, z: -0.0010309222}
+  m_Size: {x: 0.68000025, y: 0.34, z: 0.48000017}
+  m_Center: {x: 0.00082473474, y: 0.0069405586, z: -0.0010309222}
 --- !u!114 &7293653716268213597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,7 +165,7 @@ MonoBehaviour:
   itemCount: 1
   outlineWidth: 5
   maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
+  currentCell: {x: 0, y: 0}
 --- !u!114 &5286220277985344873
 MonoBehaviour:
   m_ObjectHideFlags: 0

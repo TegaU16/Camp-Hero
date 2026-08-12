@@ -8,10 +8,10 @@ public class BossHealthBar : MonoBehaviour
 {
     private int currentHealth;
 
-    public Slider slider;
-    public float tweenDuration = 0.25f;
-    public TextMeshProUGUI healthText;
-    public TextMeshProUGUI enemyNameText;
+    [SerializeField] private Slider slider;
+    [SerializeField] private float tweenDuration = 0.25f;
+    [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private TextMeshProUGUI enemyNameText;
 
     private BreakableObject breakableObject;
 

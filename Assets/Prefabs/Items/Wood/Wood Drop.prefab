@@ -178,9 +178,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 82aea9dd700995245b3243b1cd5f4c7a, type: 2}
   itemCount: 1
-  maxItemCount: 100
   outlineWidth: 5
-  CurrentCell: {x: 0, y: 0}
+  maxItemCount: 100
+  currentCell: {x: 0, y: 0}
 --- !u!114 &8636794782607590452
 MonoBehaviour:
   m_ObjectHideFlags: 0

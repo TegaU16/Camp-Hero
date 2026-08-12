@@ -37,8 +37,6 @@ namespace Game.Terrain
 
             childRocks[index].SetActive(false);
             removedIndices.Add(index);
-
-            Debug.Log($"({transform.position}) Removed rock {index}, total removed: {removedIndices.Count}");
         }
 
         public void ReleaseRocks()
@@ -56,8 +54,6 @@ namespace Game.Terrain
             {
                 removedRocks = new List<int>(removedIndices)
             });
-
-            Debug.Log($"({transform.position}) Ore Save JSON: {json}");
 
             return json;
         }

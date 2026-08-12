@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 1
   icon: {fileID: 21300000, guid: 1e9dfdcee21b1fd42a1d640c0b5c3867, type: 3}
   itemName: Green Gem
-  equippedPrefab: {fileID: 7066854928200310988, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
-  itemDrop: {fileID: 393741555877209843, guid: 0e0812481e3a90b48a63210cea208d34, type: 3}
+  equippedPrefab: {fileID: 3515407489163610449, guid: db73915e0b750d94cb9cf95b8b1a4119, type: 3}
+  itemDrop: {fileID: 1466494419972737792, guid: 0e0812481e3a90b48a63210cea208d34, type: 3}
   rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 652ce7b35ee134240b55748c1a5519d8, type: 3}
+  m_Name: Flour
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Crafting.CraftingRecipe
+  resultItem: {fileID: 11400000, guid: a0fd659393c7d3a42809b33a57800fc9, type: 2}
+  requirements:
+  - requiredItem: {fileID: 11400000, guid: 673ea92b4941aad4d9b1b6df762082de, type: 2}
+    count: 5
+  category: 0
+  source: -1
+  hasBeenCraftedBefore: 0
+  itemsRequiredToUnlock:
+  - {fileID: 11400000, guid: 673ea92b4941aad4d9b1b6df762082de, type: 2}

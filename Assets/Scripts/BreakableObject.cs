@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Game;
 using Game.AI.Animals;
 using Game.AI.Enemies;
@@ -9,10 +7,10 @@ using Game.Level;
 using Game.Players;
 using Game.Registries;
 using Game.Saving;
-using Game.Smelting;
 using Game.Storage;
 using Game.Terrain;
 using UnityEngine;
+using Worlds;
 
 public enum ObjectType
 {
@@ -40,6 +38,8 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         public readonly bool Crit;
         public readonly Vector3 HitPoint;
         public readonly Vector3 HitNormal;
+        public readonly Vector3 KnockbackDirection;
+        public readonly float KnockbackForce;
         public readonly bool FromEnemy;
 
         public DamageInfo(
@@ -48,6 +48,8 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             bool crit = false,
             Vector3 hitPoint = default,
             Vector3 hitNormal = default,
+            Vector3 knockbackDirection = default,
+            float knockbackForce = 0f,
             bool fromEnemy = false)
         {
             Damage = damage;
@@ -55,19 +57,22 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             Crit = crit;
             HitPoint = hitPoint;
             HitNormal = hitNormal;
+            KnockbackDirection = knockbackDirection;
+            KnockbackForce = knockbackForce;
             FromEnemy = fromEnemy;
         }
     }
 
     private Player player;
-    public GameObject damagePopupPrefab;
     private int maxHealth;
-    public int baseHealth;
     private int health;
-    public int expDropped;
-    public Drop[] drops;
+    [SerializeField] private int baseHealth;
+
+    [SerializeField] private int expDropped;
+    [SerializeField] private Drop[] drops;
+
+    [SerializeField] private EntityType entityType;
     public ObjectType objectType;
-    public EntityType entityType;
     public int objectLevel;
 
     private bool isDestroyed = false;
@@ -125,9 +130,12 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
         if (TryGetComponent(out Enemy enemy) && enemy.enemyType == Enemy.EnemyType.Boss)
             OnBossHealthChange?.Invoke(health);
 
+        HealthUI activeHealthUI = GetComponentInChildren<HealthUI>();
+
         if (health > 0)
         {
             HitEffectManager hitEffectManager = FindFirstObjectByType<HitEffectManager>();
+
             if (hitEffectManager != null && hitNormal != default)
                 hitEffectManager.SpawnSparks(hitPoint, hitNormal);
 
@@ -136,12 +144,25 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
             if (enemy != null)
             {
-                int poiseDamage = (int)(damageInfo.PoiseDamage * player.TotalPoiseDamageMultiplier);
-                enemy.ApplyStagger(poiseDamage);
+                int poiseDamage = Mathf.RoundToInt(
+                    damageInfo.PoiseDamage * player.TotalPoiseDamageMultiplier
+                );
+
+                enemy.ApplyStagger(poiseDamage, damageInfo.KnockbackDirection, damageInfo.KnockbackForce);
             }
 
+            if (activeHealthUI == null)
+            {
+                activeHealthUI = HealthUIPool.Instance.Get();
+                activeHealthUI.Setup(this);
+            }
+
+            activeHealthUI.SetHealth(health);
             return;
         }
+
+        if (activeHealthUI != null)
+            activeHealthUI.SetHealth(0);
 
         if (enemy != null)
         {
@@ -186,46 +207,101 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
     public void DestroyObject()
     {
-        if (isDestroyed) return;
-        isDestroyed = true;
-
-        if (!DestroyedByEnemy || GetComponent<Enemy>() != null)
+        using (ScriptPerformanceTracker.Measure("DestroyObject.Total"))
         {
-            foreach (Drop itemDrop in drops)
+            if (isDestroyed) return;
+
+            isDestroyed = true;
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.Drops"))
             {
-                if (Random.value > itemDrop.dropChance) continue;
-
-                int dropAmount = Random.Range(itemDrop.minValue, itemDrop.maxValue + 1);
-                dropAmount = Mathf.Clamp(dropAmount, itemDrop.minValue, itemDrop.maxValue);
-
-                if (TryGetComponent(out ObjectCategory category) && category != null)
-                    dropAmount = (int)(dropAmount * player.TotalResourceDropMultiplier);
-
-                SpawnDrop(itemDrop.drop, dropAmount, transform.position, torsoBone, scatter: false);
+                DropItems();
             }
 
-            float expGain = expDropped * DifficultyManager.Instance.GetExpMultiplier();
-            LevelManager.Instance.AddExp((int)expGain);
+            using (ScriptPerformanceTracker.Measure("DestroyObject.AnimalStats"))
+            {
+                if (TryGetComponent(out Animal _))
+                    WorldSession.CurrentRunStats.animalsKilled++;
+            }
+
+            if (entityType != EntityType.Static) return;
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.Storage"))
+            {
+                if (TryGetComponent(out StorageContainer storageContainer))
+                    DropStoredItems(storageContainer.items);
+            }
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.ReleaseRocks"))
+            {
+                if (TryGetComponent(out OreRockGroup oreRockGroup))
+                    oreRockGroup.ReleaseRocks();
+            }
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.RemoveChunkObject"))
+            {
+                VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, gameObject);
+            }
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.MarkVoxelArea"))
+            {
+                TerrainGenerator.Instance.MarkVoxelArea(
+                    gameObject,
+                    occupy: false,
+                    walkable: true
+                );
+            }
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.UnityDestroy"))
+            {
+                Destroy(gameObject);
+            }
         }
+    }
 
-        if (entityType != EntityType.Static) return;
+    private void DropItems()
+    {
+        if (DestroyedByEnemy && !TryGetComponent(out Enemy _)) return;
 
-        if (TryGetComponent(out StorageContainer storageContainer))
-            DropStoredItems(storageContainer.items);
+        bool hasCategory = TryGetComponent(out ObjectCategory category);
+        Vector3 dropPosition = transform.position;
 
-        if (TryGetComponent(out WallSegment wall))
+        float resourceMultiplier = hasCategory ? player.TotalResourceDropMultiplier : 1f;
+
+        foreach (Drop itemDrop in drops)
         {
-            Vector3 wallPos = wall.transform.position;
-            Vector3Int wallPosInt = BuildingManager.Instance.WorldToGrid(wallPos);
-            BuildingManager.Instance.DestroyWall(wallPosInt);
+            if (itemDrop.drop == null) continue;
+            if (Random.value > itemDrop.dropChance) continue;
+
+            int dropAmount = Random.Range(
+                itemDrop.minValue,
+                itemDrop.maxValue + 1
+            );
+
+            if (hasCategory)
+            {
+                dropAmount = Mathf.FloorToInt(
+                    dropAmount * resourceMultiplier
+                );
+
+                if (category.objectType != Game.Terrain.ObjectType.None)
+                    WorldSession.CurrentRunStats.resourcesCollected++;
+            }
+
+            using (ScriptPerformanceTracker.Measure("DestroyObject.SpawnDrop"))
+            {
+                SpawnDrop(
+                    itemDrop.drop,
+                    dropAmount,
+                    dropPosition,
+                    torsoBone,
+                    scatter: false
+                );
+            }
         }
 
-        if (TryGetComponent(out OreRockGroup oreRockGroup))
-            oreRockGroup.ReleaseRocks();
-
-        VoxelGrid.Instance.RemoveObjectFromChunk(owningChunk, gameObject);
-        VoxelGrid.Instance.MarkVoxelArea(gameObject, occupy: false, walkable: true);
-        Destroy(gameObject);
+        float expGain = expDropped * DifficultyManager.Instance.GetExpMultiplier();
+        LevelManager.Instance.AddExp(Mathf.FloorToInt(expGain));
     }
 
     private void DropStoredItems(ItemData[] items)
@@ -235,7 +311,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
             if (data == null || string.IsNullOrEmpty(data.itemName)) continue;
 
             SpawnDrop(
-                ItemRegistry.GetItemByName(data.itemName),
+                ItemRegistry.Instance.GetByKey(data.itemName),
                 data.count,
                 transform.position
             );
@@ -248,7 +324,7 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
 
         Vector3 pos = origin + Vector3.up * 1.5f;
         float scatterDistance = 0.5f;
-        float scatterForce = 1.5f;
+        float scatterForce = 0.5f;
       
         ItemSpawner.Spawn(drop, pos, amount, bone, scatter, scatterDistance, scatterForce);
     }
@@ -267,28 +343,60 @@ public class BreakableObject : MonoBehaviour, ISaveableObject
     IEnumerator BounceObject(Transform objTransform)
     {
         Vector3 originalScale = objTransform.localScale;
-        Vector3 shrunkenScale = originalScale * 0.95f; // 95% size
+        Vector3 shrinkScale = originalScale * 0.9f;
+        Vector3 overshootScale = originalScale * 1.08f;
 
-        float duration = 0.1f; // shrink duration
+        float shrinkTime = 0.08f;
+        float expandTime = 0.12f;
+        float settleTime = 0.08f;
+
         float elapsed = 0f;
 
         // Shrink
-        while (elapsed < duration)
+        while (elapsed < shrinkTime)
         {
-            objTransform.localScale = Vector3.Lerp(originalScale, shrunkenScale, elapsed / duration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        objTransform.localScale = shrunkenScale;
+            objTransform.localScale = Vector3.Lerp(
+                originalScale,
+                shrinkScale,
+                elapsed / shrinkTime
+            );
 
-        // Expand back
-        elapsed = 0f;
-        while (elapsed < duration)
-        {
-            objTransform.localScale = Vector3.Lerp(shrunkenScale, originalScale, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
         }
+
+        objTransform.localScale = shrinkScale;
+
+        // Overshoot expand
+        elapsed = 0f;
+        while (elapsed < expandTime)
+        {
+            objTransform.localScale = Vector3.Lerp(
+                shrinkScale,
+                overshootScale,
+                elapsed / expandTime
+            );
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        objTransform.localScale = overshootScale;
+
+        // Settle back
+        elapsed = 0f;
+        while (elapsed < settleTime)
+        {
+            objTransform.localScale = Vector3.Lerp(
+                overshootScale,
+                originalScale,
+                elapsed / settleTime
+            );
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
         objTransform.localScale = originalScale;
     }
 

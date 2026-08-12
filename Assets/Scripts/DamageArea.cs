@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public class DamageArea : MonoBehaviour
 {
+    [SerializeField] private AudioClip spawnSound;
+    [SerializeField] private ParticleSystem spawnEffect;
+
     [Header("Attack Settings")]
     [SerializeField] private float radius = 3f;
     [SerializeField] private LayerMask targetLayer;
@@ -29,6 +32,9 @@ public class DamageArea : MonoBehaviour
 
         // Start below ground
         transform.position = startPos;
+
+        AudioManager.Instance.PlaySFX(spawnSound, position: transform.position);
+        spawnEffect.Play();
 
         // Rise up
         yield return MoveOverTime(startPos, peakPos, riseDuration);

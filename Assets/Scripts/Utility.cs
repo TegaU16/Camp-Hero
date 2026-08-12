@@ -62,45 +62,34 @@ public static class Utility
     public static float GetHeightAt(int x, int z)
     {
         VoxelGrid voxelGrid = VoxelGrid.Instance;
+        int chunkSize = voxelGrid.chunkSize;
 
-        int chunkX = Mathf.FloorToInt((float)x / voxelGrid.chunkSize);
-        int chunkZ = Mathf.FloorToInt((float)z / voxelGrid.chunkSize);
+        int chunkX = Mathf.FloorToInt((float)x / chunkSize);
+        int chunkZ = Mathf.FloorToInt((float)z / chunkSize);
 
-        // Handle negative modulus properly
-        int localX = x - chunkX * voxelGrid.chunkSize;
-        int localZ = z - chunkZ * voxelGrid.chunkSize;
+        int localX = x - chunkX * chunkSize;
+        int localZ = z - chunkZ * chunkSize;
 
         Vector2Int chunkKey = new(chunkX, chunkZ);
 
         if (!voxelGrid.chunkMap.TryGetValue(chunkKey, out VoxelChunk chunk) || 
             localX < 0 || 
-            localX >= voxelGrid.chunkSize || 
+            localX >= chunkSize || 
             localZ < 0 || 
-            localZ >= voxelGrid.chunkSize) return 0f; // or some default height
+            localZ >= chunkSize) return 0f;
 
-        return chunk.heightMap[localX, localZ];
+        return chunk.heightMap[localX * chunkSize + localZ];
     }
 
     public static void DisableButtonsOutside(Transform menuTransform, Button[] buttonsInScene, bool open)
     {
         foreach (Button button in buttonsInScene)
         {
-            if (button.transform.parent == menuTransform) continue;
+            if (button.transform.IsChildOf(menuTransform)) continue;
 
             button.interactable = !open;
             if (button.TryGetComponent(out InteractiveButton interactiveButton))
                 interactiveButton.isActive = !open;
-        }
-    }
-
-    public static int PositionHash(int x, int z, int seed)
-    {
-        unchecked
-        {
-            int hash = seed;
-            hash = hash * 73856093 ^ x;
-            hash = hash * 19349663 ^ z;
-            return hash;
         }
     }
 
@@ -161,20 +150,10 @@ public static class Utility
     public static void RemoveMultiplierSource(object source, MultiplierStat multiplierStat)
         => multiplierStat.RemoveSource(source);
 
-    public static IEnumerator Fade(CanvasGroup canvasGroup, float start, float end, float duration)
+    public static Vector3 GetTargetPoint(Transform target)
     {
-        float elapsed = 0f;
+        if (target.TryGetComponent(out Collider col)) return col.bounds.center; // best default
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-
-            canvasGroup.alpha = Mathf.Lerp(start, end, t);
-
-            yield return null;
-        }
-
-        canvasGroup.alpha = end;
+        return target.position + Vector3.up * 1.5f; // fallback
     }
 }

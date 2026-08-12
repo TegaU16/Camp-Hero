@@ -6,9 +6,9 @@ namespace Game.Defenses
 {
     public class Projectile : MonoBehaviour
     {
-        public float speed = 20f;
-        public float homingStrength = 2f;
-        public float maxLifetime = 5f;
+        [SerializeField] private float speed = 20f;
+        [SerializeField] private float homingStrength = 2f;
+        [SerializeField] private float maxLifetime = 5f;
 
         private Transform attacker;
         private Transform target;
@@ -17,6 +17,8 @@ namespace Game.Defenses
         private bool homing = true;
         private float lifetime;
 
+        private float projectileYaw;
+
         public void SetTarget(Transform attacker, Transform t, int dmg, bool useHoming = true)
         {
             this.attacker = attacker;
@@ -24,8 +26,13 @@ namespace Game.Defenses
             projectileDamage = dmg;
             homing = useHoming;
 
-            if (target != null)
-                currentDirection = (target.position - transform.position).normalized;
+            float yaw = Random.Range(-projectileYaw, projectileYaw);
+            float pitch = Random.Range(-projectileYaw, projectileYaw);
+
+            Quaternion deviation = Quaternion.Euler(pitch, yaw, 0f);
+
+            Vector3 baseDirection = (Utility.GetTargetPoint(target) - transform.position).normalized;
+            currentDirection = deviation * baseDirection;
         }
 
         private void Update()
@@ -39,14 +46,14 @@ namespace Game.Defenses
                 return;
             }
 
-            Vector3 toTarget = (target.position - transform.position).normalized;
+            Vector3 toTarget = (Utility.GetTargetPoint(target) - transform.position).normalized;
 
             if (homing)
                 currentDirection = Vector3.RotateTowards(currentDirection, toTarget, homingStrength * Time.deltaTime, 0f);
 
             float distanceThisFrame = speed * Time.deltaTime;
 
-            if (Vector3.Distance(transform.position, target.position) <= distanceThisFrame)
+            if (Vector3.Distance(transform.position, Utility.GetTargetPoint(target)) <= distanceThisFrame)
             {
                 HitTarget();
                 return;
@@ -58,16 +65,12 @@ namespace Game.Defenses
 
         private void HitTarget()
         {
+            if (!target.TryGetComponent(out Collider collider)) return;
+
             Vector3 targetHitPoint;
             Vector3 targetHitNormal;
 
-            if (target.TryGetComponent(out Collider collider))
-                targetHitPoint = collider.ClosestPoint(transform.position);
-            else if (target.TryGetComponent(out CharacterController controller))
-                targetHitPoint = controller.ClosestPoint(transform.position);
-            else
-                return;
-
+            targetHitPoint = collider.ClosestPoint(transform.position);
             targetHitNormal = (targetHitPoint - transform.position).normalized;
 
             if (target.TryGetComponent(out Targetable targetable) && targetable.TryGetComponent(out Health targetHealth))
@@ -76,7 +79,7 @@ namespace Game.Defenses
 
                 if (target.TryGetComponent(out Rigidbody rb))
                 {
-                    Vector3 knockbackDir = (target.position - transform.position).normalized;
+                    Vector3 knockbackDir = (Utility.GetTargetPoint(target) - transform.position).normalized;
                     rb.AddForce(knockbackDir * 5f, ForceMode.Impulse);
                 }
             }
@@ -91,10 +94,12 @@ namespace Game.Defenses
                 );
 
                 breakable.TakeDamage(attackDamageInfo);
-                enemy.OnAttacked(attacker);
+                enemy.EnemyCombat.OnAttacked(attacker);
             }
 
             Destroy(gameObject);
         }
+
+        public void SetProjectileYaw(float yaw) => projectileYaw = yaw;
     }
 }

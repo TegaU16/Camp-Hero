@@ -163,8 +163,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 18828ddbe6b08384786d152e6b987838, type: 2}
   itemCount: 0
+  outlineWidth: 5
   maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
+  currentCell: {x: 0, y: 0}
 --- !u!114 &-244702364626670714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,9 +178,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 0.10182267, g: 0.85660374, b: 0.19934414, a: 1}
-  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []

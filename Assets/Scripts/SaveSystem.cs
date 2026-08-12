@@ -18,6 +18,8 @@ namespace Game.Saving
             return Path.Combine(WorldsPath, worldName);
         }
 
+        private static void EnsureWorldDirectoryExists(string worldName) => Directory.CreateDirectory(GetWorldPath(worldName));
+
         private static string GetChunksPath(string worldName) =>
             Path.Combine(GetWorldPath(worldName), "chunks");
 
@@ -27,6 +29,8 @@ namespace Game.Saving
         // ----- PLAYER -----
         public static void SavePlayer(string worldName, PlayerSaveData data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(GetFilePath(worldName, "player.json"), json);
         }
@@ -41,6 +45,8 @@ namespace Game.Saving
         // ----- WORLD METADATA -----
         public static void SaveWorldMeta(WorldMetaData data)
         {
+            EnsureWorldDirectoryExists(data.worldName);
+
             string worldPath = GetWorldPath(data.worldName);
             Directory.CreateDirectory(worldPath);
             string json = JsonUtility.ToJson(data, true);
@@ -67,54 +73,19 @@ namespace Game.Saving
 
         public static void SaveChunk(string worldName, VoxelChunk chunk)
         {
+            EnsureWorldDirectoryExists(worldName);
             Directory.CreateDirectory(GetChunksPath(worldName));
-
-            List<SpawnedObjectData> savedObjects = new();
-
-            for (int i = 0; i < chunk.objects.Count; i++)
-            {
-                GameObject instance = chunk.objects[i];
-                if (instance == null)
-                {
-                    Debug.Log("Skipped null object slot");
-                    continue;
-                }
-
-                string prefabKey = instance.GetComponent<PrefabID>().prefabKey;
-
-                if (prefabKey == null)
-                {
-                    Debug.Log($"Tried saving {instance.name}");
-                    continue;
-                }
-                GameObject prefab = PrefabRegistry.GetPrefabByKey(prefabKey);
-
-                savedObjects.Add(new SpawnedObjectData(
-                    instance.transform.position,
-                    instance,
-                    prefab
-                ));
-            }
-
-            chunk.savedObjects = savedObjects;
 
             foreach (SpawnedObjectData spawnedObjectData in chunk.savedObjects)
             {
-                if (spawnedObjectData.instance == null)
-                {
-                    Debug.LogWarning($"{spawnedObjectData.prefabID} instance is null");
-                    continue;
-                }
-
+                if (spawnedObjectData.instance == null) continue;
                 spawnedObjectData.SaveState(spawnedObjectData.instance);
             }
 
             ChunkSaveData data = new()
             {
                 chunkPosition = chunk.chunkPosition,
-                spawnedObjects = savedObjects,
-                hasNaturalObjects = chunk.hasNaturalObjects,
-                hasKeyStructure = chunk.hasKeyStructure
+                spawnedObjects = chunk.savedObjects,
             };
 
             File.WriteAllText(
@@ -149,11 +120,12 @@ namespace Game.Saving
         }
 
         // ----- CRAFTING -----
-        private static string GetCraftingPath(string worldName) =>
-            Path.Combine(GetWorldPath(worldName), "crafting.json");
+        private static string GetCraftingPath(string worldName) => Path.Combine(GetWorldPath(worldName), "crafting.json");
 
         public static void SaveCrafting(string worldName, CraftingSaveData data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(GetCraftingPath(worldName), json);
         }
@@ -175,6 +147,8 @@ namespace Game.Saving
 
         public static void SaveSmelting(string worldName, SmeltingSaveData data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(GetSmeltingPath(worldName), json);
         }
@@ -193,6 +167,8 @@ namespace Game.Saving
         // ----- ANIMALS -----
         public static void SaveAnimals(string worldName, List<AnimalSaveData> data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(new WorldAnimalData { animals = data }, true);
             string path = GetFilePath(worldName, "animals.json");
 
@@ -212,6 +188,8 @@ namespace Game.Saving
         // ----- ENEMIES -----
         public static void SaveEnemies(string worldName, List<EnemySaveData> data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(new WorldEnemyData { enemies = data }, true);
             string path = GetFilePath(worldName, "enemies.json");
 
@@ -231,6 +209,8 @@ namespace Game.Saving
         // ----- DAY NIGHT CYCLE -----
         public static void SaveDayNight(string worldName, DayNightSaveData data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(data, true);
             string path = GetFilePath(worldName, "daynight.json");
             File.WriteAllText(path, json);
@@ -249,6 +229,8 @@ namespace Game.Saving
         // ----- QUESTS -----
         public static void SaveQuestData(string worldName, WorldQuestSaveData data)
         {
+            EnsureWorldDirectoryExists(worldName);
+
             string json = JsonUtility.ToJson(data, true);
             string path = GetFilePath(worldName, "quests.json");
             File.WriteAllText(path, json);

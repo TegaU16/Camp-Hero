@@ -104,11 +104,9 @@ namespace Game.AI.Animals
                     if (!VoxelGrid.Instance.IsWithinBorders(spawnPos)) continue;
 
                     Vector3Int spawnPosInt = Utility.WorldToVoxelCoord(spawnPos);
-                    if (!VoxelGrid.Instance.IsWalkable(spawnPosInt)) continue;
+                    if (!TerrainGenerator.Instance.IsWalkable(spawnPosInt)) continue;
 
-                    Animal animal = AnimalPool.Instance.GetAnimal(spawnPos);
-                    animal.worldName = WorldSession.CurrentWorldName;
-                    animal.transform.parent = null;
+                    Animal animal = PrepareAnimal(spawnPos);
 
                     animalsList.Add(animal);
                     chunk.simulatedEntities.Add(animal);
@@ -156,9 +154,7 @@ namespace Game.AI.Animals
             foreach (AnimalSaveData data in savedAnimals)
             {
                 // Use pooling system
-                Animal animal = AnimalPool.Instance.GetAnimal(data.position);
-                animal.worldName = WorldSession.CurrentWorldName;
-                animal.transform.parent = null;
+                Animal animal = PrepareAnimal(data.position);
 
                 if (animal.TryGetComponent(out BreakableObject breakable))
                     breakable.SetHealth(data.currentHealth);
@@ -183,6 +179,21 @@ namespace Game.AI.Animals
             }
         }
 
+        private Animal PrepareAnimal(Vector3 spawnPos)
+        {
+            Animal animal = AnimalPool.Instance.Get();
+
+            animal.animator.enabled = false;
+            animal.transform.SetPositionAndRotation(spawnPos, Quaternion.identity);
+            animal.Init(spawnPos);
+            animal.animator.enabled = true;
+
+            animal.worldName = WorldSession.CurrentWorldName;
+            animal.transform.parent = null;
+
+            return animal;
+        }
+
         public void LoadAllAnimals()
         {
             ClearAllAnimals();
@@ -201,11 +212,10 @@ namespace Game.AI.Animals
                 StartCoroutine(SpawnAnimalsForChunk(chunk));
         }
 
-        public void ClearAllAnimals(bool clearPool = false)
+        private void ClearAllAnimals()
         {
             string currentWorld = WorldSession.CurrentWorldName;
 
-            // Step 1 — Remove animals from active chunks for this world
             foreach (KeyValuePair<VoxelChunk, List<Animal>> kvp in chunkAnimals)
             {
                 VoxelChunk chunk = kvp.Key;
@@ -216,17 +226,12 @@ namespace Game.AI.Animals
                     if (animal == null || animal.worldName != currentWorld) continue;
 
                     chunk.simulatedEntities.Remove(animal);
-                    AnimalPool.Instance.ReturnAnimal(animal);
+                    AnimalPool.Instance.Return(animal);
                     currentAnimalCount--;
                 }
             }
 
-            // Clean up dictionary
             chunkAnimals.Clear();
-
-            // Step 2 — Optionally clear animals from pool that belong to this world
-            if (clearPool)
-                AnimalPool.Instance.ClearPoolForWorld(currentWorld);
         }
     }
 }

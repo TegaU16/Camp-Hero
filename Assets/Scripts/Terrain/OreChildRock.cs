@@ -23,7 +23,7 @@ namespace Game.Terrain
         public void Interact()
         {
             parentOre.RemoveRock(index);
-            InventoryManager.Instance.AddItem(pickupPrefab.GetComponent<InteractableItem>().item, 1);
+            InventoryManager.Instance.AddItem(pickupPrefab.GetComponent<InteractableItem>().item);
         }
     }
 }

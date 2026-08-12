@@ -6,31 +6,41 @@ using UnityEngine.UI;
 
 namespace Game.Smelting
 {
+    [RequireComponent(typeof(CanvasGroup), typeof(RectTransform))]
     public class FurnaceUI : MonoBehaviour
     {
-        public InventorySlot inputSlot;
-        public InventorySlot outputSlot;
-        public InventorySlot fuelSlot;
+        private CanvasGroup canvasGroup;
+        private RectTransform rectTransform;
+
+        [SerializeField] private InventorySlot inputSlot;
+        [SerializeField] private InventorySlot outputSlot;
+        [SerializeField] private InventorySlot fuelSlot;
 
         [Header("General UI")]
         public Transform furnaceItemParent;
-        public GameObject furnaceItemPrefab;
-        public List<Button> smeltingTabs;
+        [SerializeField] private GameObject furnaceItemPrefab;
+        [SerializeField] private List<Button> smeltingTabs;
 
         [Header("Process Section")]
-        public ArrowFillController progressBar;
-        public Slider fuelBar;
+        [SerializeField] private ArrowFillController progressBar;
+        [SerializeField] private Slider fuelBar;
 
         [Header("Recipe Section")]
-        public GameObject recipeSection;
-        public GameObject nullItemSelectText;
-        public Image resultImage;
-        public TextMeshProUGUI resultName;
-        public Image requiredImage;
-        public TextMeshProUGUI requiredName;
+        [SerializeField] private GameObject recipeSection;
+        [SerializeField] private GameObject nullItemSelectText;
+        [SerializeField] private Image resultImage;
+        [SerializeField] private TextMeshProUGUI resultName;
+        [SerializeField] private Image requiredImage;
+        [SerializeField] private TextMeshProUGUI requiredName;
 
         private bool isOpen;
         private FurnaceUnit linkedFurnace;
+
+        private void Awake()
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            rectTransform = GetComponent<RectTransform>();
+        }
 
         // Start is called before the first frame update
         void Start()
@@ -47,9 +57,7 @@ namespace Game.Smelting
 
             isOpen = true;
             linkedFurnace = unit;
-            gameObject.SetActive(true);
-            InventoryManager.Instance.mainInventory.SetActive(true);
-            InventoryManager.Instance.OnInventoryOpen();
+            InventoryManager.Instance.OpenInventory();
 
             linkedFurnace.inputSlot = this.inputSlot;
             linkedFurnace.outputSlot = this.outputSlot;
@@ -62,6 +70,8 @@ namespace Game.Smelting
 
             if (progressBar != null)
                 progressBar.fillAmount = linkedFurnace.smeltProgress;
+
+            UITween.DefaultOpenMenu(canvasGroup, rectTransform);
         }
 
         public void Close()
@@ -69,23 +79,17 @@ namespace Game.Smelting
             if (!isOpen) return;
 
             isOpen = false;
+            if (linkedFurnace == null) return;
 
-            if (linkedFurnace != null)
-            {
-                linkedFurnace.SaveUI(inputSlot);
-                linkedFurnace.SaveUI(outputSlot);
-                linkedFurnace.SaveUI(fuelSlot);
+            linkedFurnace.SaveUI(inputSlot);
+            linkedFurnace.SaveUI(outputSlot);
+            linkedFurnace.SaveUI(fuelSlot);
 
-                linkedFurnace.inputSlot = null;
-                linkedFurnace.outputSlot = null;
-                linkedFurnace.fuelSlot = null;
+            linkedFurnace.inputSlot = null;
+            linkedFurnace.outputSlot = null;
+            linkedFurnace.fuelSlot = null;
 
-                linkedFurnace = null;
-            }
-
-            gameObject.SetActive(false);
-            InventoryManager.Instance.mainInventory.SetActive(false);
-            InventoryManager.Instance.darkBackground.SetActive(false);
+            linkedFurnace = null;
         }
 
         private void Update()

@@ -1,97 +1,128 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &6861152718525209678
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.00000004371139
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 6.1232336e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 6.1232336e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_Name
-      value: Blue Gem Drop
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_Layer
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      propertyPath: m_TagString
-      value: Pickable
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -3732736208790738528}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -301392938999151276}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -3176697026109333466}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2219800848614930844}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8453529191777662473}
-  m_SourcePrefab: {fileID: 100100000, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
---- !u!1 &6050269278113603871 stripped
+--- !u!1 &2228671958827809762
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3bd39a8aec955d047906e7126a227eb9, type: 3}
-  m_PrefabInstance: {fileID: 6861152718525209678}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &-3732736208790738528
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3203170470664406900}
+  - component: {fileID: 1895496577813053848}
+  - component: {fileID: 8273266826418386897}
+  - component: {fileID: 4275353347965076740}
+  - component: {fileID: 3204487363751429222}
+  - component: {fileID: 7511692494029068512}
+  - component: {fileID: 4143857209504596367}
+  - component: {fileID: 6049256047110394325}
+  m_Layer: 6
+  m_Name: Blue Gem Drop
+  m_TagString: Pickable
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3203170470664406900
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2228671958827809762}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1895496577813053848
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2228671958827809762}
+  m_Mesh: {fileID: 1530368501086600559, guid: f6141aa27e3c7194c9732fd55e9ced8f, type: 3}
+--- !u!23 &8273266826418386897
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2228671958827809762}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 22980ed58f85d944098f5c26fc73ec97, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &4275353347965076740
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2228671958827809762}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.24, y: 0.39999998, z: 0.12000001}
+  m_Center: {x: 0, y: 0.19999999, z: -0.00000025331974}
+--- !u!54 &3204487363751429222
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6050269278113603871}
+  m_GameObject: {fileID: 2228671958827809762}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -112,71 +143,48 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!65 &-301392938999151276
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6050269278113603871}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.16000001, y: 0.16000001, z: 0.16000003}
-  m_Center: {x: -8.564962e-25, y: 0.080000006, z: -0.000000007450581}
---- !u!114 &-3176697026109333466
+--- !u!114 &7511692494029068512
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6050269278113603871}
+  m_GameObject: {fileID: 2228671958827809762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6836f6a8c0adb8a4c8ca93896851a416, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableItem
   item: {fileID: 11400000, guid: 128d71fc4ba01e446ac5d92031ca9c5e, type: 2}
-  itemCount: 0
+  itemCount: 1
+  outlineWidth: 5
   maxItemCount: 100
-  CurrentCell: {x: 0, y: 0}
---- !u!114 &2219800848614930844
+  currentCell: {x: 0, y: 0}
+--- !u!114 &4143857209504596367
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6050269278113603871}
+  m_GameObject: {fileID: 2228671958827809762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Outline
-  outlineMode: 0
-  outlineColor: {r: 0.56086814, g: 0.08388037, b: 0.87169814, a: 1}
-  outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &8453529191777662473
+--- !u!114 &6049256047110394325
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6050269278113603871}
+  m_GameObject: {fileID: 2228671958827809762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 934e1b9b5a7e6384f9975dd484bc1dda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrefabID
-  prefabKey: gem_blue_drop
+  prefabKey: blue_gem

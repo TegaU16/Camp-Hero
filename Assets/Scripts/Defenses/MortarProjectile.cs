@@ -7,12 +7,11 @@ namespace Game.Defenses
     [RequireComponent(typeof(Rigidbody))]
     public class MortarProjectile : MonoBehaviour
     {
-        public float explosionRadius = 3f;
-        public LayerMask projectileDamageMask;
-        public GameObject explosionEffect;
-        public float arcHeight = 5f;
+        [SerializeField] private float explosionRadius = 3f;
+        [SerializeField] private GameObject explosionEffect;
+        [SerializeField] private float arcHeight = 5f;
 
-        [SerializeField] float turnSpeed = 5f;
+        [SerializeField] private float turnSpeed = 5f;
         Transform target;
         Transform mortar;
 
@@ -29,7 +28,10 @@ namespace Game.Defenses
             if (target == null) return;
 
             Vector3 direction = (target.position - transform.position).normalized;
-            Vector3 newVelocity = Vector3.Lerp(rb.linearVelocity.normalized, direction, turnSpeed * Time.fixedDeltaTime) * rb.linearVelocity.magnitude;
+
+            Vector3 norm = rb.linearVelocity.normalized;
+            float magnitude = rb.linearVelocity.magnitude;
+            Vector3 newVelocity = Vector3.Lerp(norm, direction, turnSpeed * Time.fixedDeltaTime) * magnitude;
 
             rb.linearVelocity = newVelocity;
             transform.forward = rb.linearVelocity.normalized;
@@ -90,7 +92,7 @@ namespace Game.Defenses
 
                 breakable.TakeDamage(attackDamageInfo);
 
-                enemy.OnAttacked(mortar);
+                enemy.EnemyCombat.OnAttacked(mortar);
             }
 
             if (explosionEffect != null)

@@ -78,7 +78,7 @@ namespace Game.Defenses
                 }
 
                 if (target.TryGetComponent(out Enemy enemy))
-                    enemy.OnAttacked(transform);
+                    enemy.EnemyCombat.OnAttacked(transform);
             }
         }
 

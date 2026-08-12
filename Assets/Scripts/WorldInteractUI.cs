@@ -45,6 +45,7 @@ public class WorldInteractUI : MonoBehaviour
         target = currentInteractable.GetTransform();
         if (target == null) return;
 
+        transform.SetParent(target);
         objectImage.sprite = currentInteractable.ObjectIcon;
 
         InteractableItem interactableItem = target.GetComponent<InteractableItem>();
@@ -65,7 +66,7 @@ public class WorldInteractUI : MonoBehaviour
         Bounds bounds = Utility.GetObjectBounds(target);
 
         Vector3 startPos = bounds.center + Vector3.up * bounds.extents.y;
-        Vector3 finalPos = bounds.center + Vector3.up * uiHeightOffset;
+        Vector3 finalPos = startPos + Vector3.up * uiHeightOffset;
 
         float elapsed = 0f;
 

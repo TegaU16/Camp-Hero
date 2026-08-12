@@ -17,8 +17,8 @@ MonoBehaviour:
   maxStack: 1
   icon: {fileID: 21300000, guid: 9ac3bf5e53822274c94a8c69bc9d1375, type: 3}
   itemName: Blue Gem
-  equippedPrefab: {fileID: 8524752270840117040, guid: 17778c2ea69f3d644870958fe0a8e1ed, type: 3}
-  itemDrop: {fileID: 6050269278113603871, guid: 42d1f65788d45234384a31e14b834cc0, type: 3}
+  equippedPrefab: {fileID: 5949845158012159611, guid: 17778c2ea69f3d644870958fe0a8e1ed, type: 3}
+  itemDrop: {fileID: 2228671958827809762, guid: 42d1f65788d45234384a31e14b834cc0, type: 3}
   rarity: 3
   buildingGhost: {fileID: 0}
   buildingSize: {x: 1, y: 1}

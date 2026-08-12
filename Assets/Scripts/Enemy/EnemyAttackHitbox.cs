@@ -3,32 +3,33 @@ using UnityEngine;
 
 namespace Game.AI.Enemies
 {
-    public class EnemyAttackHitbox : MonoBehaviour
+    public class EnemyCombatAttackHitbox : MonoBehaviour
     {
-        private Enemy enemyScript;
+        private EnemyCombat enemyCombat;
         private readonly HashSet<Targetable> alreadyHit = new();
 
         public LayerMask targetableLayer;
+        [SerializeField] private AudioClip hitSound;
 
         void Awake()
         {
-            enemyScript = GetComponentInParent<Enemy>();
+            enemyCombat = GetComponentInParent<EnemyCombat>();
         }
 
         private void Start()
         {
-            if (enemyScript != null && TryGetComponent(out BoxCollider box))
+            if (enemyCombat != null && TryGetComponent(out BoxCollider box))
             {
-                box.size = new Vector3(box.size.x, box.size.y, enemyScript.meleeAttackRange);
-                box.center = new Vector3(0, box.center.y, enemyScript.meleeAttackRange / 2f);
+                box.size = new Vector3(box.size.x, box.size.y, enemyCombat.meleeAttackRange);
+                box.center = new Vector3(0, box.center.y, enemyCombat.meleeAttackRange / 2f);
             }
         }
 
         // Called by animation event
-        void PerformHit()
+        private void PerformHit()
         {
             if (!GameManager.Instance.IsGameActive) return;
-            if (enemyScript == null) return;
+            if (enemyCombat == null) return;
             if (!TryGetComponent(out BoxCollider box)) return;
 
             alreadyHit.Clear();
@@ -42,7 +43,7 @@ namespace Game.AI.Enemies
                 ProcessHit(hit);
         }
 
-        void ProcessHit(Collider other)
+        private void ProcessHit(Collider other)
         {
             Targetable target = other.GetComponentInParent<Targetable>();
             if (target == null) return;
@@ -50,7 +51,9 @@ namespace Game.AI.Enemies
             if (alreadyHit.Contains(target)) return;
 
             alreadyHit.Add(target);
-            enemyScript.DealDamage();
+            enemyCombat.DealDamage();
+
+            AudioManager.Instance.PlaySFX(hitSound, position: transform.position);
         }
     }
 }

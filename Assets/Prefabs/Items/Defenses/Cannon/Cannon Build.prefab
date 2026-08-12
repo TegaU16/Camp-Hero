@@ -202,7 +202,10 @@ MonoBehaviour:
   firePoint: {fileID: 8834070817164444102}
   projectilePrefab: {fileID: 309557753819694897, guid: d51470ba7fe6be3428772ed8778327b2, type: 3}
   shotSound: {fileID: 8300000, guid: d0dfe73fa36c421449dcf883d584b189, type: 3}
-  rotatingPart: {fileID: 1906092921314158574}
+  barrel: {fileID: 1906092921314158574}
+  recoilDistance: 0.2
+  recoilDuration: 0.08
+  returnDuration: 0.15
 --- !u!114 &310294678028782270
 MonoBehaviour:
   m_ObjectHideFlags: 0

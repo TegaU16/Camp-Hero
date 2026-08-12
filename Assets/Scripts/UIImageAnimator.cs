@@ -1,12 +1,16 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIImageAnimator : MonoBehaviour
 {
+    public event Action AnimationFinished;
+
     [SerializeField] private Image targetImage;
     [SerializeField] private Sprite[] frames;
     [SerializeField] private float frameRate = 12f;
     [SerializeField] private bool startOnAwake;
+    [SerializeField] private bool loop = true;
 
     private int currentFrame;
     private float frameTimer;
@@ -25,6 +29,9 @@ public class UIImageAnimator : MonoBehaviour
 
         frameDuration = 1f / frameRate;
         originalSprite = targetImage.sprite;
+
+        if (startOnAwake)
+            Play();
     }
 
     private void Update()
@@ -36,11 +43,26 @@ public class UIImageAnimator : MonoBehaviour
         while (frameTimer >= frameDuration)
         {
             frameTimer -= frameDuration;
-
             currentFrame++;
-            if (currentFrame >= frames.Length)
-                currentFrame = 0;
 
+            if (currentFrame < frames.Length)
+            {
+                targetImage.sprite = frames[currentFrame];
+                continue;
+            }
+
+            if (!loop)
+            {
+                currentFrame = frames.Length - 1;
+                targetImage.sprite = frames[currentFrame];
+                isPlaying = false;
+
+                AnimationFinished?.Invoke();
+
+                return;
+            }
+
+            currentFrame = 0;
             targetImage.sprite = frames[currentFrame];
         }
     }
@@ -71,11 +93,13 @@ public class UIImageAnimator : MonoBehaviour
         isPlaying = true;
     }
 
-    public void Stop()
+    public void Stop(bool restoreOriginalSprite = true)
     {
         isPlaying = false;
 
-        if (targetImage != null && originalSprite != null)
+        if (restoreOriginalSprite && targetImage != null && originalSprite != null)
             targetImage.sprite = originalSprite;
     }
+
+    public void SetLooping(bool shouldLoop) => loop = shouldLoop;
 }

@@ -9,8 +9,8 @@ using Worlds;
 
 namespace Game.Players
 {
-    [RequireComponent(typeof(Animator))]
-    [RequireComponent(typeof(ProceduralAnimator))]
+    [RequireComponent(typeof(Animator), typeof(PlayerCombat), typeof(CharacterController))]
+    [RequireComponent(typeof(PlayerAttributes))]
     public class Player : MonoBehaviour
     {
         [Header("Movement")]
@@ -18,27 +18,32 @@ namespace Game.Players
         [SerializeField] private float sprintSpeed = 10f;
         [SerializeField] private float gravity = -9.8f;
         [SerializeField] private float jumpHeight = 3f;
+
         private Vector3 velocity;
+        private Vector3 lastPosition;
         private float currentSpeed;
+
         public float CurrentSpeed => currentSpeed;
 
         [Header("Status")]
-        public Health health;
         [HideInInspector] public HealthBar healthBar;
         [HideInInspector] public StaminaBar staminaBar;
-        private float buffer = 0f;
+        public Health health;
+        
         [SerializeField] private float bufferCooldown = 5f;
         [SerializeField] private float jumpDecrease = 5f;
-        public PlayerAttributes playerAttributes;
-        [SerializeField] private PlayerCombat playerCombat;
+        private float buffer = 0f;
+
+        [HideInInspector] public PlayerAttributes playerAttributes;
+        private PlayerCombat playerCombat;
+
         public float CurrentStamina => staminaBar.GetStamina();
 
         [Header("Body Settings")]
-        public CharacterController controller;
-        public SimpleRagdollController ragdollController;
         public Transform itemHolder;
-        public Transform speedLinesSpawn;
-        private ProceduralAnimator proceduralAnimator;
+        public Transform torsoBone;
+
+        private CharacterController controller;
         private Animator animator;
 
         [Header("Camera Settings")]
@@ -76,7 +81,13 @@ namespace Game.Players
         public float TotalCritFactorMultiplier => critFactorMultiplier.Total;
         public float TotalResourceDropMultiplier => resourceDropMultiplier.Total;
 
-        private void Awake() => animator = GetComponent<Animator>();
+        private void Awake()
+        {
+            animator = GetComponent<Animator>();
+            playerCombat = GetComponent<PlayerCombat>();
+            controller = GetComponent<CharacterController>();
+            playerAttributes = GetComponent<PlayerAttributes>();
+        }
 
         private void Start()
         {
@@ -85,10 +96,6 @@ namespace Game.Players
 
             if (cam == null)
                 Debug.LogError("Main Camera not found! Ensure there is a Camera tagged as 'MainCamera' in the scene.");
-
-            proceduralAnimator = GetComponent<ProceduralAnimator>();
-            if (proceduralAnimator == null)
-                proceduralAnimator = gameObject.AddComponent<ProceduralAnimator>();
         }
 
         // Update is called once per frame
@@ -128,6 +135,7 @@ namespace Game.Players
             if (!uiBound) return;
             if (controller == null || !controller.enabled || cam == null) return;
 
+            bool isSprinting = false;
             bool isGrounded = controller.isGrounded;
             Vector3 direction = new Vector3(horizontalInput, 0f, verticalInput).normalized;
 
@@ -145,15 +153,12 @@ namespace Game.Players
                 transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
                 Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-                bool isSprinting = Input.GetKey(sprintKey) && CurrentStamina > 0;
+                isSprinting = Input.GetKey(sprintKey) && CurrentStamina > 0;
 
                 float moveSpeed = isSprinting ? sprintSpeed : speed;
                 float finalSpeed = moveSpeed * playerAttributes.MovementSpeedMultiplier;
 
                 controller.Move(finalSpeed * Time.fixedDeltaTime * moveDir.normalized);
-
-                if (proceduralAnimator != null)
-                    proceduralAnimator.SetMovementSpeed(finalSpeed);
 
                 // Stamina handling
                 if (isSprinting)
@@ -172,9 +177,6 @@ namespace Game.Players
             }
             else
             {
-                if (proceduralAnimator != null)
-                    proceduralAnimator.SetMovementSpeed(0f);
-
                 if (buffer >= bufferCooldown)
                     staminaBar.IncreaseStamina(playerAttributes.StaminaRegenRate);
                 else
@@ -191,9 +193,18 @@ namespace Game.Players
             // Apply vertical velocity
             controller.Move(velocity * Time.fixedDeltaTime);
 
-            Vector3 horizontalVelocity = controller.velocity;
-            horizontalVelocity.y = 0f;
-            currentSpeed = horizontalVelocity.magnitude;
+            Vector3 flatDelta = transform.position - lastPosition;
+            flatDelta.y = 0f;
+
+            currentSpeed = flatDelta.magnitude / Time.fixedDeltaTime;
+
+            lastPosition = transform.position;
+
+            float speedFactor = 0f;
+            if (currentSpeed > 0f)
+                speedFactor = isSprinting ? 1f : 0.5f;
+
+            animator.SetFloat("Speed", speedFactor);
         }
 
         void LateUpdate()
@@ -251,11 +262,10 @@ namespace Game.Players
 
         public void RegisterActiveUpgrade(ActiveUpgradeEffect upgrade)
         {
-            if (!activeUpgrades.Contains(upgrade))
-            {
-                activeUpgrades.Add(upgrade);
-                PlayerStatsManager.Instance.AddSkill(upgrade.skillImagePrefab);
-            }
+            if (activeUpgrades.Contains(upgrade)) return;
+
+            activeUpgrades.Add(upgrade);
+            PlayerStatsManager.Instance.AddSkill(upgrade.skillImagePrefab);
         }
 
         public void UnregisterActiveUpgrade(ActiveUpgradeEffect upgrade)
@@ -286,9 +296,6 @@ namespace Game.Players
         // Called by animation event
         private void OnEndActiveUpgrade()
         {
-            if (proceduralAnimator != null)
-                proceduralAnimator.enabled = true;
-
             if (playerCombat != null)
                 playerCombat.canAttack = true;
 
@@ -311,7 +318,7 @@ namespace Game.Players
             health.SetHealth(currentHealth);
             health.healthBar.Initialize(health.maxHealth, currentHealth);
 
-            float currentStamina = staminaBar.GetStamina();
+            float currentStamina = CurrentStamina;
             currentStamina += staminaBar.maxStamina - oldMaxStamina;
             currentStamina = Mathf.Clamp(currentStamina, 0, staminaBar.maxStamina);
 
@@ -338,7 +345,7 @@ namespace Game.Players
                 maxHealth = health.maxHealth,
                 currentHealth = health.GetHealth(),
                 maxStamina = staminaBar.maxStamina,
-                currentStamina = staminaBar.GetStamina(),
+                currentStamina = CurrentStamina,
                 attributes = new PlayerAttributesData
                 {
                     strength = stats.strength.Value,
